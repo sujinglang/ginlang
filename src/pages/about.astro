@@ -1,0 +1,19 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<SiteLayout title="关于" description="关于 GINLANG。">
+  <article class="about-page">
+    <a class="back-link" href={base + '/'}>← GINLANG</a>
+    <header class="page-intro">
+      <p class="eyebrow">关于这里</p>
+      <h1>GINLANG</h1>
+      <p>写一些迟到的文字。</p>
+    </header>
+    <div class="prose about-copy">
+      <p>这里收着随笔、日记、读书时的停顿，以及偶尔想留下的短句。</p>
+      <p>愿每一段文字都不必匆忙，也愿你在这里读得自在。</p>
+    </div>
+  </article>
+</SiteLayout>

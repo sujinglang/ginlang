@@ -1,0 +1,38 @@
+---
+import { getCollection, render } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { categoryLabel } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<SiteLayout title={post.data.title} description={post.data.excerpt}>
+  <article class="article-page">
+    <a class="back-link" href={base + '/'}>← 回到首页</a>
+    <header class="article-header">
+      <div class="post-meta article-meta">
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        <span class="meta-dot" aria-hidden="true">·</span>
+        <a href={base + '/category/' + post.data.category + '/'}>{categoryLabel(post.data.category)}</a>
+      </div>
+      <h1>{post.data.title}</h1>
+      <p class="article-deck">{post.data.excerpt}</p>
+    </header>
+    <div class="article-body prose">
+      <Content />
+    </div>
+    <footer class="article-footer">
+      <span>写于 {formatDate(post.data.date)}</span>
+      <a href={base + '/archive/'}>继续翻阅归档 →</a>
+    </footer>
+  </article>
+</SiteLayout>

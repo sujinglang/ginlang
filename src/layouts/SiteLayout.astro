@@ -1,0 +1,91 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'GINLANG · 写一些迟到的文字',
+  description = '随笔、日记、书摘与短句。',
+} = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f6f2" />
+    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <link rel="icon" type="image/svg+xml" href={base + '/favicon.svg'} />
+    <script is:inline>
+      (() => {
+        try {
+          const saved = localStorage.getItem('ginlang-theme');
+          const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.dataset.theme = saved || (dark ? 'dark' : 'light');
+        } catch {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="wordmark" href={base + '/'} aria-label="GINLANG 首页">GINLANG</a>
+        <nav class="primary-nav" aria-label="主导航">
+          <a href={base + '/category/essay/'}>随笔</a>
+          <a href={base + '/category/diary/'}>日记</a>
+          <a href={base + '/category/book/'}>书摘</a>
+          <a href={base + '/category/short/'}>短句</a>
+          <a href={base + '/archive/'}>归档</a>
+          <a href={base + '/about/'}>关于</a>
+        </nav>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换夜间模式" aria-pressed="false">
+          <span aria-hidden="true">◐</span>
+        </button>
+      </header>
+
+      <main id="main-content">
+        <slot />
+      </main>
+
+      <footer class="site-footer">
+        <span>GINLANG</span>
+        <span>写一些迟到的文字。</span>
+        <div class="footer-links">
+          <a href={base + '/archive/'}>归档</a>
+          <a href={base + '/about/'}>关于</a>
+          <a href="#main-content">回到顶部</a>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
+      const root = document.documentElement;
+
+      function syncThemeButton() {
+        toggle?.setAttribute('aria-pressed', String(root.dataset.theme === 'dark'));
+      }
+
+      syncThemeButton();
+      toggle?.addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('ginlang-theme', next);
+        } catch {
+          // The theme still changes for this page if storage is unavailable.
+        }
+        syncThemeButton();
+      });
+    </script>
+  </body>
+</html>

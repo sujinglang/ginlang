@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { categories, categoryLabel } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export function getStaticPaths() {
+  return categories.map((category) => ({ params: { slug: category.slug }, props: { category } }));
+}
+
+const { category } = Astro.props;
+const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === category.slug)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<SiteLayout title={category.label} description={category.description}>
+  <section class="listing-page">
+    <a class="back-link" href={base + '/'}>← GINLANG</a>
+    <header class="page-intro">
+      <p class="eyebrow">文字分类</p>
+      <h1>{category.label}</h1>
+      <p>{category.description}</p>
+    </header>
+
+    {posts.length > 0 ? (
+      <ol class="post-list">
+        {posts.map((post) => (
+          <li class="post-row">
+            <div class="post-meta">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <span>{categoryLabel(post.data.category)}</span>
+            </div>
+            <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
+            <p class="post-excerpt">{post.data.excerpt}</p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty-note">这一页暂时留白。等有新的文字，再回来看看。</p>
+    )}
+  </section>
+</SiteLayout>

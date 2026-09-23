@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { categoryLabel } from '../lib/categories';
+import { formatDate } from '../lib/date';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+---
+
+<SiteLayout description="随笔、日记、书摘与短句。GINLANG，写一些迟到的文字。">
+  <section class="home-intro" aria-labelledby="home-title">
+    <p class="eyebrow">一间安静的文字房间</p>
+    <h1 id="home-title">写一些迟到的文字。</h1>
+    <p class="intro-note">随笔、日记、书摘与短句。给经过的日子留一页。</p>
+  </section>
+
+  <section class="post-list-section" aria-labelledby="latest-title">
+    <div class="section-heading">
+      <h2 id="latest-title">最近写下</h2>
+      <a class="quiet-link" href={base + '/archive/'}>全部文章 <span aria-hidden="true">↗</span></a>
+    </div>
+
+    {posts.length > 0 ? (
+      <ol class="post-list">
+        {posts.map((post) => (
+          <li class="post-row">
+            <div class="post-meta">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <a href={base + '/category/' + post.data.category + '/'}>{categoryLabel(post.data.category)}</a>
+            </div>
+            <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
+            <p class="post-excerpt">{post.data.excerpt}</p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty-note">这里还空着。等第一篇文字慢慢长出来。</p>
+    )}
+  </section>
+
+  <section class="home-endnote" aria-label="站点说明">
+    <p>不赶时间，慢慢写。</p>
+    <span aria-hidden="true">✳</span>
+  </section>
+</SiteLayout>
