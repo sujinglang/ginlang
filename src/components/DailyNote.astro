@@ -1,0 +1,234 @@
+---
+// A small writing invitation. Keep these lines short enough to read at a glance.
+const prompts = [
+  '写一扇你熟悉的窗，不写窗外的风景。',
+  '从一件被留下的小物开始，讲一个人的离开。',
+  '记下今天最轻的一声响。',
+  '给多年后的自己写一句不必解释的话。',
+  '让一段路在文字里慢下来。',
+  '描述一次没有说出口的道别。',
+  '写一场雨，但不要使用“雨”字。',
+  '把昨夜的梦压缩成三句话。',
+  '替一盏熄灭的灯写一段注脚。',
+  '写出某个城市在清晨六点的气味。',
+  '选一个反复出现的词，追问它从哪里来。',
+  '给一本未读完的书写封短信。',
+  '写下你曾误以为会永远存在的事物。',
+  '用一句话留住今天的光。',
+];
+---
+
+<section class="daily-note" aria-labelledby="daily-note-title" data-daily-note data-prompts={JSON.stringify(prompts)}>
+  <div class="note-intro">
+    <p class="note-kicker">A LITTLE PROMPT · 01</p>
+    <h2 id="daily-note-title">抽一张<br /><em>今日笺。</em></h2>
+    <p class="note-description">从一句话开始，写下此刻想留住的东西。没有标准答案，也不必写完。</p>
+    <button class="draw-button" type="button" data-draw hidden>
+      <span>再抽一张</span>
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+        <path d="M20 11a8 8 0 1 0-2.1 6.3M20 5v6h-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="note-paper" data-paper>
+    <div class="paper-topline" aria-hidden="true">
+      <span>GINLANG</span>
+      <span>一页偶然</span>
+    </div>
+    <span class="opening-mark" aria-hidden="true">“</span>
+    <p class="prompt" aria-live="polite" aria-atomic="true" data-prompt>{prompts[0]}</p>
+    <div class="paper-footline" aria-hidden="true">
+      <span>写作提议</span>
+      <span data-counter>01 / {String(prompts.length).padStart(2, '0')}</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  function initDailyNotes() {
+    document.querySelectorAll<HTMLElement>('[data-daily-note]').forEach((root) => {
+      if (root.dataset.ready === 'true') return;
+
+      const button = root.querySelector<HTMLButtonElement>('[data-draw]');
+      const paper = root.querySelector<HTMLElement>('[data-paper]');
+      const prompt = root.querySelector<HTMLElement>('[data-prompt]');
+      const counter = root.querySelector<HTMLElement>('[data-counter]');
+      let notes: string[] = [];
+
+      try {
+        notes = JSON.parse(root.dataset.prompts ?? '[]');
+      } catch {
+        return;
+      }
+      if (!button || !paper || !prompt || !counter || notes.length < 2) return;
+
+      root.dataset.ready = 'true';
+      button.hidden = false;
+      let current = 0;
+      let changing = false;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      button.addEventListener('click', () => {
+        if (changing) return;
+        const nextPick = Math.floor(Math.random() * (notes.length - 1));
+        const next = nextPick >= current ? nextPick + 1 : nextPick;
+
+        const showNext = () => {
+          current = next;
+          prompt.textContent = notes[current];
+          counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(notes.length).padStart(2, '0')}`;
+          paper.classList.remove('is-changing');
+        };
+
+        if (reducedMotion.matches) {
+          showNext();
+          return;
+        }
+
+        changing = true;
+        paper.classList.add('is-changing');
+        window.setTimeout(() => {
+          showNext();
+          window.setTimeout(() => { changing = false; }, 200);
+        }, 140);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDailyNotes, { once: true });
+  } else {
+    initDailyNotes();
+  }
+  document.addEventListener('astro:page-load', initDailyNotes);
+</script>
+
+<style>
+  .daily-note {
+    display: grid;
+    grid-template-columns: minmax(210px, 0.43fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 72px);
+    margin: 59px 0 0;
+    padding: 38px 0 42px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .note-kicker {
+    margin: 0 0 17px;
+    color: var(--clay);
+    font: 10px/1.5 var(--sans);
+    letter-spacing: 0.15em;
+  }
+
+  .note-intro h2 {
+    margin: 0;
+    font-size: clamp(26px, 3.6vw, 37px);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  .note-intro h2 em { color: var(--accent); font-style: normal; }
+
+  .note-description {
+    max-width: 23em;
+    margin: 15px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.9;
+  }
+
+  .draw-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 21px;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent-deep);
+    cursor: pointer;
+    font: 12px/1.5 var(--sans);
+    letter-spacing: 0.03em;
+    transition: color 160ms ease, gap 160ms ease;
+  }
+
+  .draw-button[hidden] { display: none; }
+  .draw-button:hover { gap: 15px; color: var(--clay); }
+  .draw-button svg { width: 15px; height: 15px; }
+  .draw-button:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+
+  .note-paper {
+    position: relative;
+    display: flex;
+    min-height: 270px;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 20px clamp(24px, 4vw, 42px) 22px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    box-shadow: 7px 7px 0 color-mix(in srgb, var(--paper-soft) 72%, transparent);
+  }
+
+  .note-paper::before {
+    position: absolute;
+    top: 0;
+    left: clamp(24px, 4vw, 42px);
+    width: 31px;
+    height: 2px;
+    background: var(--clay);
+    content: '';
+  }
+
+  .paper-topline, .paper-footline {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    color: var(--muted);
+    font: 9px/1.5 var(--sans);
+    letter-spacing: 0.13em;
+  }
+
+  .paper-topline span:first-child { color: var(--accent); }
+  .paper-footline { margin-top: auto; padding-top: 17px; border-top: 1px solid var(--line); }
+
+  .opening-mark {
+    height: 43px;
+    margin-top: 15px;
+    color: var(--clay);
+    font: 58px/1 var(--serif);
+  }
+
+  .prompt {
+    max-width: 23em;
+    min-height: 2.8em;
+    margin: 0 0 20px;
+    font-size: clamp(19px, 2.8vw, 25px);
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    line-height: 1.65;
+    transition: opacity 140ms ease, transform 140ms ease;
+  }
+
+  .note-paper.is-changing .prompt { opacity: 0; transform: translateY(-5px); }
+
+  @media (max-width: 680px) {
+    .daily-note { grid-template-columns: 1fr; gap: 24px; margin-top: 43px; padding: 32px 0 38px; }
+    .note-intro h2 br { display: none; }
+    .note-description { margin-top: 8px; font-size: 12px; }
+    .draw-button { margin-top: 12px; }
+    .note-paper { min-height: 230px; padding: 18px 22px 20px; }
+    .note-paper::before { left: 22px; }
+    .opening-mark { margin-top: 8px; }
+    .prompt { font-size: 21px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .draw-button, .prompt { transition: none; }
+    .note-paper.is-changing .prompt { opacity: 1; transform: none; }
+  }
+</style>

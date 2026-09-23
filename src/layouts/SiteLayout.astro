@@ -15,6 +15,7 @@ const {
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const homeUrl = new URL(base + '/', siteUrl).toString();
 const socialImage = new URL(base + '/social-card.svg', siteUrl).toString();
 const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
@@ -120,6 +121,9 @@ const webSiteSchema = JSON.stringify({
         </nav>
 
         <div class="header-tools" aria-label="阅读工具">
+          <button class="tool-button" type="button" data-share-site aria-label="分享 GINLANG 网站" aria-haspopup="dialog" aria-controls="share-dialog">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4h7v7M20 4l-9 9"></path><path d="M19 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"></path></svg>
+          </button>
           <button class="tool-button" id="search-open" type="button" aria-label="搜索文章" aria-haspopup="dialog" aria-controls="search-dialog">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"></circle><path d="m16 16 4.3 4.3"></path></svg>
           </button>
@@ -143,7 +147,10 @@ const webSiteSchema = JSON.stringify({
             <a class="footer-wordmark" href={base + '/'}>GINLANG <span aria-hidden="true">✳</span></a>
             <p>把日子留在纸上，让文字慢慢抵达。</p>
           </div>
-          <a class="rss-link" href={base + '/rss.xml'} aria-label="订阅 GINLANG RSS">订阅 RSS <span aria-hidden="true">↗</span></a>
+          <div class="footer-actions">
+            <button class="rss-link share-link" type="button" data-share-site>分享网站 <span aria-hidden="true">↗</span></button>
+            <a class="rss-link" href={base + '/rss.xml'} aria-label="订阅 GINLANG RSS">订阅 RSS <span aria-hidden="true">↗</span></a>
+          </div>
         </div>
         <div class="footer-bottom">
           <span>© {year} GINLANG</span>
@@ -152,6 +159,24 @@ const webSiteSchema = JSON.stringify({
         </div>
       </footer>
     </div>
+
+    <dialog class="utility-dialog share-dialog" id="share-dialog" aria-labelledby="share-title" data-share-url={homeUrl}>
+      <div class="dialog-topline">
+        <div>
+          <p class="dialog-kicker">PASS THE LETTER ALONG</p>
+          <h2 id="share-title">把这间文字房间分享给朋友</h2>
+        </div>
+        <button class="dialog-close" type="button" data-dialog-close aria-label="关闭分享窗口">×</button>
+      </div>
+      <p class="share-intro">这是网站的公开地址。朋友点开链接就能阅读，无需登录。</p>
+      <label class="share-label" for="share-url">网站地址</label>
+      <div class="share-url-row">
+        <input id="share-url" type="text" readonly value={homeUrl} />
+        <button class="solid-button" id="share-copy" type="button">复制链接</button>
+      </div>
+      <button class="text-button share-native" id="share-native" type="button" hidden>使用系统分享</button>
+      <p class="share-status" id="share-status" aria-live="polite">复制后就可以发送给朋友。</p>
+    </dialog>
 
     <dialog class="utility-dialog search-dialog" id="search-dialog" aria-labelledby="search-title" data-index-url={base + '/search-index.json'}>
       <div class="dialog-topline">
@@ -371,6 +396,52 @@ const webSiteSchema = JSON.stringify({
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
           event.preventDefault();
           openSearch();
+        }
+      });
+
+      const shareDialog = document.querySelector<HTMLDialogElement>('#share-dialog');
+      const shareUrlInput = document.querySelector<HTMLInputElement>('#share-url');
+      const shareStatus = document.querySelector<HTMLElement>('#share-status');
+      const shareUrl = shareDialog?.dataset.shareUrl;
+      const nativeShareButton = document.querySelector<HTMLButtonElement>('#share-native');
+
+      function openShareDialog() {
+        if (!shareDialog?.open) shareDialog?.showModal();
+        shareUrlInput?.focus();
+        shareUrlInput?.select();
+      }
+
+      document.querySelectorAll<HTMLButtonElement>('[data-share-site]').forEach((button) => {
+        button.addEventListener('click', openShareDialog);
+      });
+      if (nativeShareButton && typeof navigator.share === 'function') {
+        nativeShareButton.hidden = false;
+        nativeShareButton.addEventListener('click', async () => {
+          if (!shareUrl) return;
+          try {
+            await navigator.share({ title: 'GINLANG', text: '一间安静的文字房间', url: shareUrl });
+            shareDialog?.close();
+          } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') return;
+            if (shareStatus) shareStatus.textContent = '系统分享暂不可用，可以复制上方网址。';
+          }
+        });
+      }
+      shareDialog?.addEventListener('click', (event) => {
+        if (event.target === shareDialog) shareDialog.close();
+      });
+      document.querySelector<HTMLButtonElement>('#share-copy')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget as HTMLButtonElement;
+        if (!shareUrl) return;
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          if (shareStatus) shareStatus.textContent = '网址已复制，现在可以发送给朋友。';
+          button.textContent = '已复制';
+          window.setTimeout(() => { button.textContent = '复制链接'; }, 2200);
+        } catch {
+          shareUrlInput?.focus();
+          shareUrlInput?.select();
+          if (shareStatus) shareStatus.textContent = '网址已选中，请手动复制。';
         }
       });
 

@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import DailyNote from '../components/DailyNote.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
@@ -14,6 +15,7 @@ const counts = categories.map((category) => ({
   ...category,
   count: posts.filter((post) => post.data.category === category.slug).length,
 }));
+const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
 ---
 
 <SiteLayout description="一间安静的文字房间。随笔、日记、书摘与短句，给经过的日子留一页。">
@@ -28,16 +30,14 @@ const counts = categories.map((category) => ({
         <p class="intro-note">随笔、日记、书摘与短句。给经过的日子留一页，也给尚未说完的话留一点时间。</p>
         <div class="hero-links">
           <a class="hero-link" href={base + '/archive/'}>从最近的文字开始 <span aria-hidden="true">↗</span></a>
+          <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden>随机翻一页 <span aria-hidden="true">↗</span></button>
           <span class="hero-topics">随笔 · 日记 · 书摘 · 短句</span>
         </div>
       </div>
-      <div class="hero-seal" aria-hidden="true">
-        <div class="hero-seal-inner">
-          <strong>G</strong>
-          <span>LETTERS</span>
-          <small>EST. 2026</small>
-        </div>
-      </div>
+      <figure class="hero-art">
+        <img src={base + '/letter-window.webp'} width="971" height="1619" alt="窗边的一封信，信封旁伸来一枝细叶" fetchpriority="high" decoding="async" />
+        <figcaption>窗边来信 · 一张慢读的纸</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -70,6 +70,8 @@ const counts = categories.map((category) => ({
         <p class="empty-note">这里还空着。等第一篇文字慢慢长出来。</p>
       )}
     </section>
+
+    <DailyNote />
 
     {earlierPosts.length > 0 && (
       <section class="recent-section" aria-labelledby="earlier-title">
@@ -120,3 +122,30 @@ const counts = categories.map((category) => ({
     </aside>
   </div>
 </SiteLayout>
+
+<script>
+  function initRandomPost() {
+    const button = document.querySelector<HTMLButtonElement>('[data-random-post]');
+    if (!button || button.dataset.ready === 'true') return;
+    let urls: string[] = [];
+    try {
+      urls = JSON.parse(button.dataset.postUrls ?? '[]');
+    } catch {
+      return;
+    }
+    if (!urls.length) return;
+    button.dataset.ready = 'true';
+    button.hidden = false;
+    button.addEventListener('click', () => {
+      const target = urls[Math.floor(Math.random() * urls.length)];
+      if (target) window.location.assign(target);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRandomPost, { once: true });
+  } else {
+    initRandomPost();
+  }
+  document.addEventListener('astro:page-load', initRandomPost);
+</script>
