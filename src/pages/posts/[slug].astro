@@ -13,9 +13,17 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+const postIndex = allPosts.findIndex((item) => item.id === post.id);
+const newerPost = postIndex > 0 ? allPosts[postIndex - 1] : undefined;
+const olderPost = postIndex >= 0 ? allPosts[postIndex + 1] : undefined;
+const bodyCharacters = Array.from((post.body ?? '').replace(/[\s#>*_~-]/g, '')).length;
+const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
 ---
 
-<SiteLayout title={post.data.title} description={post.data.excerpt}>
+<SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true}>
   <article class="article-page">
     <a class="back-link" href={base + '/'}>← 回到首页</a>
     <header class="article-header">
@@ -26,13 +34,46 @@ const { Content } = await render(post);
       </div>
       <h1>{post.data.title}</h1>
       <p class="article-deck">{post.data.excerpt}</p>
+      <div class="article-byline">
+        <span>GINLANG 文字集</span>
+        <span aria-hidden="true">·</span>
+        <span>约 {readingMinutes} 分钟读完</span>
+      </div>
     </header>
+
     <div class="article-body prose">
       <Content />
     </div>
+
+    <div class="article-endmark" aria-hidden="true">✳</div>
+    <div class="article-actions">
+      <span>如果这段文字也陪你停留了一会儿</span>
+      <button class="copy-link" id="copy-link" type="button">复制文章链接 <span aria-hidden="true">↗</span></button>
+    </div>
+    <span class="sr-only" id="copy-status" aria-live="polite"></span>
+
     <footer class="article-footer">
-      <span>写于 {formatDate(post.data.date)}</span>
+      <span>写于 {formatDate(post.data.date)} · {categoryLabel(post.data.category)}</span>
       <a href={base + '/archive/'}>继续翻阅归档 →</a>
     </footer>
+
+    <nav class="article-neighbors" aria-label="相邻文章">
+      {olderPost ? (
+        <a class="neighbor-card" href={base + '/posts/' + olderPost.id + '/'}>
+          <span>← 更早一篇</span>
+          <strong>{olderPost.data.title}</strong>
+        </a>
+      ) : (
+        <div class="neighbor-card neighbor-placeholder"><span>← 更早一篇</span><strong>从第一封信开始</strong></div>
+      )}
+      {newerPost ? (
+        <a class="neighbor-card next" href={base + '/posts/' + newerPost.id + '/'}>
+          <span>更新一篇 →</span>
+          <strong>{newerPost.data.title}</strong>
+        </a>
+      ) : (
+        <div class="neighbor-card neighbor-placeholder next"><span>更新一篇 →</span><strong>你已读到最新</strong></div>
+      )}
+    </nav>
   </article>
 </SiteLayout>

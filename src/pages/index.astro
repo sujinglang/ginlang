@@ -1,49 +1,122 @@
 ---
 import { getCollection } from 'astro:content';
 import SiteLayout from '../layouts/SiteLayout.astro';
-import { categoryLabel } from '../lib/categories';
+import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
+const latest = posts[0];
+const earlierPosts = posts.slice(1, 5);
+const counts = categories.map((category) => ({
+  ...category,
+  count: posts.filter((post) => post.data.category === category.slug).length,
+}));
 ---
 
-<SiteLayout description="随笔、日记、书摘与短句。GINLANG，写一些迟到的文字。">
+<SiteLayout description="一间安静的文字房间。随笔、日记、书摘与短句，给经过的日子留一页。">
   <section class="home-intro" aria-labelledby="home-title">
-    <p class="eyebrow">一间安静的文字房间</p>
-    <h1 id="home-title">写一些迟到的文字。</h1>
-    <p class="intro-note">随笔、日记、书摘与短句。给经过的日子留一页。</p>
-  </section>
-
-  <section class="post-list-section" aria-labelledby="latest-title">
-    <div class="section-heading">
-      <h2 id="latest-title">最近写下</h2>
-      <a class="quiet-link" href={base + '/archive/'}>全部文章 <span aria-hidden="true">↗</span></a>
+    <div class="hero-kicker">
+      <span>独立文字集</span>
+      <span>VOL. 01 · 2026</span>
     </div>
+    <div class="home-hero">
+      <div>
+        <h1 id="home-title">把日子写得<br /><em>慢一点。</em></h1>
+        <p class="intro-note">随笔、日记、书摘与短句。给经过的日子留一页，也给尚未说完的话留一点时间。</p>
+        <div class="hero-links">
+          <a class="hero-link" href={base + '/archive/'}>从最近的文字开始 <span aria-hidden="true">↗</span></a>
+          <span class="hero-topics">随笔 · 日记 · 书摘 · 短句</span>
+        </div>
+      </div>
+      <div class="hero-seal" aria-hidden="true">
+        <div class="hero-seal-inner">
+          <strong>G</strong>
+          <span>LETTERS</span>
+          <small>EST. 2026</small>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    {posts.length > 0 ? (
-      <ol class="post-list">
-        {posts.map((post) => (
-          <li class="post-row">
-            <div class="post-meta">
-              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-              <span class="meta-dot" aria-hidden="true">·</span>
-              <a href={base + '/category/' + post.data.category + '/'}>{categoryLabel(post.data.category)}</a>
-            </div>
-            <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
-            <p class="post-excerpt">{post.data.excerpt}</p>
-          </li>
-        ))}
-      </ol>
-    ) : (
-      <p class="empty-note">这里还空着。等第一篇文字慢慢长出来。</p>
+  <div class="home-content">
+    <section aria-labelledby="latest-title">
+      <div class="section-heading">
+        <div class="section-heading-main">
+          <p class="section-kicker">A LETTER LEFT ON THE DESK</p>
+          <h2 id="latest-title">最近写下</h2>
+        </div>
+        <a class="quiet-link" href={base + '/archive/'}>全部文章 <span aria-hidden="true">↗</span></a>
+      </div>
+
+      {latest ? (
+        <a class="featured-post" href={base + '/posts/' + latest.id + '/'}>
+          <div class="featured-topline">
+            <span>本期来信</span>
+            <span>01 / {String(posts.length).padStart(2, '0')}</span>
+          </div>
+          <h3>{latest.data.title}</h3>
+          <p>{latest.data.excerpt}</p>
+          <div class="featured-meta">
+            <time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time>
+            <span aria-hidden="true">·</span>
+            <span>{categoryLabel(latest.data.category)}</span>
+          </div>
+          <span class="featured-arrow" aria-hidden="true">↗</span>
+        </a>
+      ) : (
+        <p class="empty-note">这里还空着。等第一篇文字慢慢长出来。</p>
+      )}
+    </section>
+
+    {earlierPosts.length > 0 && (
+      <section class="recent-section" aria-labelledby="earlier-title">
+        <div class="section-heading">
+          <div class="section-heading-main">
+            <p class="section-kicker">THE DAYS BEFORE</p>
+            <h2 id="earlier-title">此前的片段</h2>
+          </div>
+          <span class="section-kicker">{String(earlierPosts.length).padStart(2, '0')} 篇文字</span>
+        </div>
+        <ol class="post-list">
+          {earlierPosts.map((post) => (
+            <li class="post-row">
+              <div class="post-meta">
+                <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+                <span class="meta-dot" aria-hidden="true">·</span>
+                <a href={base + '/category/' + post.data.category + '/'}>{categoryLabel(post.data.category)}</a>
+              </div>
+              <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
+              <p class="post-excerpt">{post.data.excerpt}</p>
+              <span class="post-row-arrow" aria-hidden="true">↗</span>
+            </li>
+          ))}
+        </ol>
+      </section>
     )}
-  </section>
 
-  <section class="home-endnote" aria-label="站点说明">
-    <p>不赶时间，慢慢写。</p>
-    <span aria-hidden="true">✳</span>
-  </section>
+    <section class="category-shelf" aria-labelledby="category-title">
+      <div class="section-heading">
+        <div class="section-heading-main">
+          <p class="section-kicker">A FEW WAYS TO READ</p>
+          <h2 id="category-title">从一类文字开始</h2>
+        </div>
+      </div>
+      <div class="category-grid">
+        {counts.map((category, index) => (
+          <a class="category-card" href={base + '/category/' + category.slug + '/'}>
+            <span>{category.label}</span>
+            <span class="category-count"><em>{String(index + 1).padStart(2, '0')}</em><span>{category.count} 篇</span><span aria-hidden="true">↗</span></span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <aside class="home-endnote" aria-label="写作寄语">
+      <p>不赶时间，慢慢写。愿每一段文字都不必匆忙，也愿每个读到这里的人，都能找到一处停留。</p>
+      <span class="home-endnote-mark" aria-hidden="true">✳</span>
+    </aside>
+  </div>
 </SiteLayout>

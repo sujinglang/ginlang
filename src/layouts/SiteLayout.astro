@@ -4,14 +4,41 @@ import '../styles/global.css';
 interface Props {
   title?: string;
   description?: string;
+  articlePage?: boolean;
 }
 
 const {
   title = 'GINLANG · 写一些迟到的文字',
-  description = '随笔、日记、书摘与短句。',
+  description = '随笔、日记、书摘与短句。GINLANG，写一些迟到的文字。',
+  articlePage = false,
 } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const socialImage = new URL(base + '/social-card.svg', siteUrl).toString();
 const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
+const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const navItems = [
+  { label: '随笔', href: base + '/category/essay/' },
+  { label: '日记', href: base + '/category/diary/' },
+  { label: '书摘', href: base + '/category/book/' },
+  { label: '短句', href: base + '/category/short/' },
+  { label: '归档', href: base + '/archive/' },
+  { label: '关于', href: base + '/about/' },
+];
+const isCurrent = (href: string) => {
+  const target = href.replace(/\/+$/, '') || '/';
+  return currentPath === target || currentPath.startsWith(target + '/');
+};
+const year = new Date().getFullYear();
+const webSiteSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'GINLANG',
+  url: new URL(base + '/', siteUrl).toString(),
+  inLanguage: 'zh-CN',
+  description,
+}).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -19,72 +46,360 @@ const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f7f6f2" />
+    <meta name="theme-color" id="theme-color" content="#f6f4ee" />
     <meta name="description" content={description} />
-    <title>{pageTitle}</title>
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={base + '/favicon.svg'} />
+    <link rel="alternate" type="application/rss+xml" title="GINLANG RSS" href={base + '/rss.xml'} />
+    <meta property="og:site_name" content="GINLANG" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={articlePage ? 'article' : 'website'} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <title>{pageTitle}</title>
+    <script type="application/ld+json" set:html={webSiteSchema}></script>
     <script is:inline>
       (() => {
+        const defaults = { theme: 'system', textSize: 'normal', font: 'serif', width: 'comfortable' };
+        const valid = {
+          theme: ['system', 'light', 'dark'],
+          textSize: ['small', 'normal', 'large'],
+          font: ['serif', 'sans'],
+          width: ['narrow', 'comfortable', 'wide'],
+        };
+        let preferences = { ...defaults };
+
         try {
-          const saved = localStorage.getItem('ginlang-theme');
-          const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.dataset.theme = saved || (dark ? 'dark' : 'light');
+          const saved = JSON.parse(localStorage.getItem('ginlang-preferences') || 'null');
+          if (saved && typeof saved === 'object') {
+            for (const key of Object.keys(defaults)) {
+              if (valid[key].includes(saved[key])) preferences[key] = saved[key];
+            }
+          } else {
+            const legacyTheme = localStorage.getItem('ginlang-theme');
+            if (legacyTheme === 'light' || legacyTheme === 'dark') preferences.theme = legacyTheme;
+          }
         } catch {
-          document.documentElement.dataset.theme = 'light';
+          // Keep the defaults when browser storage is unavailable or malformed.
         }
+
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.themeMode = preferences.theme;
+        document.documentElement.dataset.theme =
+          preferences.theme === 'system' ? (prefersDark ? 'dark' : 'light') : preferences.theme;
+        document.documentElement.dataset.textSize = preferences.textSize;
+        document.documentElement.dataset.font = preferences.font;
+        document.documentElement.dataset.readingWidth = preferences.width;
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.content = document.documentElement.dataset.theme === 'dark' ? '#20221f' : '#f6f4ee';
       })();
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">跳到正文</a>
     <div class="site-shell">
       <header class="site-header">
-        <a class="wordmark" href={base + '/'} aria-label="GINLANG 首页">GINLANG</a>
+        <div class="brand-block">
+          <a class="wordmark" href={base + '/'} aria-label="GINLANG 首页">
+            <span>GINLANG</span><span class="wordmark-flower" aria-hidden="true">✳</span>
+          </a>
+          <span class="brand-note">A QUIET PLACE FOR WORDS</span>
+        </div>
+
         <nav class="primary-nav" aria-label="主导航">
-          <a href={base + '/category/essay/'}>随笔</a>
-          <a href={base + '/category/diary/'}>日记</a>
-          <a href={base + '/category/book/'}>书摘</a>
-          <a href={base + '/category/short/'}>短句</a>
-          <a href={base + '/archive/'}>归档</a>
-          <a href={base + '/about/'}>关于</a>
+          {navItems.map((item) => (
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+          ))}
         </nav>
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换夜间模式" aria-pressed="false">
-          <span aria-hidden="true">◐</span>
-        </button>
+
+        <div class="header-tools" aria-label="阅读工具">
+          <button class="tool-button" id="search-open" type="button" aria-label="搜索文章" aria-haspopup="dialog" aria-controls="search-dialog">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"></circle><path d="m16 16 4.3 4.3"></path></svg>
+          </button>
+          <button class="tool-button settings-open" id="settings-open" type="button" aria-label="阅读设置" aria-haspopup="dialog" aria-controls="reading-settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.3a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Z"></path><path d="m19.1 13.5 1.1.9-1.6 2.8-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.3 1.5h-3.2l-.3-1.5a7.8 7.8 0 0 1-1.5-.9l-1.4.5-1.6-2.8 1.1-.9a7.7 7.7 0 0 1 0-1.8l-1.1-.9 1.6-2.8 1.4.5a7.8 7.8 0 0 1 1.5-.9l.3-1.5h3.2l.3 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.6 2.8-1.1.9a7.7 7.7 0 0 1 0 1.8Z"></path></svg>
+          </button>
+        </div>
       </header>
+
+      {articlePage && (
+        <div class="reading-progress" aria-hidden="true"><span id="reading-progress-fill"></span></div>
+      )}
 
       <main id="main-content">
         <slot />
       </main>
 
       <footer class="site-footer">
-        <span>GINLANG</span>
-        <span>写一些迟到的文字。</span>
-        <div class="footer-links">
-          <a href={base + '/archive/'}>归档</a>
-          <a href={base + '/about/'}>关于</a>
-          <a href="#main-content">回到顶部</a>
+        <div class="footer-main">
+          <div>
+            <a class="footer-wordmark" href={base + '/'}>GINLANG <span aria-hidden="true">✳</span></a>
+            <p>把日子留在纸上，让文字慢慢抵达。</p>
+          </div>
+          <a class="rss-link" href={base + '/rss.xml'} aria-label="订阅 GINLANG RSS">订阅 RSS <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="footer-bottom">
+          <span>© {year} GINLANG</span>
+          <span>写一些迟到的文字。</span>
+          <a href="#main-content">回到顶部 ↑</a>
         </div>
       </footer>
     </div>
 
-    <script>
-      const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
-      const root = document.documentElement;
+    <dialog class="utility-dialog search-dialog" id="search-dialog" aria-labelledby="search-title" data-index-url={base + '/search-index.json'}>
+      <div class="dialog-topline">
+        <div>
+          <p class="dialog-kicker">FIND A LINE</p>
+          <h2 id="search-title">找一段文字</h2>
+        </div>
+        <button class="dialog-close" type="button" data-dialog-close aria-label="关闭搜索">×</button>
+      </div>
+      <label class="sr-only" for="search-input">搜索标题、摘要和分类</label>
+      <input class="search-input" id="search-input" type="search" placeholder="试试「九月」或「读书」" autocomplete="off" />
+      <p class="search-status" id="search-status" aria-live="polite">输入关键词，慢慢找。</p>
+      <ol class="search-results" id="search-results"></ol>
+      <div class="dialog-foot"><span>标题 · 摘要 · 分类</span><kbd>ESC</kbd></div>
+    </dialog>
 
-      function syncThemeButton() {
-        toggle?.setAttribute('aria-pressed', String(root.dataset.theme === 'dark'));
+    <dialog class="utility-dialog settings-dialog" id="reading-settings" aria-labelledby="settings-title">
+      <div class="dialog-topline">
+        <div>
+          <p class="dialog-kicker">YOUR READING ROOM</p>
+          <h2 id="settings-title">阅读设置</h2>
+        </div>
+        <button class="dialog-close" type="button" data-dialog-close aria-label="关闭阅读设置">×</button>
+      </div>
+      <form id="settings-form">
+        <fieldset class="setting-group">
+          <legend>页面主题</legend>
+          <div class="setting-options">
+            <label><input type="radio" name="theme" value="system" /><span>跟随系统</span></label>
+            <label><input type="radio" name="theme" value="light" /><span>浅色纸页</span></label>
+            <label><input type="radio" name="theme" value="dark" /><span>夜间阅读</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="setting-group">
+          <legend>正文字号</legend>
+          <div class="setting-options">
+            <label><input type="radio" name="textSize" value="small" /><span>小</span></label>
+            <label><input type="radio" name="textSize" value="normal" /><span>标准</span></label>
+            <label><input type="radio" name="textSize" value="large" /><span>大</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="setting-group">
+          <legend>字体风格</legend>
+          <div class="setting-options">
+            <label><input type="radio" name="font" value="serif" /><span>衬线</span></label>
+            <label><input type="radio" name="font" value="sans" /><span>黑体</span></label>
+          </div>
+        </fieldset>
+        <fieldset class="setting-group">
+          <legend>阅读宽度</legend>
+          <div class="setting-options">
+            <label><input type="radio" name="width" value="narrow" /><span>窄</span></label>
+            <label><input type="radio" name="width" value="comfortable" /><span>适中</span></label>
+            <label><input type="radio" name="width" value="wide" /><span>宽</span></label>
+          </div>
+        </fieldset>
+      </form>
+      <div class="settings-actions">
+        <button class="text-button" id="settings-reset" type="button">恢复默认</button>
+        <button class="solid-button" type="button" data-dialog-close>完成</button>
+      </div>
+      <p class="settings-note">偏好只保存在当前浏览器中。</p>
+    </dialog>
+
+    <script>
+      type Preferences = {
+        theme: 'system' | 'light' | 'dark';
+        textSize: 'small' | 'normal' | 'large';
+        font: 'serif' | 'sans';
+        width: 'narrow' | 'comfortable' | 'wide';
+      };
+
+      const preferenceKey = 'ginlang-preferences';
+      const defaults: Preferences = { theme: 'system', textSize: 'normal', font: 'serif', width: 'comfortable' };
+      const root = document.documentElement;
+      const settingsDialog = document.querySelector<HTMLDialogElement>('#reading-settings');
+      const settingsForm = document.querySelector<HTMLFormElement>('#settings-form');
+      const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
+      let preferences: Preferences = { ...defaults };
+
+      function resolvedTheme(theme: Preferences['theme']) {
+        if (theme !== 'system') return theme;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
 
-      syncThemeButton();
-      toggle?.addEventListener('click', () => {
-        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-        root.dataset.theme = next;
-        try {
-          localStorage.setItem('ginlang-theme', next);
-        } catch {
-          // The theme still changes for this page if storage is unavailable.
+      function applyPreferences(save = false) {
+        root.dataset.themeMode = preferences.theme;
+        root.dataset.theme = resolvedTheme(preferences.theme);
+        root.dataset.textSize = preferences.textSize;
+        root.dataset.font = preferences.font;
+        root.dataset.readingWidth = preferences.width;
+        if (themeColor) themeColor.content = resolvedTheme(preferences.theme) === 'dark' ? '#20221f' : '#f6f4ee';
+        if (save) {
+          try {
+            localStorage.setItem(preferenceKey, JSON.stringify(preferences));
+          } catch {
+            // Preferences still apply until the page is closed if storage is unavailable.
+          }
         }
-        syncThemeButton();
+      }
+
+      function syncSettingsForm() {
+        settingsForm?.querySelectorAll<HTMLInputElement>('input[type="radio"]').forEach((input) => {
+          input.checked = input.value === preferences[input.name as keyof Preferences];
+        });
+      }
+
+      document.querySelector('#settings-open')?.addEventListener('click', () => {
+        syncSettingsForm();
+        settingsDialog?.showModal();
+      });
+
+      document.querySelectorAll<HTMLButtonElement>('[data-dialog-close]').forEach((button) => {
+        button.addEventListener('click', () => button.closest('dialog')?.close());
+      });
+
+      settingsDialog?.addEventListener('click', (event) => {
+        if (event.target === settingsDialog) settingsDialog.close();
+      });
+
+      settingsForm?.addEventListener('change', () => {
+        const values = new FormData(settingsForm);
+        const theme = values.get('theme');
+        const textSize = values.get('textSize');
+        const font = values.get('font');
+        const width = values.get('width');
+        preferences = {
+          theme: theme === 'light' || theme === 'dark' ? theme : 'system',
+          textSize: textSize === 'small' || textSize === 'large' ? textSize : 'normal',
+          font: font === 'sans' ? 'sans' : 'serif',
+          width: width === 'narrow' || width === 'wide' ? width : 'comfortable',
+        };
+        applyPreferences(true);
+      });
+
+      document.querySelector('#settings-reset')?.addEventListener('click', () => {
+        preferences = { ...defaults };
+        syncSettingsForm();
+        applyPreferences(true);
+      });
+
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+      systemTheme.addEventListener?.('change', () => {
+        if (preferences.theme === 'system') applyPreferences();
+      });
+
+      const searchDialog = document.querySelector<HTMLDialogElement>('#search-dialog');
+      const searchInput = document.querySelector<HTMLInputElement>('#search-input');
+      const searchResults = document.querySelector<HTMLOListElement>('#search-results');
+      const searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
+      const indexUrl = searchDialog?.dataset.indexUrl ?? '/search-index.json';
+      type SearchItem = { title: string; excerpt: string; category: string; date: string; url: string };
+      let searchItemsPromise: Promise<SearchItem[]> | undefined;
+
+      function getSearchItems() {
+        searchItemsPromise ??= fetch(indexUrl)
+          .then((response) => {
+            if (!response.ok) throw new Error('Search index unavailable');
+            return response.json() as Promise<SearchItem[]>;
+          })
+          .catch(() => []);
+        return searchItemsPromise;
+      }
+
+      function showSearchResult(item: SearchItem) {
+        const row = document.createElement('li');
+        const link = document.createElement('a');
+        const meta = document.createElement('span');
+        const title = document.createElement('strong');
+        const excerpt = document.createElement('span');
+        row.className = 'search-result';
+        link.href = item.url;
+        meta.className = 'search-result-meta';
+        meta.textContent = item.date + '  ·  ' + item.category;
+        title.textContent = item.title;
+        excerpt.textContent = item.excerpt;
+        link.append(meta, title, excerpt);
+        row.append(link);
+        searchResults?.append(row);
+      }
+
+      async function updateSearch() {
+        if (!searchResults || !searchStatus || !searchInput) return;
+        const query = searchInput.value.trim().toLocaleLowerCase();
+        searchResults.replaceChildren();
+        if (!query) {
+          searchStatus.textContent = '输入关键词，慢慢找。';
+          return;
+        }
+        searchStatus.textContent = '正在翻找…';
+        const items = await getSearchItems();
+        const matches = items.filter((item) =>
+          (item.title + ' ' + item.excerpt + ' ' + item.category).toLocaleLowerCase().includes(query),
+        ).slice(0, 8);
+        if (matches.length) {
+          searchStatus.textContent = '找到 ' + matches.length + ' 篇相关文字';
+          matches.forEach(showSearchResult);
+        } else {
+          searchStatus.textContent = items.length ? '没有找到这段文字。换个词试试。' : '暂时无法读取文章索引。';
+        }
+      }
+
+      function openSearch() {
+        if (!searchDialog?.open) searchDialog?.showModal();
+        searchInput?.focus();
+      }
+      document.querySelector('#search-open')?.addEventListener('click', openSearch);
+      searchDialog?.addEventListener('click', (event) => {
+        if (event.target === searchDialog) searchDialog.close();
+      });
+      searchDialog?.addEventListener('close', () => {
+        if (searchInput) searchInput.value = '';
+        void updateSearch();
+      });
+      searchInput?.addEventListener('input', () => void updateSearch());
+      document.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+          event.preventDefault();
+          openSearch();
+        }
+      });
+
+      const progressFill = document.querySelector<HTMLElement>('#reading-progress-fill');
+      const article = document.querySelector<HTMLElement>('.article-page');
+      if (progressFill && article) {
+        const updateProgress = () => {
+          const articleTop = window.scrollY + article.getBoundingClientRect().top;
+          const scrollable = Math.max(1, article.scrollHeight - window.innerHeight);
+          const progress = Math.min(1, Math.max(0, (window.scrollY - articleTop) / scrollable));
+          progressFill.style.transform = 'scaleX(' + progress + ')';
+        };
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        window.addEventListener('resize', updateProgress);
+        updateProgress();
+      }
+
+      document.querySelector<HTMLButtonElement>('#copy-link')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget as HTMLButtonElement;
+        const status = document.querySelector<HTMLElement>('#copy-status');
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          button.textContent = '已复制链接';
+          if (status) status.textContent = '文章链接已复制到剪贴板。';
+        } catch {
+          if (status) status.textContent = '浏览器暂不允许复制，请从地址栏复制链接。';
+          button.textContent = '复制不可用';
+        }
+        window.setTimeout(() => { button.textContent = '复制文章链接'; }, 2200);
       });
     </script>
   </body>

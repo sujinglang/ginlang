@@ -23,6 +23,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ca
       <p class="eyebrow">文字分类</p>
       <h1>{category.label}</h1>
       <p>{category.description}</p>
+      <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · 按时间慢慢排开</p>
     </header>
 
     {posts.length > 0 ? (
@@ -36,6 +37,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ca
             </div>
             <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
             <p class="post-excerpt">{post.data.excerpt}</p>
+            <span class="post-row-arrow" aria-hidden="true">↗</span>
           </li>
         ))}
       </ol>

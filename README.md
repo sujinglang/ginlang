@@ -1,15 +1,38 @@
 # GINLANG
 
-一个以 Markdown 写作为主的中文文学随笔站，使用 Astro 生成静态页面并发布到 GitHub Pages。
+一个安静的中文文学随笔站。使用 Astro 生成静态页面，发布在 GitHub Pages。
 
 ## 写一篇新文章
 
-在 src/content/posts/ 新建 .md 文件，添加 title、date、category、excerpt 和 draft 元数据，再写正文。
+在 src/content/posts/ 新建 Markdown 文件，例如 2026-10-01-autumn-note.md：
 
-category 可填 essay（随笔）、diary（日记）、book（书摘）或 short（短句）。将 draft 设为 true 可先保存而不发布。
+    ---
+    title: 秋天经过的时候
+    date: 2026-10-01
+    category: essay
+    excerpt: 给文章写一句简短的介绍。
+    draft: false
+    ---
 
-提交并推送到 main 后，GitHub Actions 会自动构建并更新网站。
+    从这里开始写正文。
 
-## 本地预览
+category 可用 essay（随笔）、diary（日记）、book（书摘）或 short（短句）。写作中的文章将 draft 设为 true，发布前改成 false。
 
-运行 npm install 后执行 npm run dev。本地构建命令为 npm run build，生成文件位于 dist/。
+## 本地预览和构建
+
+    npm install
+    npm run dev
+    npm run build
+
+静态文件会生成到 dist/。推送到 GitHub 仓库的 main 分支后，GitHub Actions 会自动构建并发布。
+
+## 站点功能
+
+- 首页精选最新文章，并展示文章分类和归档入口。
+- 文章支持阅读进度、阅读时间、相邻文章和复制链接。
+- 阅读设置可调整系统/浅色/夜间主题、字号、字体风格和正文宽度，偏好保存在当前浏览器。
+- 搜索支持文章标题、摘要和分类，也可按 Ctrl+K 或 ⌘K 打开。
+- RSS 订阅位于 /rss.xml，站点地图位于 /sitemap.xml。
+- 页面包含 canonical、Open Graph、Twitter 卡片和基础结构化数据。
+
+站点使用项目 Pages 地址 https://sujinglang.github.io/ginlang/，对应配置在 astro.config.mjs。如果仓库或 GitHub 账号发生变化，请一并更新 site 与 base。

@@ -18,6 +18,7 @@ const years = [...new Set(posts.map((post) => post.data.date.getUTCFullYear()))]
       <p class="eyebrow">慢慢积下的日子</p>
       <h1>归档</h1>
       <p>不按重要与否，只按它们来到的时间。</p>
+      <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · {years.length} 个年份</p>
     </header>
 
     {posts.length > 0 ? years.map((year) => (

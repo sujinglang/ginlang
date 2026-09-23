@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">GINLANG · 写一些迟到的文字</title>
+  <desc id="desc">一间安静的文字房间，随笔、日记、书摘与短句。</desc>
+  <rect width="1200" height="630" fill="#f6f4ee"/>
+  <path d="M0 0h1200v8H0z" fill="#596d5b"/>
+  <circle cx="1010" cy="310" r="180" fill="none" stroke="#dedbd1" stroke-width="2"/>
+  <circle cx="1010" cy="310" r="157" fill="none" stroke="#dedbd1" stroke-width="1" stroke-dasharray="3 8"/>
+  <circle cx="1010" cy="310" r="132" fill="none" stroke="#a66d52" stroke-opacity=".45"/>
+  <text x="1010" y="335" text-anchor="middle" font-family="Georgia,serif" font-size="100" fill="#596d5b">G</text>
+  <text x="1008" y="365" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" letter-spacing="7" fill="#77776e">LETTERS</text>
+  <text x="102" y="135" font-family="Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="6" fill="#292a26">GINLANG <tspan fill="#a66d52">✳</tspan></text>
+  <text x="104" y="290" font-family="'Noto Serif SC','Songti SC',serif" font-size="70" fill="#292a26">把日子写得</text>
+  <text x="104" y="382" font-family="'Noto Serif SC','Songti SC',serif" font-size="70" fill="#596d5b">慢一点。</text>
+  <path d="M104 435h80" stroke="#a66d52" stroke-width="2"/>
+  <text x="104" y="486" font-family="Arial,sans-serif" font-size="21" letter-spacing="2" fill="#77776e">随笔 · 日记 · 书摘 · 短句</text>
+  <text x="104" y="552" font-family="Arial,sans-serif" font-size="13" letter-spacing="4" fill="#77776e">A QUIET PLACE FOR WORDS · EST. 2026</text>
+  <path d="M104 590h992" stroke="#dedbd1" stroke-width="1"/>
+</svg>
