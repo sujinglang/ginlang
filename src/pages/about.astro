@@ -1,4 +1,5 @@
 ---
+import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -6,11 +7,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <SiteLayout title="关于" description="关于 GINLANG。">
   <article class="about-page">
     <a class="back-link" href={base + '/'}>← GINLANG</a>
-    <header class="page-intro">
-      <p class="eyebrow">关于这里</p>
-      <h1>GINLANG</h1>
-      <p>写一些迟到的文字。</p>
-    </header>
+    <div class="intro-spread">
+      <header class="page-intro">
+        <p class="eyebrow">关于这里</p>
+        <h1>GINLANG</h1>
+        <p>写一些迟到的文字。</p>
+      </header>
+      <figure class="intro-art" data-reveal>
+        <img src={base + '/about-notebook.webp'} width="720" height="720" alt="摊开的手缝笔记本上放着一枝植物" loading="lazy" decoding="async" />
+        <figcaption>留白的地方，也可以写字。</figcaption>
+      </figure>
+    </div>
+    <MarginWhisper theme="about" />
     <div class="prose about-copy">
       <p>GINLANG 是一间慢慢写、慢慢读的文字房间。这里收着随笔、日记、读书时的停顿，以及偶尔想留下的短句。</p>
       <p>它不追着更新，也不急着归纳答案。只是想给经过的日子留一页，让那些一闪而过的念头，有地方可以停下来。</p>

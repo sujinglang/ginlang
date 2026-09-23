@@ -69,6 +69,19 @@ const prompts = [
       let changing = false;
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+      try {
+        const raw = sessionStorage.getItem('ginlang-daily-note');
+        const saved = raw === null ? -1 : Number(raw);
+        if (Number.isInteger(saved) && saved >= 0 && saved < notes.length) current = saved;
+      } catch {
+        // The note can still rotate when browser storage is unavailable.
+      }
+      const firstPick = Math.floor(Math.random() * (notes.length - 1));
+      current = firstPick >= current ? firstPick + 1 : firstPick;
+      prompt.textContent = notes[current];
+      counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(notes.length).padStart(2, '0')}`;
+      try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
+
       button.addEventListener('click', () => {
         if (changing) return;
         const nextPick = Math.floor(Math.random() * (notes.length - 1));
@@ -79,6 +92,7 @@ const prompts = [
           prompt.textContent = notes[current];
           counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(notes.length).padStart(2, '0')}`;
           paper.classList.remove('is-changing');
+          try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
         };
 
         if (reducedMotion.matches) {
@@ -172,6 +186,12 @@ const prompts = [
     border: 1px solid var(--line);
     background: var(--paper-raised);
     box-shadow: 7px 7px 0 color-mix(in srgb, var(--paper-soft) 72%, transparent);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  .note-paper.is-changing {
+    transform: rotate(-0.8deg) translateY(-3px);
+    box-shadow: 10px 12px 0 color-mix(in srgb, var(--paper-soft) 72%, transparent);
   }
 
   .note-paper::before {
@@ -228,7 +248,8 @@ const prompts = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .draw-button, .prompt { transition: none; }
+    .draw-button, .prompt, .note-paper { transition: none; }
+    .note-paper.is-changing { transform: none; }
     .note-paper.is-changing .prompt { opacity: 1; transform: none; }
   }
 </style>

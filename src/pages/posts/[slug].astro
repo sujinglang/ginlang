@@ -1,5 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
+import BookmarkWidget from '../../components/BookmarkWidget.astro';
+import MarginWhisper from '../../components/MarginWhisper.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
@@ -41,6 +43,8 @@ const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
       </div>
     </header>
 
+    <BookmarkWidget />
+
     <div class="article-body prose">
       <Content />
     </div>
@@ -51,6 +55,14 @@ const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
       <button class="copy-link" id="copy-link" type="button">复制文章链接 <span aria-hidden="true">↗</span></button>
     </div>
     <span class="sr-only" id="copy-status" aria-live="polite"></span>
+
+    <div class="article-afterword" data-reveal>
+      <figure class="article-tail-art">
+        <img src={base + '/archive-ginkgo.webp'} width="720" height="720" alt="旧卡片上的银杏叶与红色书签" loading="lazy" decoding="async" />
+        <figcaption>夹在页间的一片叶</figcaption>
+      </figure>
+      <MarginWhisper theme="article" />
+    </div>
 
     <footer class="article-footer">
       <span>写于 {formatDate(post.data.date)} · {categoryLabel(post.data.category)}</span>

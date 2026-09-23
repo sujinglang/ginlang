@@ -1,4 +1,5 @@
 ---
+import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -7,6 +8,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <section class="not-found">
     <p class="eyebrow">404 · 走岔了一页</p>
     <h1>这里暂时没有文字。</h1>
+    <MarginWhisper theme="notFound" />
     <a class="back-link" href={base + '/'}>回到首页 →</a>
   </section>
 </SiteLayout>

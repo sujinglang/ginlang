@@ -472,6 +472,21 @@ const webSiteSchema = JSON.stringify({
         }
         window.setTimeout(() => { button.textContent = '复制文章链接'; }, 2200);
       });
+
+      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const revealItems = document.querySelectorAll<HTMLElement>('[data-reveal]');
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-revealed');
+            observer.unobserve(entry.target);
+          });
+        }, { rootMargin: '0px 0px -22px 0px', threshold: 0.07 });
+        revealItems.forEach((item) => {
+          item.classList.add('will-reveal');
+          revealObserver.observe(item);
+        });
+      }
     </script>
   </body>
 </html>

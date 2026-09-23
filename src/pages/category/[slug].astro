@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import MarginWhisper from '../../components/MarginWhisper.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
@@ -14,17 +15,31 @@ const { category } = Astro.props;
 const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === category.slug)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
+const categoryArt = {
+  essay: { file: 'about-notebook.webp', width: 720, height: 720, alt: '摊开的手缝笔记本上放着一枝植物' },
+  diary: { file: 'night-window.webp', width: 960, height: 620, alt: '纸上夜窗里的弯月与一片红叶' },
+  book: { file: 'archive-ginkgo.webp', width: 720, height: 720, alt: '旧卡片上的银杏叶与红色书签' },
+  short: { file: 'letter-window.webp', width: 971, height: 1619, alt: '窗边的一封信，信封旁伸来一枝细叶' },
+}[category.slug as 'essay' | 'diary' | 'book' | 'short'];
 ---
 
 <SiteLayout title={category.label} description={category.description}>
-  <section class="listing-page">
+  <section class="listing-page category-page">
     <a class="back-link" href={base + '/'}>← GINLANG</a>
-    <header class="page-intro">
-      <p class="eyebrow">文字分类</p>
-      <h1>{category.label}</h1>
-      <p>{category.description}</p>
-      <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · 按时间慢慢排开</p>
-    </header>
+    <div class="intro-spread">
+      <header class="page-intro">
+        <p class="eyebrow">文字分类</p>
+        <h1>{category.label}</h1>
+        <p>{category.description}</p>
+        <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · 按时间慢慢排开</p>
+      </header>
+      <figure class="intro-art" data-reveal>
+        <img src={base + '/' + categoryArt.file} width={categoryArt.width} height={categoryArt.height} alt={categoryArt.alt} loading="lazy" decoding="async" />
+        <figcaption>从这里，翻开一页。</figcaption>
+      </figure>
+    </div>
+
+    <MarginWhisper theme="category" />
 
     {posts.length > 0 ? (
       <ol class="post-list">

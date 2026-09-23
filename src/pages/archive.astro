@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
@@ -14,15 +15,23 @@ const years = [...new Set(posts.map((post) => post.data.date.getUTCFullYear()))]
 <SiteLayout title="归档" description="GINLANG 的文章归档。">
   <section class="listing-page archive-page">
     <a class="back-link" href={base + '/'}>← GINLANG</a>
-    <header class="page-intro">
-      <p class="eyebrow">慢慢积下的日子</p>
-      <h1>归档</h1>
-      <p>不按重要与否，只按它们来到的时间。</p>
-      <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · {years.length} 个年份</p>
-    </header>
+    <div class="intro-spread">
+      <header class="page-intro">
+        <p class="eyebrow">慢慢积下的日子</p>
+        <h1>归档</h1>
+        <p>不按重要与否，只按它们来到的时间。</p>
+        <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · {years.length} 个年份</p>
+      </header>
+      <figure class="intro-art" data-reveal>
+        <img src={base + '/archive-ginkgo.webp'} width="720" height="720" alt="旧卡片上的银杏叶与红色书签" loading="lazy" decoding="async" />
+        <figcaption>把经过的日子，夹在页间。</figcaption>
+      </figure>
+    </div>
+
+    <MarginWhisper theme="archive" />
 
     {posts.length > 0 ? years.map((year) => (
-      <section class="archive-year" aria-labelledby={'year-' + year}>
+      <section class="archive-year" aria-labelledby={'year-' + year} data-reveal>
         <h2 id={'year-' + year}>{year}</h2>
         <ol class="archive-list">
           {posts.filter((post) => post.data.date.getUTCFullYear() === year).map((post) => (

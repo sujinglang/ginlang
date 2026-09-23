@@ -1,0 +1,267 @@
+---
+// A small, private reading marker. The saved position belongs to this browser only.
+---
+
+<div class="reading-bookmark" data-reading-bookmark>
+  <aside class="resume-panel" data-resume hidden aria-label="阅读书签">
+    <span class="paper-ribbon" aria-hidden="true"><span>✳</span></span>
+    <div class="resume-copy">
+      <p class="resume-kicker">A PAGE KEPT OPEN</p>
+      <p class="resume-title">上次读到<span data-saved-percent>这里</span>，文字还在等你。</p>
+      <p class="resume-privacy">这枚书签只留在你当前的浏览器里。</p>
+    </div>
+    <div class="resume-actions">
+      <button class="resume-button" type="button" data-resume-action>回到书签 <span aria-hidden="true">↗</span></button>
+      <button class="remove-button" type="button" data-remove-action>取下</button>
+    </div>
+  </aside>
+
+  <button class="bookmark-float" type="button" data-save-action hidden aria-label="把当前阅读位置夹成书签">
+    <span class="float-ribbon" aria-hidden="true">✳</span>
+    <span class="float-label">夹在这里</span>
+    <span class="float-progress" data-current-percent aria-hidden="true"></span>
+  </button>
+  <span class="bookmark-toast" data-bookmark-toast role="status" aria-live="polite"></span>
+</div>
+
+<script>
+  function initReadingBookmark() {
+    document.querySelectorAll<HTMLElement>('[data-reading-bookmark]').forEach((root) => {
+      if (root.dataset.ready === 'true') return;
+
+      const article = root.closest('.article-page');
+      const body = article?.querySelector<HTMLElement>('.article-body');
+      const resumePanel = root.querySelector<HTMLElement>('[data-resume]');
+      const savedPercent = root.querySelector<HTMLElement>('[data-saved-percent]');
+      const currentPercent = root.querySelector<HTMLElement>('[data-current-percent]');
+      const saveButton = root.querySelector<HTMLButtonElement>('[data-save-action]');
+      const resumeButton = root.querySelector<HTMLButtonElement>('[data-resume-action]');
+      const removeButton = root.querySelector<HTMLButtonElement>('[data-remove-action]');
+      const toast = root.querySelector<HTMLElement>('[data-bookmark-toast]');
+      if (!body || !resumePanel || !savedPercent || !currentPercent || !saveButton || !resumeButton || !removeButton || !toast) return;
+
+      root.dataset.ready = 'true';
+      const key = `ginlang-reading-bookmark:${window.location.pathname}`;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let savedRatio: number | null = null;
+      let canPersist = true;
+      let toastTimer = 0;
+      let scrollFrame = 0;
+
+      const clamp = (value: number) => Math.min(1, Math.max(0, value));
+      const bodyBounds = () => {
+        const rect = body.getBoundingClientRect();
+        return { top: rect.top + window.scrollY, height: Math.max(1, rect.height) };
+      };
+      const currentRatio = () => {
+        const { top, height } = bodyBounds();
+        return clamp((window.scrollY + window.innerHeight * 0.36 - top) / height);
+      };
+      const showToast = (message: string) => {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add('is-visible');
+        toastTimer = window.setTimeout(() => {
+          toast.classList.remove('is-visible');
+          toast.textContent = '';
+        }, 2400);
+      };
+      const updateResume = () => {
+        const hasBookmark = savedRatio !== null;
+        resumePanel.hidden = !hasBookmark;
+        if (hasBookmark) {
+          savedPercent.textContent = `约 ${Math.round(savedRatio! * 100)}%`;
+          saveButton.querySelector<HTMLElement>('.float-label')!.textContent = '重夹书签';
+        } else {
+          saveButton.querySelector<HTMLElement>('.float-label')!.textContent = '夹在这里';
+        }
+      };
+      const updateFloatingButton = () => {
+        const { top, height } = bodyBounds();
+        const sightLine = window.scrollY + window.innerHeight * 0.36;
+        const isReading = sightLine >= top && sightLine <= top + height;
+        saveButton.hidden = !isReading;
+        if (isReading) currentPercent.textContent = `${Math.round(currentRatio() * 100)}%`;
+      };
+
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (raw !== null) {
+          const parsed = Number(raw);
+          if (Number.isFinite(parsed) && parsed >= 0 && parsed <= 1) savedRatio = parsed;
+        }
+      } catch {
+        canPersist = false;
+      }
+      updateResume();
+      updateFloatingButton();
+
+      const onScroll = () => {
+        if (scrollFrame) return;
+        scrollFrame = window.requestAnimationFrame(() => {
+          scrollFrame = 0;
+          updateFloatingButton();
+        });
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+
+      saveButton.addEventListener('click', () => {
+        savedRatio = currentRatio();
+        if (canPersist) {
+          try {
+            window.localStorage.setItem(key, savedRatio.toFixed(4));
+          } catch {
+            canPersist = false;
+          }
+        }
+        updateResume();
+        if (!reduceMotion.matches) {
+          saveButton.classList.remove('is-stamping');
+          // Restart the short paper-drop motion on each deliberate save.
+          void saveButton.offsetWidth;
+          saveButton.classList.add('is-stamping');
+        }
+        showToast(canPersist ? '书签已夹在这一页' : '书签已夹好，本次浏览有效');
+      });
+
+      resumeButton.addEventListener('click', () => {
+        if (savedRatio === null) return;
+        const { top, height } = bodyBounds();
+        const target = Math.max(0, top + height * savedRatio - window.innerHeight * 0.36);
+        window.scrollTo({ top: target, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+      });
+
+      removeButton.addEventListener('click', () => {
+        savedRatio = null;
+        try {
+          window.localStorage.removeItem(key);
+        } catch {
+          // The ephemeral marker can still be removed from this page.
+        }
+        updateResume();
+        showToast('书签已取下');
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReadingBookmark, { once: true });
+  } else {
+    initReadingBookmark();
+  }
+  document.addEventListener('astro:page-load', initReadingBookmark);
+</script>
+
+<style>
+  .reading-bookmark [hidden] { display: none !important; }
+  .resume-panel {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 17px;
+    width: min(100%, var(--reading-width));
+    margin: 20px auto 0;
+    padding: 15px 19px 15px 0;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 88%, transparent);
+    animation: bookmark-appear 320ms ease-out both;
+  }
+  .paper-ribbon {
+    display: grid;
+    place-items: start center;
+    align-self: start;
+    width: 32px;
+    height: 47px;
+    padding-top: 10px;
+    background: var(--clay);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+    color: var(--paper-raised);
+    font: 11px/1 var(--serif);
+  }
+  .resume-kicker { margin: 0 0 3px; color: var(--clay); font: 9px/1.5 var(--sans); letter-spacing: 0.12em; }
+  .resume-title { margin: 0; font-size: 13px; line-height: 1.6; }
+  .resume-title span { margin: 0 0.25em; color: var(--accent-deep); }
+  .resume-privacy { margin: 3px 0 0; color: var(--muted); font: 10px/1.6 var(--sans); }
+  .resume-actions { display: flex; align-items: center; gap: 13px; }
+  .resume-actions button { border: 0; background: none; cursor: pointer; font: 11px/1.5 var(--sans); white-space: nowrap; }
+  .resume-button { padding: 8px 0; color: var(--accent-deep); }
+  .resume-button span { display: inline-block; transition: transform 170ms ease; }
+  .resume-button:hover span { transform: translate(2px, -2px); }
+  .remove-button { padding: 8px 0; color: var(--muted); }
+  .remove-button:hover { color: var(--clay); }
+
+  .bookmark-float {
+    position: fixed;
+    z-index: 15;
+    right: max(17px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 5px 11px 5px 7px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--paper-raised);
+    box-shadow: 0 7px 22px rgb(22 27 22 / 10%);
+    color: var(--ink);
+    cursor: pointer;
+    font: 11px/1.5 var(--sans);
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  }
+  .bookmark-float:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 10px 27px rgb(22 27 22 / 14%); }
+  .float-ribbon {
+    display: grid;
+    place-items: start center;
+    width: 23px;
+    height: 32px;
+    padding-top: 7px;
+    background: var(--accent);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 81%, 0 100%);
+    color: var(--paper-raised);
+    font: 10px/1 var(--serif);
+  }
+  .float-progress { padding-left: 8px; border-left: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+  .bookmark-float.is-stamping .float-ribbon { animation: bookmark-drop 440ms cubic-bezier(0.22, 0.9, 0.35, 1.3); }
+  .bookmark-toast {
+    position: fixed;
+    z-index: 16;
+    right: max(17px, env(safe-area-inset-right));
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 55px);
+    max-width: min(240px, calc(100vw - 34px));
+    padding: 7px 11px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    box-shadow: 0 5px 19px rgb(22 27 22 / 8%);
+    color: var(--accent-deep);
+    font: 10px/1.6 var(--sans);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(5px);
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+  .bookmark-toast:empty { display: none; }
+  .bookmark-toast.is-visible { opacity: 1; transform: translateY(0); }
+  @keyframes bookmark-drop {
+    0% { transform: translateY(-9px); opacity: 0.3; }
+    70% { transform: translateY(3px); opacity: 1; }
+    100% { transform: translateY(0); }
+  }
+  @keyframes bookmark-appear {
+    from { opacity: 0; transform: translateY(7px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (max-width: 560px) {
+    .resume-panel { grid-template-columns: 28px minmax(0, 1fr); gap: 8px 12px; padding: 12px 13px 13px 0; }
+    .paper-ribbon { width: 28px; height: 43px; }
+    .resume-actions { grid-column: 2; justify-content: flex-start; margin-top: -2px; }
+    .bookmark-float { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+    .bookmark-toast { right: 12px; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 55px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .resume-panel, .bookmark-float.is-stamping .float-ribbon { animation: none; }
+    .bookmark-float, .bookmark-toast, .resume-button span { transition: none; }
+    .bookmark-float:hover { transform: none; }
+  }
+</style>
