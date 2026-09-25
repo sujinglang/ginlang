@@ -14,7 +14,8 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const tocHeadings = headings.filter((heading) => heading.depth <= 3);
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
@@ -44,6 +45,19 @@ const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
     </header>
 
     <BookmarkWidget />
+
+    {tocHeadings.length > 0 && (
+      <nav class="article-toc" aria-label="文章目录">
+        <p class="toc-kicker">目录</p>
+        <ol>
+          {tocHeadings.map((heading) => (
+            <li class={'toc-depth-' + heading.depth}>
+              <a href={'#' + heading.slug}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
 
     <div class="article-body prose">
       <Content />

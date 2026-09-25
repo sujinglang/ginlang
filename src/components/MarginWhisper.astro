@@ -6,20 +6,19 @@ interface Props {
 }
 
 const { theme } = Astro.props;
-const themeOrder = Object.keys(whispers) as WhisperTheme[];
-const offset = themeOrder.slice(0, themeOrder.indexOf(theme)).reduce((sum, key) => sum + whispers[key].length, 0);
-const total = themeOrder.reduce((sum, key) => sum + whispers[key].length, 0);
-const initialNumber = String(offset + 1).padStart(3, '0') + ' / ' + String(total).padStart(3, '0');
+const first = whispers[theme][0];
 ---
 
 <aside class="margin-whisper" data-whisper data-whisper-theme={theme} aria-label="页边札记">
   <div class="margin-whisper-heading">
     <span>一则页边札记</span>
-    <span data-whisper-index>{initialNumber}</span>
   </div>
   <div class="margin-whisper-content">
-    <span class="margin-whisper-quote" aria-hidden="true">“</span>
-    <p data-whisper-text aria-live="polite">{whispers[theme][0]}</p>
+    <span class="margin-whisper-quote" aria-hidden="true">"</span>
+    <div class="margin-whisper-body">
+      <p data-whisper-text aria-live="polite">{first.text}</p>
+      <cite data-whisper-source hidden={!first.source}>{first.source}</cite>
+    </div>
     <button type="button" data-whisper-next aria-label="换一句页边札记">换一句 <span aria-hidden="true">↻</span></button>
   </div>
 </aside>
@@ -27,20 +26,16 @@ const initialNumber = String(offset + 1).padStart(3, '0') + ' / ' + String(total
 <script>
   import { whispers, type WhisperTheme } from '../data/whispers';
 
-  const themeOrder = Object.keys(whispers) as WhisperTheme[];
-  const total = themeOrder.reduce((sum, key) => sum + whispers[key].length, 0);
-
   function initWhispers() {
     document.querySelectorAll<HTMLElement>('[data-whisper]:not([data-whisper-ready])').forEach((note) => {
       const theme = note.dataset.whisperTheme as WhisperTheme;
       const lines = whispers[theme];
       const text = note.querySelector<HTMLElement>('[data-whisper-text]');
-      const indexLabel = note.querySelector<HTMLElement>('[data-whisper-index]');
+      const source = note.querySelector<HTMLElement>('[data-whisper-source]');
       const button = note.querySelector<HTMLButtonElement>('[data-whisper-next]');
-      if (!lines?.length || !text || !indexLabel || !button) return;
+      if (!lines?.length || !text || !source || !button) return;
 
       note.dataset.whisperReady = 'true';
-      const offset = themeOrder.slice(0, themeOrder.indexOf(theme)).reduce((sum, key) => sum + whispers[key].length, 0);
       const key = 'ginlang-whisper-' + theme;
       let previous = -1;
       try {
@@ -56,8 +51,10 @@ const initialNumber = String(offset + 1).padStart(3, '0') + ' / ' + String(total
         const step = Math.floor(Math.random() * Math.max(1, count - 1)) + 1;
         const index = previous < 0 ? Math.floor(Math.random() * count) : (previous + step) % count;
         previous = index;
-        text.textContent = lines[index];
-        indexLabel.textContent = String(offset + index + 1).padStart(3, '0') + ' / ' + String(total).padStart(3, '0');
+        const line = lines[index];
+        text.textContent = line.text;
+        source.textContent = line.source ?? '';
+        source.hidden = !line.source;
         text.classList.remove('whisper-swapping');
         void text.offsetWidth;
         text.classList.add('whisper-swapping');

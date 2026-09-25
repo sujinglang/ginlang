@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import BlueButterfly from '../components/BlueButterfly.astro';
-import DailyNote from '../components/DailyNote.astro';
+import Butterfly from '../components/Butterfly.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
@@ -39,8 +38,8 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
       <figure class="hero-art">
         <img src={base + '/letter-window.webp'} width="971" height="1619" alt="窗边的一封信，信封旁伸来一枝细叶" fetchpriority="high" decoding="async" />
         <figcaption>窗边来信 · 一张慢读的纸</figcaption>
+        <Butterfly size="md" />
       </figure>
-      <BlueButterfly />
     </div>
   </section>
 
@@ -76,18 +75,6 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
       )}
     </section>
 
-    <div data-reveal><DailyNote /></div>
-
-    <section class="night-panel" aria-labelledby="night-panel-title" data-reveal>
-      <img src={base + '/night-window.webp'} width="960" height="620" alt="纸上夜窗里的弯月与一片红叶" loading="lazy" decoding="async" />
-      <div class="night-panel-copy">
-        <p class="section-kicker">A PAGE AFTER DARK · 02</p>
-        <h2 id="night-panel-title">把夜色<br />折进书页。</h2>
-        <a href={base + '/category/diary/'}>读夜里的片段 <span aria-hidden="true">↗</span></a>
-      </div>
-      <span class="night-panel-caption">月亮替未写完的句子留白</span>
-    </section>
-
     {earlierPosts.length > 0 && (
       <section class="recent-section" aria-labelledby="earlier-title" data-reveal>
         <div class="section-heading">
@@ -121,18 +108,24 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
           <h2 id="category-title">从一类文字开始</h2>
         </div>
       </div>
-      <div class="category-grid">
+      <ol class="category-list">
         {counts.map((category, index) => (
-          <a class="category-card" href={base + '/category/' + category.slug + '/'}>
-            <span>{category.label}</span>
-            <span class="category-count"><em>{String(index + 1).padStart(2, '0')}</em><span>{category.count} 篇</span><span aria-hidden="true">↗</span></span>
-          </a>
+          <li class="category-row">
+            <a href={base + '/category/' + category.slug + '/'}>
+              <span class="category-index">{String(index + 1).padStart(2, '0')}</span>
+              <span class="category-label">{category.label}</span>
+              <span class="category-desc">{category.description}</span>
+              <span class="category-count">{category.count} 篇</span>
+              <span class="category-arrow" aria-hidden="true">↗</span>
+            </a>
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
 
     <aside class="home-endnote" aria-label="写作寄语" data-reveal>
       <p>不赶时间，慢慢写。愿每一段文字都不必匆忙，也愿每个读到这里的人，都能找到一处停留。</p>
+      <a class="quiet-link" href={base + '/about/'}>关于写字的人 <span aria-hidden="true">↗</span></a>
       <span class="home-endnote-mark" aria-hidden="true">✳</span>
     </aside>
   </div>
