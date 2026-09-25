@@ -17,8 +17,8 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
         <h1>GINLANG</h1>
         <p>写一些迟到的文字。</p>
       </header>
-      <figure class="intro-art" data-reveal>
-        <img src={base + '/about-notebook.webp'} width="720" height="720" alt="摊开的手缝笔记本上放着一枝植物" loading="lazy" decoding="async" />
+      <figure class="intro-art" data-reveal="image">
+        <img src={base + '/about-notebook-animated.webp'} width="720" height="720" alt="手绘的摊开笔记本与一枝植物" loading="lazy" decoding="async" />
         <figcaption>留白的地方，也可以写字。</figcaption>
         <Butterfly size="sm" />
       </figure>
@@ -31,7 +31,7 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
       {publishedSections.map((section) => (
         <section aria-label={section.title}>
           <h2>{section.title}</h2>
-          <p>{section.text}</p>
+          <p class:list={[{ 'about-placeholder': section.text === '此处需要您亲自填写' }]}>{section.text}</p>
         </section>
       ))}
 

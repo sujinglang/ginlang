@@ -5,37 +5,9 @@ interface Props {
 }
 
 const { size = 'md', class: className = '' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<div class={`quiet-butterfly quiet-butterfly--${size} ${className}`.trim()} aria-hidden="true">
-  <svg viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg" focusable="false">
-    <defs>
-      <linearGradient id="butterfly-blue" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0" stop-color="#ced9dc" />
-        <stop offset="0.48" stop-color="#a9bcc4" />
-        <stop offset="1" stop-color="#8ca5af" />
-      </linearGradient>
-      <linearGradient id="butterfly-soft" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0" stop-color="#e1e7e4" />
-        <stop offset="1" stop-color="#acc1c9" />
-      </linearGradient>
-    </defs>
-    <g class="butterfly-left-wing">
-      <path d="M77 66C55 53 39 20 20 15 7 12 5 31 12 49c8 20 30 32 65 22Z" fill="url(#butterfly-blue)" stroke="#7e99a4" stroke-width="1.5" />
-      <path d="M76 70C56 72 42 94 29 112c-9 12-20 13-20-3 0-22 21-44 67-43Z" fill="url(#butterfly-soft)" stroke="#7e99a4" stroke-width="1.5" />
-      <path d="M75 65C52 46 35 24 20 19M75 68C55 67 30 76 15 94" fill="none" stroke="#e8ebe0" stroke-width="1.2" opacity=".6" />
-      <path d="M58 55c-13-7-24-19-31-29M47 72c-11 5-20 13-25 22" fill="none" stroke="#66818e" stroke-width=".9" opacity=".4" />
-      <circle cx="24" cy="43" r="2.4" fill="#eef0e4" opacity=".8" /><circle cx="34" cy="96" r="2" fill="#eef0e4" opacity=".7" />
-    </g>
-    <g class="butterfly-right-wing" transform="translate(160 0) scale(-1 1)">
-      <path d="M77 66C55 53 39 20 20 15 7 12 5 31 12 49c8 20 30 32 65 22Z" fill="url(#butterfly-blue)" stroke="#7e99a4" stroke-width="1.5" />
-      <path d="M76 70C56 72 42 94 29 112c-9 12-20 13-20-3 0-22 21-44 67-43Z" fill="url(#butterfly-soft)" stroke="#7e99a4" stroke-width="1.5" />
-      <path d="M75 65C52 46 35 24 20 19M75 68C55 67 30 76 15 94" fill="none" stroke="#e8ebe0" stroke-width="1.2" opacity=".6" />
-      <path d="M58 55c-13-7-24-19-31-29M47 72c-11 5-20 13-25 22" fill="none" stroke="#66818e" stroke-width=".9" opacity=".4" />
-      <circle cx="24" cy="43" r="2.4" fill="#eef0e4" opacity=".8" /><circle cx="34" cy="96" r="2" fill="#eef0e4" opacity=".7" />
-    </g>
-    <path d="M77 63c-7-17-14-23-20-24M83 63c7-17 14-23 20-24" fill="none" stroke="#5d7986" stroke-width="1.7" stroke-linecap="round" />
-    <circle cx="80" cy="63" r="4.4" fill="#5c7784" />
-    <path d="M80 66c-4 10-4 26 0 47 4-21 4-37 0-47Z" fill="#5a7280" />
-  </svg>
-</div>
+<span class={`quiet-butterfly quiet-butterfly--${size} ${className}`.trim()} aria-hidden="true">
+  <img src={base + '/goddess-butterfly.webp'} width="720" height="480" alt="" decoding="async" />
+</span>

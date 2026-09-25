@@ -16,10 +16,10 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ca
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
 const categoryArt = {
-  essay: { file: 'about-notebook.webp', width: 720, height: 720, alt: '摊开的手缝笔记本上放着一枝植物' },
-  diary: { file: 'night-window.webp', width: 960, height: 620, alt: '纸上夜窗里的弯月与一片红叶' },
-  book: { file: 'archive-ginkgo.webp', width: 720, height: 720, alt: '旧卡片上的银杏叶与红色书签' },
-  short: { file: 'letter-window.webp', width: 971, height: 1619, alt: '窗边的一封信，信封旁伸来一枝细叶' },
+  essay: { file: 'about-notebook-animated.webp', width: 720, height: 720, alt: '手绘的摊开笔记本与一枝植物' },
+  diary: { file: 'diary-moon-animated.webp', width: 720, height: 720, alt: '手绘的明亮街道与浅蓝天空中的弯月' },
+  book: { file: 'archive-ginkgo-animated.webp', width: 720, height: 720, alt: '手绘的银杏叶、旧卡片与书签' },
+  short: { file: 'hero-letter-animated.webp', width: 800, height: 1200, alt: '手绘的窗边信封与一枝细叶' },
 }[category.slug as 'essay' | 'diary' | 'book' | 'short'];
 ---
 
@@ -33,7 +33,7 @@ const categoryArt = {
         <p>{category.description}</p>
         <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · 按时间慢慢排开</p>
       </header>
-      <figure class="intro-art" data-reveal>
+      <figure class="intro-art" data-reveal="image">
         <img src={base + '/' + categoryArt.file} width={categoryArt.width} height={categoryArt.height} alt={categoryArt.alt} loading="lazy" decoding="async" />
         <figcaption>从这里，翻开一页。</figcaption>
       </figure>

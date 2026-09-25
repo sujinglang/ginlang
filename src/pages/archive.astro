@@ -22,8 +22,8 @@ const years = [...new Set(posts.map((post) => post.data.date.getUTCFullYear()))]
         <p>不按重要与否，只按它们来到的时间。</p>
         <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · {years.length} 个年份</p>
       </header>
-      <figure class="intro-art" data-reveal>
-        <img src={base + '/archive-ginkgo.webp'} width="720" height="720" alt="旧卡片上的银杏叶与红色书签" loading="lazy" decoding="async" />
+      <figure class="intro-art" data-reveal="image">
+        <img src={base + '/archive-ginkgo-animated.webp'} width="720" height="720" alt="手绘的银杏叶、旧卡片与书签" loading="lazy" decoding="async" />
         <figcaption>把经过的日子，夹在页间。</figcaption>
       </figure>
     </div>

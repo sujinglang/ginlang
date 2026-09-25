@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Butterfly from '../components/Butterfly.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
+import { authorIntro } from '../data/author';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
@@ -17,26 +18,42 @@ const counts = categories.map((category) => ({
   count: posts.filter((post) => post.data.category === category.slug).length,
 }));
 const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
+const plainText = (markdown: string) => markdown
+  .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  .replace(/<[^>]+>/g, '')
+  .replace(/[#*_`>~]/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+const bodyParagraphs = latest?.body?.trim().split(/\n\s*\n/).map(plainText).filter(Boolean) ?? [];
+const featuredSource = bodyParagraphs.slice(1).join(' ') || bodyParagraphs.join(' ') || latest?.data.excerpt || '';
+const featuredCharacters = Array.from(featuredSource);
+const featuredExcerpt = featuredCharacters.slice(0, 140).join('') + (featuredCharacters.length > 140 ? '…' : '');
+const landscapes = [
+  { label: '海边', caption: '海边 · 清晨', file: 'sea-morning-animated.webp', width: 1400, height: 788, alt: '手绘的浅蓝海岸与清晨天空' },
+  { label: '林间', caption: '林间 · 流水', file: 'forest-waterfall-animated.webp', width: 1400, height: 933, alt: '手绘的林间瀑布与浅色水潭' },
+  { label: '街角', caption: '街角 · 一弯月', file: 'diary-moon-animated.webp', width: 720, height: 720, alt: '手绘的明亮街道与浅蓝天空中的弯月' },
+];
 ---
 
 <SiteLayout description="一间安静的文字房间。随笔、日记、书摘与短句，给经过的日子留一页。">
   <section class="home-intro" aria-labelledby="home-title">
     <div class="hero-kicker">
       <span>独立文字集</span>
-      <span>VOL. 01 · 2026</span>
+      <span>2026 · GINLANG</span>
     </div>
     <div class="home-hero">
       <div>
         <h1 id="home-title">把日子写得<br /><em>慢一点。</em></h1>
-        <p class="intro-note">随笔、日记、书摘与短句。给经过的日子留一页，也给尚未说完的话留一点时间。</p>
+        <p class="intro-note">这里收着随笔、日记、读书时的停顿，和当时没有说完的话。</p>
         <div class="hero-links">
-          <a class="hero-link" href={base + '/archive/'}>从最近的文字开始 <span aria-hidden="true">↗</span></a>
+          <a class="hero-link" href="#latest-title">阅读最新文章 <span aria-hidden="true">↗</span></a>
           <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden>随机翻一页 <span aria-hidden="true">↗</span></button>
           <span class="hero-topics">随笔 · 日记 · 书摘 · 短句</span>
         </div>
       </div>
       <figure class="hero-art">
-        <img src={base + '/letter-window.webp'} width="971" height="1619" alt="窗边的一封信，信封旁伸来一枝细叶" fetchpriority="high" decoding="async" />
+        <img src={base + '/hero-letter-animated.webp'} width="800" height="1200" alt="手绘的窗边信封与一枝细叶" fetchpriority="high" decoding="async" />
         <figcaption>窗边来信 · 一张慢读的纸</figcaption>
         <Butterfly size="md" />
       </figure>
@@ -44,13 +61,11 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
   </section>
 
   <div class="home-content">
-    <MarginWhisper theme="home" />
-
-    <section aria-labelledby="latest-title" data-reveal>
+    <section aria-labelledby="latest-title" data-reveal="ink">
       <div class="section-heading">
         <div class="section-heading-main">
-          <p class="section-kicker">A LETTER LEFT ON THE DESK</p>
-          <h2 id="latest-title">最近写下</h2>
+          <p class="section-kicker">THE FEATURED LETTER</p>
+          <h2 id="latest-title">本期主文</h2>
         </div>
         <a class="quiet-link" href={base + '/archive/'}>全部文章 <span aria-hidden="true">↗</span></a>
       </div>
@@ -58,17 +73,14 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
       {latest ? (
         <a class="featured-post" href={base + '/posts/' + latest.id + '/'}>
           <div class="featured-topline">
-            <span>本期来信</span>
-            <span>01 / {String(posts.length).padStart(2, '0')}</span>
+            <span>{categoryLabel(latest.data.category)}</span>
+            <time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time>
           </div>
           <h3>{latest.data.title}</h3>
-          <p>{latest.data.excerpt}</p>
+          <p>{featuredExcerpt}</p>
           <div class="featured-meta">
-            <time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time>
-            <span aria-hidden="true">·</span>
-            <span>{categoryLabel(latest.data.category)}</span>
+            <span>继续读下去</span><span aria-hidden="true">↗</span>
           </div>
-          <span class="featured-arrow" aria-hidden="true">↗</span>
         </a>
       ) : (
         <p class="empty-note">这里还空着。等第一篇文字慢慢长出来。</p>
@@ -76,7 +88,7 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
     </section>
 
     {earlierPosts.length > 0 && (
-      <section class="recent-section" aria-labelledby="earlier-title" data-reveal>
+      <section class="recent-section" aria-labelledby="earlier-title" data-reveal="list">
         <div class="section-heading">
           <div class="section-heading-main">
             <p class="section-kicker">THE DAYS BEFORE</p>
@@ -101,7 +113,41 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
       </section>
     )}
 
-    <section class="category-shelf" aria-labelledby="category-title" data-reveal>
+    <div class="home-whisper" data-reveal="quote"><MarginWhisper theme="home" /></div>
+
+    <section class="landscape-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
+      <div class="landscape-topline">
+        <div>
+          <p class="section-kicker">A VIEW BETWEEN PAGES</p>
+          <h2 id="landscape-title">换一扇窗</h2>
+        </div>
+        <span class="landscape-count" data-landscape-count>01 / 03</span>
+      </div>
+      <div class="landscape-frame">
+        {landscapes.map((scene, index) => (
+          <img
+            class:list={['landscape-image', { 'is-active': index === 0 }]}
+            src={base + '/' + scene.file}
+            width={scene.width}
+            height={scene.height}
+            alt={scene.alt}
+            aria-hidden={index !== 0}
+            loading="lazy"
+            decoding="async"
+          />
+        ))}
+      </div>
+      <div class="landscape-bottomline">
+        <p data-landscape-caption aria-live="polite">{landscapes[0].caption}</p>
+        <div class="landscape-controls" role="group" aria-label="切换窗外风景">
+          {landscapes.map((scene, index) => (
+            <button type="button" data-landscape-choice={index} data-landscape-caption={scene.caption} aria-pressed={index === 0}>{scene.label}</button>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="category-shelf" aria-labelledby="category-title" data-reveal="list">
       <div class="section-heading">
         <div class="section-heading-main">
           <p class="section-kicker">A FEW WAYS TO READ</p>
@@ -115,7 +161,7 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
               <span class="category-index">{String(index + 1).padStart(2, '0')}</span>
               <span class="category-label">{category.label}</span>
               <span class="category-desc">{category.description}</span>
-              <span class="category-count">{category.count} 篇</span>
+              <span class="category-count">{category.count ? category.count + ' 篇' : '暂无'}</span>
               <span class="category-arrow" aria-hidden="true">↗</span>
             </a>
           </li>
@@ -123,10 +169,13 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
       </ol>
     </section>
 
-    <aside class="home-endnote" aria-label="写作寄语" data-reveal>
-      <p>不赶时间，慢慢写。愿每一段文字都不必匆忙，也愿每个读到这里的人，都能找到一处停留。</p>
-      <a class="quiet-link" href={base + '/about/'}>关于写字的人 <span aria-hidden="true">↗</span></a>
-      <span class="home-endnote-mark" aria-hidden="true">✳</span>
+    <aside class="home-endnote" aria-labelledby="author-teaser-title" data-reveal="ink">
+      <div>
+        <p class="section-kicker">A NOTE FROM THE AUTHOR</p>
+        <h2 id="author-teaser-title">关于写字的人</h2>
+        <p class="author-placeholder">{authorIntro}</p>
+      </div>
+      <a class="quiet-link" href={base + '/about/'}>进入关于页 <span aria-hidden="true">↗</span></a>
     </aside>
   </div>
 </SiteLayout>
@@ -156,4 +205,31 @@ const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
     initRandomPost();
   }
   document.addEventListener('astro:page-load', initRandomPost);
+
+  function initLandscape() {
+    const gallery = document.querySelector<HTMLElement>('[data-landscape]:not([data-landscape-ready])');
+    if (!gallery) return;
+    const images = [...gallery.querySelectorAll<HTMLImageElement>('.landscape-image')];
+    const buttons = [...gallery.querySelectorAll<HTMLButtonElement>('[data-landscape-choice]')];
+    const caption = gallery.querySelector<HTMLElement>('[data-landscape-caption]');
+    const count = gallery.querySelector<HTMLElement>('[data-landscape-count]');
+    gallery.dataset.landscapeReady = 'true';
+    buttons.forEach((button, index) => button.addEventListener('click', () => {
+      images.forEach((image, imageIndex) => {
+        const active = imageIndex === index;
+        image.classList.toggle('is-active', active);
+        image.setAttribute('aria-hidden', String(!active));
+      });
+      buttons.forEach((item, buttonIndex) => item.setAttribute('aria-pressed', String(buttonIndex === index)));
+      if (caption) caption.textContent = button.dataset.landscapeCaption ?? '';
+      if (count) count.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(images.length).padStart(2, '0');
+    }));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLandscape, { once: true });
+  } else {
+    initLandscape();
+  }
+  document.addEventListener('astro:page-load', initLandscape);
 </script>
