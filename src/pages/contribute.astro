@@ -1,4 +1,5 @@
 ---
+import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -10,10 +11,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <div class="contribute-layout">
       <div class="contribute-main">
         <section><h2>写些什么</h2><p>随笔、日记、书摘与短句都可以。作品应是作者愿意公开、署名发表的完整文章；编辑会先与作者确认分类、标题和页面呈现。</p></section>
-        <section><h2>准备什么</h2><ol><li>笔名或希望展示的署名，以及一句简短介绍。</li><li>作品正文；纯文本或 Markdown 均可。</li><li>如果愿意，再附较完整的简介、代表图和可公开的链接。</li></ol><p>不需要提交真实姓名、年龄或所在地。</p></section>
-        <section><h2>怎样刊出</h2><p>创办人确认稿件与作者意愿后，进行必要的排版与文字核对；作者确认最终署名和内容，再将作品发布到网站。更新或撤下作品也通过创办人处理。</p></section>
+        <section><h2>准备什么</h2><ul><li>笔名或希望展示的署名，以及一句简短介绍。</li><li>作品正文；纯文本或 Markdown 均可。</li><li>如果愿意，再附较完整的简介、代表图和可公开的链接。</li></ul><p>不需要提交真实姓名、年龄或所在地。</p></section>
+        <section><h2>怎样刊出</h2><p>创办人确认稿件与作者意愿后，进行必要的排版与内容校对；作者确认最终署名和内容，再将作品发布到网站。更新或撤下作品也通过创办人处理。</p></section>
       </div>
       <aside class="contribute-contact"><span class="folio-mark">联系与版权</span><h2>联系渠道</h2><p>此处需要您亲自填写</p><small>公开联系方式尚未提供。填写前，本站不接收在线投稿。</small><hr /><p>每篇作品保留作者署名。受邀作者的作品权利仍由各自作者持有；转载、修改和其他使用方式需另外征得作者同意。</p></aside>
     </div>
+    <MarginWhisper theme="writing" />
   </article>
 </SiteLayout>

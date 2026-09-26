@@ -203,15 +203,29 @@ button { color: inherit; }
 }
 .home-intro h1 em { color: var(--accent); font-style: normal; }
 .intro-note { max-width: 520px; margin: 14px 0 0; color: var(--muted); font-size: 16px; line-height: 1.95; }
-.hero-links { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 23px; margin-top: 24px; }
-.hero-link { display: inline-flex; align-items: center; gap: 10px; color: var(--accent-deep); font: 13px/1.6 var(--sans); text-decoration: none; }
-.hero-link span { transition: transform 150ms ease; }
-.hero-link:hover span { transform: translate(3px, -3px); }
-.random-post { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: 12px/1.6 var(--sans); }
-.random-post:hover { color: var(--accent-deep); }
+.hero-links { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.hero-link, .random-post {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  border-radius: 2px;
+  font: 12px/1.5 var(--sans);
+  letter-spacing: 0.025em;
+  text-decoration: none;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.hero-link { padding: 10px 19px; border: 1px solid var(--accent-deep); background: var(--accent-deep); color: var(--paper); }
+.hero-link:hover { background: var(--accent); border-color: var(--accent); box-shadow: 0 4px 10px color-mix(in srgb, var(--accent-deep) 15%, transparent); transform: translateY(-2px); }
+.hero-link-secondary { background: var(--paper-raised); border-color: var(--line); color: var(--accent-deep); }
+.hero-link-secondary:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
+.hero-link span, .random-post span { transition: transform 180ms ease; }
+.hero-link:hover span, .random-post:hover span { transform: translate(3px, -3px); }
+.random-post { padding: 10px 12px; border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer; }
+.random-post:hover { color: var(--clay); background: color-mix(in srgb, var(--paper-soft) 55%, transparent); }
+.hero-link:focus-visible, .random-post:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .random-post[hidden] { display: none; }
-.random-post span { transition: transform 150ms ease; }
-.random-post:hover span { transform: translate(3px, -3px); }
 .hero-topics { color: var(--muted); font: 11px/1.6 var(--sans); }
 .hero-gallery { position: relative; width: 100%; margin: 0; min-width: 0; }
 .hero-gallery-frame {
@@ -639,8 +653,7 @@ body { background: var(--paper); }
 .cover-colophon { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px 25px; margin-top: 30px; padding: 13px 0 0; border-top: 1px solid var(--line); color: var(--muted); font: 11px/1.6 var(--sans); }
 .cover-colophon span:first-child { color: var(--clay); }
 .cover-colophon a { overflow: hidden; color: var(--ink); font: 15px/1.6 var(--serif); text-overflow: ellipsis; text-decoration: none; white-space: nowrap; }
-.hero-links { gap: 12px 24px; }
-.hero-link-secondary { color: var(--muted); }
+.hero-links { gap: 10px; }
 .selection-section { padding-bottom: 7px; }
 .selection-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(270px, 0.85fr); gap: clamp(26px, 5vw, 62px); align-items: stretch; }
 .selection-grid .featured-post { min-height: 350px; padding: clamp(25px, 3vw, 40px); background: var(--paper-raised); box-shadow: none; transform: none; }
@@ -753,7 +766,7 @@ body { background: var(--paper); }
 .contribute-main section { padding: 0 0 23px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
 .contribute-main h2, .contribute-contact h2 { margin: 0 0 11px; font-size: 22px; font-weight: 500; }
 .contribute-main p, .contribute-main li, .contribute-contact p { margin: 0; font-size: 14px; line-height: 1.95; }
-.contribute-main ol { margin: 0 0 12px; padding-left: 1.4em; }
+.contribute-main ul { margin: 0 0 12px; padding-left: 1.4em; list-style: circle; }
 .contribute-contact { padding: 25px; border: 1px solid var(--line); background: var(--paper-raised); }
 .contribute-contact h2 { margin-top: 10px; }
 .contribute-contact > p:first-of-type { padding: 4px 0 8px; border-bottom: 1px dashed var(--line); color: var(--muted); }

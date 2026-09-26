@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import MarginWhisper from '../../components/MarginWhisper.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -44,5 +45,6 @@ const founders = authors.filter((author) => author.data.role === 'founder');
         <div class="people-empty"><p>客席作者的页面还在等第一位受邀写作者。这里会展示他们愿意公开的介绍与作品。</p><a href={base + '/contribute/'}>了解参与写作的方式 ↗</a></div>
       )}
     </section>
+    <MarginWhisper theme="writing" />
   </section>
 </SiteLayout>

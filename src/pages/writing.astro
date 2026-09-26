@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
@@ -30,6 +31,7 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
       })}
     </ol>
     <p class="writing-empty" data-writing-empty hidden>这一类还没有文章。可以试试别的类别。</p>
+    <MarginWhisper theme="writing" />
   </section>
 </SiteLayout>
 

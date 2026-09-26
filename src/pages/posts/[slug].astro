@@ -24,8 +24,6 @@ const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 const postIndex = allPosts.findIndex((item) => item.id === post.id);
 const newerPost = postIndex > 0 ? allPosts[postIndex - 1] : undefined;
 const olderPost = postIndex >= 0 ? allPosts[postIndex + 1] : undefined;
-const bodyCharacters = Array.from((post.body ?? '').replace(/[\s#>*_~-]/g, '')).length;
-const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
 const relatedPosts = allPosts
   .filter((item) => item.id !== post.id)
   .sort((a, b) => Number(b.data.author.id === post.data.author.id) - Number(a.data.author.id === post.data.author.id)
@@ -65,8 +63,6 @@ const articleSchema = JSON.stringify({
       <p class="article-deck">{post.data.excerpt}</p>
       <div class="article-byline">
         <span>文 / <a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></span>
-        <span aria-hidden="true">·</span>
-        <span>约 {readingMinutes} 分钟读完</span>
       </div>
     </header>
 
