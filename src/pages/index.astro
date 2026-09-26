@@ -3,14 +3,37 @@ import { getCollection } from 'astro:content';
 import HeroGallery from '../components/HeroGallery.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
 import { authorIntro } from '../data/author';
+import topicRecords from '../content/topics.json';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+const allPosts = await getCollection('posts');
+const posts = allPosts.filter((post) => !post.data.draft).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
+const authors = await getCollection('authors');
+const authorById = new Map(authors.map((author) => [author.id, author]));
+const postById = new Map(allPosts.map((post) => [post.id, post]));
+for (const post of allPosts) {
+  if (!authorById.has(post.data.author.id)) throw new Error(`作品 ${post.id} 引用了不存在的作者 ${post.data.author.id}`);
+}
+for (const author of authors) {
+  if (!author.data.featuredPost) continue;
+  const selected = postById.get(author.data.featuredPost.id);
+  if (!selected || selected.data.author.id !== author.id || selected.data.draft) throw new Error(`作者 ${author.id} 的代表作无效或尚未发布`);
+}
+const guests = authors.filter((author) => author.data.role === 'guest' && author.data.featured).sort((a, b) => a.data.order - b.data.order);
+const founder = authors.find((author) => author.data.role === 'founder');
+const allTopics = Object.keys(topicRecords).length ? await getCollection('topics') : [];
+for (const topic of allTopics) {
+  for (const reference of topic.data.posts) {
+    const post = postById.get(reference.id);
+    if (!post || (!topic.data.draft && post.data.draft)) throw new Error(`专题 ${topic.id} 引用了不存在或未发布的作品 ${reference.id}`);
+  }
+}
+const topics = allTopics.filter((topic) => !topic.data.draft).sort((a, b) => a.data.order - b.data.order);
 const latest = posts[0];
 const earlierPosts = posts.slice(1, 5);
 const counts = categories.map((category) => ({
@@ -45,69 +68,48 @@ const landscapes = [
     <div class="home-hero">
       <div>
         <h1 id="home-title">把日子写得<br /><em>慢一点。</em></h1>
-        <p class="intro-note">这里收着随笔、日记、读书时的停顿，和当时没有说完的话。</p>
+        <p class="intro-note">一本文字还不多的小刊物。随笔、日记、读书时的停顿，都从这里开始。</p>
         <div class="hero-links">
-          <a class="hero-link" href="#latest-title">阅读最新文章 <span aria-hidden="true">↗</span></a>
+          <a class="hero-link" href="#latest-title">开始阅读 <span aria-hidden="true">↗</span></a>
+          <a class="hero-link hero-link-secondary" href={base + '/authors/'}>认识客席作者 <span aria-hidden="true">↗</span></a>
           <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden>随机翻一页 <span aria-hidden="true">↗</span></button>
-          <span class="hero-topics">随笔 · 日记 · 书摘 · 短句</span>
         </div>
       </div>
       <HeroGallery />
     </div>
+    {latest && <div class="cover-colophon"><span>本期从这里读起</span><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a><span>文 / {authorById.get(latest.data.author.id)?.data.name}</span><span>{formatDate(latest.data.date)}</span></div>}
   </section>
 
   <div class="home-content">
-    <section aria-labelledby="latest-title" data-reveal="ink">
+    <section class="selection-section" aria-labelledby="latest-title" data-reveal="ink">
       <div class="section-heading">
         <div class="section-heading-main">
-          <p class="section-kicker">THE FEATURED LETTER</p>
-          <h2 id="latest-title">本期主文</h2>
+          <p class="section-kicker">本期选读</p>
+          <h2 id="latest-title">从这些文字开始</h2>
         </div>
-        <a class="quiet-link" href={base + '/archive/'}>全部文章 <span aria-hidden="true">↗</span></a>
+        <a class="quiet-link" href={base + '/writing/'}>进入文字目录 <span aria-hidden="true">↗</span></a>
       </div>
 
       {latest ? (
-        <a class="featured-post" href={base + '/posts/' + latest.id + '/'}>
-          <div class="featured-topline">
-            <span>{categoryLabel(latest.data.category)}</span>
-            <time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time>
-          </div>
-          <h3>{latest.data.title}</h3>
-          <p>{featuredExcerpt}</p>
-          <div class="featured-meta">
-            <span>继续读下去</span><span aria-hidden="true">↗</span>
-          </div>
-        </a>
-      ) : (
-        <p class="empty-note">这里还空着。等第一篇文字慢慢长出来。</p>
-      )}
+        <div class="selection-grid">
+          <article class="featured-post">
+            <div class="featured-topline"><span>{categoryLabel(latest.data.category)}</span><time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time></div>
+            <h3><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a></h3>
+            <p>{featuredExcerpt}</p>
+            <div class="featured-meta"><a href={base + '/authors/' + latest.data.author.id + '/'}>文 / {authorById.get(latest.data.author.id)?.data.name}</a><a href={base + '/posts/' + latest.id + '/'}>阅读全文 <span aria-hidden="true">↗</span></a></div>
+          </article>
+          {earlierPosts.length > 0 && <div class="selection-side">{earlierPosts.map((post, index) => <article class="selection-brief"><span class="selection-brief-no">{String(index + 2).padStart(2, '0')}</span><div class="selection-brief-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><span>{categoryLabel(post.data.category)}</span></div><h3><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a></h3><p>{post.data.excerpt}</p><a class="selection-brief-author" href={base + '/authors/' + post.data.author.id + '/'}>{authorById.get(post.data.author.id)?.data.name}</a></article>)}</div>}
+        </div>
+      ) : <p class="empty-note">第一篇文字还没有发布。</p>}
     </section>
 
-    {earlierPosts.length > 0 && (
-      <section class="recent-section" aria-labelledby="earlier-title" data-reveal="list">
-        <div class="section-heading">
-          <div class="section-heading-main">
-            <p class="section-kicker">THE DAYS BEFORE</p>
-            <h2 id="earlier-title">此前的片段</h2>
-          </div>
-          <span class="section-kicker">{String(earlierPosts.length).padStart(2, '0')} 篇文字</span>
-        </div>
-        <ol class="post-list">
-          {earlierPosts.map((post) => (
-            <li class="post-row">
-              <div class="post-meta">
-                <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-                <span class="meta-dot" aria-hidden="true">·</span>
-                <a href={base + '/category/' + post.data.category + '/'}>{categoryLabel(post.data.category)}</a>
-              </div>
-              <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
-              <p class="post-excerpt">{post.data.excerpt}</p>
-              <span class="post-row-arrow" aria-hidden="true">↗</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-    )}
+    <section class="home-people" aria-labelledby="home-people-title" data-reveal="list">
+      <div class="section-heading"><div class="section-heading-main"><p class="section-kicker">写字的人</p><h2 id="home-people-title">从一位主理人，到更多署名</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者 <span aria-hidden="true">↗</span></a></div>
+      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <div class="home-guest-empty"><div><span class="folio-mark">客席写作</span><h3>留出一个位置，给接下来加入的作者。</h3><p>目前只有主理人的文字。受邀作者的介绍与作品，会在确认后出现在这里。</p></div><a href={base + '/contribute/'}>了解参与写作 ↗</a></div>}
+      {founder && <p class="home-founder-note">目前由 <a href={base + '/authors/' + founder.id + '/'}>{founder.data.name}</a> 整理与发布 · 已刊出 {posts.length} 篇文字</p>}
+    </section>
+
+    {topics.length > 0 && <section class="home-topics" aria-labelledby="home-topics-title"><div class="section-heading"><h2 id="home-topics-title">主题选集</h2><a class="quiet-link" href={base + '/topics/'}>全部专题 ↗</a></div><div class="home-topic-list">{topics.slice(0, 2).map((topic) => <a href={base + '/topics/' + topic.id + '/'}><span>{topic.data.posts.length} 篇作品</span><h3>{topic.data.title}</h3><p>{topic.data.introduction}</p></a>)}</div></section>}
 
     <div class="home-whisper" data-reveal="quote"><MarginWhisper theme="home" /></div>
 
@@ -167,11 +169,11 @@ const landscapes = [
 
     <aside class="home-endnote" aria-labelledby="author-teaser-title" data-reveal="ink">
       <div>
-        <p class="section-kicker">A NOTE FROM THE AUTHOR</p>
-        <h2 id="author-teaser-title">关于写字的人</h2>
+        <p class="section-kicker">关于刊物</p>
+        <h2 id="author-teaser-title">还会继续往这本刊物里加页。</h2>
         <p class="author-placeholder">{authorIntro}</p>
       </div>
-      <a class="quiet-link" href={base + '/about/'}>进入关于页 <span aria-hidden="true">↗</span></a>
+      <div class="endnote-links"><a class="quiet-link" href={base + '/about/'}>关于这本刊物 <span aria-hidden="true">↗</span></a><a class="quiet-link" href={base + '/contribute/'}>参与写作 <span aria-hidden="true">↗</span></a></div>
     </aside>
   </div>
 </SiteLayout>

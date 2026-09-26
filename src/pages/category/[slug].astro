@@ -15,6 +15,7 @@ const { category } = Astro.props;
 const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === category.slug)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
+const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
 const categoryArt = {
   essay: { file: 'about-notebook-animated.webp', width: 720, height: 720, alt: '手绘的摊开笔记本与一枝植物' },
   diary: { file: 'diary-moon-animated.webp', width: 720, height: 720, alt: '手绘的明亮街道与浅蓝天空中的弯月' },
@@ -49,6 +50,8 @@ const categoryArt = {
               <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
               <span class="meta-dot" aria-hidden="true">·</span>
               <span>{categoryLabel(post.data.category)}</span>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a>
             </div>
             <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
             <p class="post-excerpt">{post.data.excerpt}</p>

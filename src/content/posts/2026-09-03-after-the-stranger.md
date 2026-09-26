@@ -2,6 +2,7 @@
 title: 读完《局外人》之后
 date: 2026-09-03
 category: book
+author: ginlang
 excerpt: 合上书以后，我想起的不是答案，而是人怎样诚实地面对自己的感受。
 draft: false
 ---

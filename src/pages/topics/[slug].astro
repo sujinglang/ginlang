@@ -1,0 +1,29 @@
+---
+import { getCollection, getEntries } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import topicRecords from '../../content/topics.json';
+import { categoryLabel } from '../../lib/categories';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+export async function getStaticPaths() {
+  return Object.keys(topicRecords).length ? (await getCollection('topics', ({ data }) => !data.draft)).map((topic) => ({ params: { slug: topic.id }, props: { topic } })) : [];
+}
+const { topic } = Astro.props;
+const posts = await getEntries(topic.data.posts);
+if (posts.length !== topic.data.posts.length || posts.some((post) => !post || post.data.draft)) {
+  throw new Error(`专题 ${topic.id} 引用了不存在或未发布的作品`);
+}
+const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
+for (const post of posts) {
+  if (!authors.has(post.data.author.id)) throw new Error(`作品 ${post.id} 引用了不存在的作者`);
+}
+---
+<SiteLayout title={topic.data.title + ' · 专题'} description={topic.data.introduction}>
+  <article class="listing-page topic-page">
+    <a class="back-link" href={base + '/topics/'}>← 全部专题</a>
+    <header class="topic-cover">
+      {topic.data.cover && <img src={base + '/' + topic.data.cover.replace(/^\/+/, '')} width={topic.data.coverWidth} height={topic.data.coverHeight} alt="" loading="eager" />}
+      <div><span class="folio-mark">GINLANG / 主题选集</span><h1>{topic.data.title}</h1><p>{topic.data.introduction}</p><span>{posts.length} 篇作品</span></div>
+    </header>
+    <ol class="topic-works">{posts.map((post, index) => <li><span>{String(index + 1).padStart(2, '0')}</span><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p><a class="topic-author" href={base + '/authors/' + post.data.author.id + '/'}>文 / {authors.get(post.data.author.id)?.data.name}</a></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol>
+  </article>
+</SiteLayout>

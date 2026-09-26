@@ -1,0 +1,42 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { categoryLabel } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+export async function getStaticPaths() {
+  return (await getCollection('authors')).map((author) => ({ params: { slug: author.id }, props: { author } }));
+}
+const { author } = Astro.props;
+const posts = (await getCollection('posts', ({ data }) => !data.draft && data.author.id === author.id))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const selected = author.data.featuredPost ? await getEntry(author.data.featuredPost) : posts[0];
+if (author.data.featuredPost && (!selected || selected.data.author.id !== author.id || selected.data.draft)) {
+  throw new Error(`作者 ${author.id} 的代表作无效或尚未发布`);
+}
+const bio = author.data.bio === '此处需要您亲自填写' ? undefined : author.data.bio;
+---
+
+<SiteLayout title={author.data.name + ' · 作者'} description={author.data.tagline}>
+  <article class="listing-page author-page">
+    <a class="back-link" href={base + '/authors/'}>← 全部作者</a>
+    <header class="author-cover">
+      <div class="author-portrait">
+        {author.data.portrait ? <img src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.name + '的代表图'} /> : <span aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
+      </div>
+      <div>
+        <p class="person-role">{author.data.role === 'founder' ? '主理人' : '客席作者'}</p>
+        <h1>{author.data.name}</h1>
+        <p class="author-tagline">{author.data.tagline}</p>
+        {bio && <p class="author-bio">{bio}</p>}
+        {author.data.links.length > 0 && <div class="author-links">{author.data.links.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label} ↗</a>)}</div>}
+      </div>
+    </header>
+    {selected && <section class="author-selected" aria-labelledby="selected-title"><span class="folio-mark">编者选读</span><h2 id="selected-title"><a href={base + '/posts/' + selected.id + '/'}>{selected.data.title}</a></h2><p>{selected.data.excerpt}</p></section>}
+    <section class="author-works" aria-labelledby="works-title">
+      <div class="section-heading"><h2 id="works-title">全部作品</h2><span class="section-kicker">{posts.length} 篇</span></div>
+      {posts.length ? <ol class="editorial-index">{posts.map((post) => <li><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol> : <p class="empty-note">这位作者的作品尚未发布。</p>}
+    </section>
+  </article>
+</SiteLayout>

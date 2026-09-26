@@ -10,6 +10,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
 const years = [...new Set(posts.map((post) => post.data.date.getUTCFullYear()))];
+const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
 ---
 
 <SiteLayout title="归档" description="GINLANG 的文章归档。">
@@ -38,7 +39,7 @@ const years = [...new Set(posts.map((post) => post.data.date.getUTCFullYear()))]
             <li>
               <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date).slice(5)}</time>
               <a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
-              <span>{categoryLabel(post.data.category)}</span>
+              <span>{categoryLabel(post.data.category)} · <a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a></span>
             </li>
           ))}
         </ol>

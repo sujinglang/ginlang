@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import { getCollection } from 'astro:content';
+import topicRecords from '../content/topics.json';
 
 interface Props {
   title?: string;
@@ -19,16 +21,19 @@ const homeUrl = new URL(base + '/', siteUrl).toString();
 const socialImage = new URL(base + '/social-card.svg', siteUrl).toString();
 const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const hasTopics = Object.keys(topicRecords).length > 0 && (await getCollection('topics', ({ data }) => !data.draft)).length > 0;
 const navItems = [
-  { label: '随笔', href: base + '/category/essay/' },
-  { label: '日记', href: base + '/category/diary/' },
-  { label: '书摘', href: base + '/category/book/' },
-  { label: '短句', href: base + '/category/short/' },
+  { label: '首页', href: base + '/' },
+  { label: '文字', href: base + '/writing/' },
+  { label: '客席作者', href: base + '/authors/' },
+  ...(hasTopics ? [{ label: '专题', href: base + '/topics/' }] : []),
   { label: '归档', href: base + '/archive/' },
   { label: '关于', href: base + '/about/' },
 ];
 const isCurrent = (href: string) => {
   const target = href.replace(/\/+$/, '') || '/';
+  if (target === base) return currentPath === target;
+  if (target === base + '/writing' && (currentPath.startsWith(base + '/category/') || currentPath.startsWith(base + '/posts/'))) return true;
   return currentPath === target || currentPath.startsWith(target + '/');
 };
 const year = new Date().getFullYear();
@@ -109,12 +114,13 @@ const webSiteSchema = JSON.stringify({
       <header class="site-header">
         <div class="brand-block">
           <a class="wordmark" href={base + '/'} aria-label="GINLANG 首页">
-            <span>GINLANG</span><span class="wordmark-flower" aria-hidden="true">✳</span>
+            <span translate="no">GINLANG</span><span class="wordmark-flower" aria-hidden="true">✳</span>
           </a>
           <span class="brand-note">A QUIET PLACE FOR WORDS</span>
         </div>
 
-        <nav class="primary-nav" aria-label="主导航">
+        <button class="menu-toggle" type="button" data-menu-toggle aria-controls="primary-nav" aria-expanded="false">目录 <span aria-hidden="true">☰</span></button>
+        <nav class="primary-nav" id="primary-nav" aria-label="主导航">
           {navItems.map((item) => (
             <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
           ))}
@@ -148,13 +154,15 @@ const webSiteSchema = JSON.stringify({
             <p>把日子留在纸上，让文字慢慢抵达。</p>
           </div>
           <div class="footer-actions">
+            <a class="rss-link" href={base + '/contribute/'}>参与写作 <span aria-hidden="true">↗</span></a>
             <button class="rss-link share-link" type="button" data-share-site>分享网站 <span aria-hidden="true">↗</span></button>
             <a class="rss-link" href={base + '/rss.xml'} aria-label="订阅 GINLANG RSS">订阅 RSS <span aria-hidden="true">↗</span></a>
           </div>
         </div>
+        <nav class="footer-nav" aria-label="页脚导航">{navItems.map((item) => <a href={item.href}>{item.label}</a>)}</nav>
         <div class="footer-bottom">
           <span>© {year} GINLANG</span>
-          <span>写一些迟到的文字。</span>
+          <span>作品署名与权利归各自作者；转载前请征得作者同意。</span>
           <a href="#main-content">回到顶部 ↑</a>
         </div>
       </footer>
@@ -186,11 +194,11 @@ const webSiteSchema = JSON.stringify({
         </div>
         <button class="dialog-close" type="button" data-dialog-close aria-label="关闭搜索">×</button>
       </div>
-      <label class="sr-only" for="search-input">搜索标题、摘要和分类</label>
-      <input class="search-input" id="search-input" type="search" placeholder="试试「九月」或「读书」" autocomplete="off" />
+      <label class="sr-only" for="search-input">搜索标题、摘要、作者和分类</label>
+      <input class="search-input" id="search-input" type="search" name="query" placeholder="试试「九月」或「读书」…" autocomplete="off" />
       <p class="search-status" id="search-status" aria-live="polite">输入关键词，慢慢找。</p>
       <ol class="search-results" id="search-results"></ol>
-      <div class="dialog-foot"><span>标题 · 摘要 · 分类</span><kbd>ESC</kbd></div>
+      <div class="dialog-foot"><span>标题 · 摘要 · 作者 · 分类</span><kbd>ESC</kbd></div>
     </dialog>
 
     <dialog class="utility-dialog settings-dialog" id="reading-settings" aria-labelledby="settings-title">
@@ -252,6 +260,22 @@ const webSiteSchema = JSON.stringify({
       const preferenceKey = 'ginlang-preferences';
       const defaults: Preferences = { theme: 'system', textSize: 'normal', font: 'serif', width: 'comfortable' };
       const root = document.documentElement;
+      const header = document.querySelector<HTMLElement>('.site-header');
+      const menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+      const menu = document.querySelector<HTMLElement>('#primary-nav');
+      if (header && menuToggle && menu) {
+        header.dataset.menuReady = 'true';
+        const closeMenu = (restoreFocus = false) => {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          if (restoreFocus) menuToggle.focus();
+        };
+        menuToggle.addEventListener('click', () => {
+          menuToggle.setAttribute('aria-expanded', String(menuToggle.getAttribute('aria-expanded') !== 'true'));
+        });
+        menu.addEventListener('click', (event) => { if ((event.target as Element).closest('a')) closeMenu(); });
+        document.addEventListener('click', (event) => { if (event.target instanceof Node && !header.contains(event.target)) closeMenu(); });
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') closeMenu(true); });
+      }
       const settingsDialog = document.querySelector<HTMLDialogElement>('#reading-settings');
       const settingsForm = document.querySelector<HTMLFormElement>('#settings-form');
       const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
@@ -328,8 +352,9 @@ const webSiteSchema = JSON.stringify({
       const searchResults = document.querySelector<HTMLOListElement>('#search-results');
       const searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
       const indexUrl = searchDialog?.dataset.indexUrl ?? '/search-index.json';
-      type SearchItem = { title: string; excerpt: string; category: string; date: string; url: string };
+      type SearchItem = { title: string; excerpt: string; category: string; author: string; date: string; url: string };
       let searchItemsPromise: Promise<SearchItem[]> | undefined;
+      let searchRevision = 0;
 
       function getSearchItems() {
         searchItemsPromise ??= fetch(indexUrl)
@@ -350,7 +375,7 @@ const webSiteSchema = JSON.stringify({
         row.className = 'search-result';
         link.href = item.url;
         meta.className = 'search-result-meta';
-        meta.textContent = item.date + '  ·  ' + item.category;
+        meta.textContent = item.date + '  ·  ' + item.category + '  ·  ' + item.author;
         title.textContent = item.title;
         excerpt.textContent = item.excerpt;
         link.append(meta, title, excerpt);
@@ -360,6 +385,7 @@ const webSiteSchema = JSON.stringify({
 
       async function updateSearch() {
         if (!searchResults || !searchStatus || !searchInput) return;
+        const revision = ++searchRevision;
         const query = searchInput.value.trim().toLocaleLowerCase();
         searchResults.replaceChildren();
         if (!query) {
@@ -368,8 +394,9 @@ const webSiteSchema = JSON.stringify({
         }
         searchStatus.textContent = '正在翻找…';
         const items = await getSearchItems();
+        if (revision !== searchRevision || !searchDialog?.open) return;
         const matches = items.filter((item) =>
-          (item.title + ' ' + item.excerpt + ' ' + item.category).toLocaleLowerCase().includes(query),
+          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + item.author).toLocaleLowerCase().includes(query),
         ).slice(0, 8);
         if (matches.length) {
           searchStatus.textContent = '找到 ' + matches.length + ' 篇相关文字';
@@ -392,6 +419,13 @@ const webSiteSchema = JSON.stringify({
         void updateSearch();
       });
       searchInput?.addEventListener('input', () => void updateSearch());
+      searchInput?.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          searchDialog?.close();
+        }
+      });
       document.addEventListener('keydown', (event) => {
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
           event.preventDefault();

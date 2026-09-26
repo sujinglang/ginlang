@@ -1,0 +1,14 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import topicRecords from '../../content/topics.json';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const topics = Object.keys(topicRecords).length ? (await getCollection('topics', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order) : [];
+---
+<SiteLayout title="专题" description="按主题编排的 GINLANG 作品。">
+  <section class="listing-page topic-page">
+    <a class="back-link" href={base + '/'}>← 回到首页</a>
+    <header class="editorial-page-header"><span class="folio-mark">GINLANG / SERIES</span><h1>主题选集</h1><p>把来自不同作者的文字，放在同一处重新阅读。</p></header>
+    {topics.length ? <div class="topic-list">{topics.map((topic) => <a class="topic-entry" href={base + '/topics/' + topic.id + '/'}><span>{topic.data.posts.length} 篇作品</span><h2>{topic.data.title}</h2><p>{topic.data.introduction}</p></a>)}</div> : <p class="empty-note">专题正在准备。已发表的作品可以先从文字目录阅读。</p>}
+  </section>
+</SiteLayout>

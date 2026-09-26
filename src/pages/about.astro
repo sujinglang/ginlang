@@ -27,6 +27,7 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
     <div class="prose about-copy">
       <p>这里是 GINLANG，放随笔、日记、读书笔记，还有一些短句。有东西想写的时候，就来更新一篇。</p>
       <p>页面留得宽松一些，方便阅读，也方便过段时间回来找一篇旧文章。</p>
+      <p>这里也会陆续邀请其他作者写作。每篇作品写明作者，介绍与作品只展示作者同意公开的部分。</p>
 
       {publishedSections.map((section) => (
         <section aria-label={section.title}>
@@ -39,6 +40,7 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
         <span class="about-card-label">ABOUT THE PAGES</span>
         <p>随笔记下回望，日记记下当时，书摘收着读书的回声，短句留下还不想忘记的话。</p>
       </div>
+      <p><a href={base + '/authors/'}>认识写字的人</a> · <a href={base + '/contribute/'}>了解参与写作的方式</a></p>
     </div>
 
     <div data-reveal><DailyNote /></div>

@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import BookmarkWidget from '../../components/BookmarkWidget.astro';
 import MarginWhisper from '../../components/MarginWhisper.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
@@ -9,11 +9,13 @@ import { formatDate } from '../../lib/date';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  const posts = await getCollection('posts', ({ data }) => import.meta.env.DEV || !data.draft);
   return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 
 const { post } = Astro.props;
+const author = await getEntry(post.data.author);
+if (!author) throw new Error(`作品 ${post.id} 引用了不存在的作者`);
 const { Content, headings } = await render(post);
 const tocHeadings = headings.filter((heading) => heading.depth <= 3);
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -24,12 +26,19 @@ const newerPost = postIndex > 0 ? allPosts[postIndex - 1] : undefined;
 const olderPost = postIndex >= 0 ? allPosts[postIndex + 1] : undefined;
 const bodyCharacters = Array.from((post.body ?? '').replace(/[\s#>*_~-]/g, '')).length;
 const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
+const relatedPosts = allPosts
+  .filter((item) => item.id !== post.id)
+  .sort((a, b) => Number(b.data.author.id === post.data.author.id) - Number(a.data.author.id === post.data.author.id)
+    || Number(b.data.category === post.data.category) - Number(a.data.category === post.data.category)
+    || b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 2);
 ---
 
 <SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true}>
   <article class="article-page">
     <a class="back-link" href={base + '/'}>← 回到首页</a>
     <header class="article-header">
+      {post.data.draft && <p class="draft-banner">草稿预览 · 这篇文字不会出现在正式网站</p>}
       <div class="post-meta article-meta">
         <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
         <span class="meta-dot" aria-hidden="true">·</span>
@@ -38,7 +47,7 @@ const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
       <h1>{post.data.title}</h1>
       <p class="article-deck">{post.data.excerpt}</p>
       <div class="article-byline">
-        <span>GINLANG 文字集</span>
+        <span>文 / <a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></span>
         <span aria-hidden="true">·</span>
         <span>约 {readingMinutes} 分钟读完</span>
       </div>
@@ -69,6 +78,12 @@ const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
       <button class="copy-link" id="copy-link" type="button">复制文章链接 <span aria-hidden="true">↗</span></button>
     </div>
     <span class="sr-only" id="copy-status" aria-live="polite"></span>
+
+    <aside class="article-author" aria-label="关于作者">
+      <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>
+      <div><p>{author.data.role === 'founder' ? '主理人' : '客席作者'}</p><h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2><span>{author.data.tagline}</span></div>
+      <a href={base + '/authors/' + author.id + '/'}>阅读这位作者的其他作品 ↗</a>
+    </aside>
 
     <div class="article-afterword" data-reveal="image">
       <figure class="article-tail-art">
@@ -101,5 +116,6 @@ const readingMinutes = Math.max(1, Math.ceil(bodyCharacters / 420));
         <div class="neighbor-card neighbor-placeholder next"><span>更新一篇 →</span><strong>你已读到最新</strong></div>
       )}
     </nav>
+    {relatedPosts.length > 0 && <section class="related-reading" aria-labelledby="related-title"><h2 id="related-title">继续阅读</h2><div>{relatedPosts.map((item) => <a href={base + '/posts/' + item.id + '/'}><span>{categoryLabel(item.data.category)}</span><strong>{item.data.title}</strong></a>)}</div></section>}
   </article>
 </SiteLayout>

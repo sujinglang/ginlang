@@ -2,6 +2,7 @@
 title: 九月的风从窗边经过
 date: 2026-09-23
 category: essay
+author: ginlang
 excerpt: 那天下午没有发生什么特别的事情。窗帘被风吹起来的时候，我忽然想起很多年前。
 draft: false
 ---
