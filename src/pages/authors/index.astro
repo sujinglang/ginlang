@@ -30,7 +30,7 @@ const founders = authors.filter((author) => author.data.role === 'founder');
           <p class="person-role">创办人</p>
           <h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2>
           <p>{author.data.tagline}</p>
-          <a class="quiet-link" href={base + '/authors/' + author.id + '/'}>查看作者与作品 <span aria-hidden="true">↗</span></a>
+          <a class="quiet-link" href={base + '/authors/' + author.id + '/'}>查看作者与作品</a>
         </div>
       </article>
     ))}
@@ -47,7 +47,7 @@ const founders = authors.filter((author) => author.data.role === 'founder');
           ))}
         </div>
       ) : (
-        <div class="people-empty"><p>客席作者的页面还在等第一位受邀写作者。这里会展示他们愿意公开的介绍与作品。</p><a class="quiet-link" href={base + '/contribute/'}>了解参与写作的方式 <span aria-hidden="true">↗</span></a></div>
+        <div class="people-empty"><p>客席作者的页面还在等第一位受邀写作者。这里会展示他们愿意公开的介绍与作品。</p><a class="quiet-link" href={base + '/contribute/'}>了解参与写作的方式</a></div>
       )}
     </section>
     <MarginWhisper theme="writing" />

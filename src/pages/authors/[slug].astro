@@ -52,13 +52,13 @@ const authorSchema = JSON.stringify({
       <h2 id="author-about-title">关于</h2>
       <div>
         <p class:list={['author-bio', { 'is-placeholder': bio === '此处需要您亲自填写' }]}>{bio}</p>
-        {author.data.links.length > 0 && <div class="author-links">{author.data.links.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label} <span aria-hidden="true">↗</span></a>)}</div>}
+        {author.data.links.length > 0 && <div class="author-links">{author.data.links.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>)}</div>}
       </div>
     </section>
-    {selected && <a class="author-selected" href={base + '/posts/' + selected.id + '/'}><span>从这篇开始</span><strong>{selected.data.title}</strong><span class="author-selected-arrow" aria-hidden="true">↗</span></a>}
+    {selected && <a class="author-selected" href={base + '/posts/' + selected.id + '/'}><span>从这篇开始</span><strong>{selected.data.title}</strong></a>}
     <section class="author-works" aria-labelledby="works-title">
       <div class="section-heading"><h2 id="works-title">文章</h2></div>
-      {posts.length ? <ol class="editorial-index">{posts.map((post) => <li><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}<span class="author-work-arrow" aria-hidden="true">↗</span></a><p>{post.data.excerpt}</p></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol> : <p class="empty-note">这位作者的作品尚未发布。</p>}
+      {posts.length ? <ol class="editorial-index">{posts.map((post) => <li><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol> : <p class="empty-note">这位作者的作品尚未发布。</p>}
     </section>
   </article>
 </SiteLayout>
