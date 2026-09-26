@@ -143,7 +143,7 @@ const webSiteSchema = JSON.stringify({
         <div class="reading-progress" aria-hidden="true"><span id="reading-progress-fill"></span></div>
       )}
 
-      <main id="main-content">
+      <main id="main-content" tabindex="-1">
         <slot />
       </main>
 
@@ -198,7 +198,7 @@ const webSiteSchema = JSON.stringify({
       <input class="search-input" id="search-input" type="search" name="query" placeholder="试试「九月」或「读书」…" autocomplete="off" />
       <p class="search-status" id="search-status" aria-live="polite">输入关键词，慢慢找。</p>
       <ol class="search-results" id="search-results"></ol>
-      <div class="dialog-foot"><span>标题 · 摘要 · 作者 · 分类</span><kbd>ESC</kbd></div>
+      <div class="dialog-foot"><span>标题 · 摘要 · 作者 · 分类 · <kbd>↑</kbd><kbd>↓</kbd> 选择</span><kbd>ESC</kbd></div>
     </dialog>
 
     <dialog class="utility-dialog settings-dialog" id="reading-settings" aria-labelledby="settings-title">
@@ -263,6 +263,18 @@ const webSiteSchema = JSON.stringify({
       const header = document.querySelector<HTMLElement>('.site-header');
       const menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
       const menu = document.querySelector<HTMLElement>('#primary-nav');
+      if (header) {
+        // The header settles into a slimmer bar once the cover has scrolled past.
+        let compactFrame = 0;
+        const updateCompact = () => {
+          compactFrame = 0;
+          header.classList.toggle('is-compact', window.scrollY > 160);
+        };
+        window.addEventListener('scroll', () => {
+          if (!compactFrame) compactFrame = window.requestAnimationFrame(updateCompact);
+        }, { passive: true });
+        updateCompact();
+      }
       if (header && menuToggle && menu) {
         header.dataset.menuReady = 'true';
         const closeMenu = (restoreFocus = false) => {
@@ -366,7 +378,30 @@ const webSiteSchema = JSON.stringify({
         return searchItemsPromise;
       }
 
-      function showSearchResult(item: SearchItem) {
+      function highlighted(text: string, query: string) {
+        const fragment = document.createDocumentFragment();
+        if (!query) {
+          fragment.append(text);
+          return fragment;
+        }
+        const lower = text.toLocaleLowerCase();
+        let index = 0;
+        for (;;) {
+          const found = lower.indexOf(query, index);
+          if (found === -1) {
+            fragment.append(text.slice(index));
+            break;
+          }
+          if (found > index) fragment.append(text.slice(index, found));
+          const mark = document.createElement('mark');
+          mark.textContent = text.slice(found, found + query.length);
+          fragment.append(mark);
+          index = found + query.length;
+        }
+        return fragment;
+      }
+
+      function showSearchResult(item: SearchItem, query: string) {
         const row = document.createElement('li');
         const link = document.createElement('a');
         const meta = document.createElement('span');
@@ -376,8 +411,8 @@ const webSiteSchema = JSON.stringify({
         link.href = item.url;
         meta.className = 'search-result-meta';
         meta.textContent = item.date + '  ·  ' + item.category + '  ·  ' + item.author;
-        title.textContent = item.title;
-        excerpt.textContent = item.excerpt;
+        title.append(highlighted(item.title, query));
+        excerpt.append(highlighted(item.excerpt, query));
         link.append(meta, title, excerpt);
         row.append(link);
         searchResults?.append(row);
@@ -400,7 +435,7 @@ const webSiteSchema = JSON.stringify({
         ).slice(0, 8);
         if (matches.length) {
           searchStatus.textContent = '找到 ' + matches.length + ' 篇相关文字';
-          matches.forEach(showSearchResult);
+          matches.forEach((item) => showSearchResult(item, query));
         } else {
           searchStatus.textContent = items.length ? '没有找到这段文字。换个词试试。' : '暂时无法读取文章索引。';
         }
@@ -409,6 +444,8 @@ const webSiteSchema = JSON.stringify({
       function openSearch() {
         if (!searchDialog?.open) searchDialog?.showModal();
         searchInput?.focus();
+        // Warm the index while the reader is still thinking of a word.
+        void getSearchItems();
       }
       document.querySelector('#search-open')?.addEventListener('click', openSearch);
       searchDialog?.addEventListener('click', (event) => {
@@ -424,6 +461,28 @@ const webSiteSchema = JSON.stringify({
           event.preventDefault();
           event.stopPropagation();
           searchDialog?.close();
+          return;
+        }
+        if (event.key === 'ArrowDown') {
+          const first = searchResults?.querySelector('a');
+          if (first) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      });
+      searchResults?.addEventListener('keydown', (event) => {
+        if (!(event.target instanceof HTMLAnchorElement) || !searchResults) return;
+        const links = [...searchResults.querySelectorAll('a')];
+        const index = links.indexOf(event.target);
+        if (index === -1) return;
+        if (event.key === 'ArrowDown' && index < links.length - 1) {
+          event.preventDefault();
+          links[index + 1].focus();
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          if (index > 0) links[index - 1].focus();
+          else searchInput?.focus();
         }
       });
       document.addEventListener('keydown', (event) => {

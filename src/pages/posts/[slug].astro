@@ -32,9 +32,26 @@ const relatedPosts = allPosts
     || Number(b.data.category === post.data.category) - Number(a.data.category === post.data.category)
     || b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 2);
+const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const articleSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.excerpt,
+  datePublished: post.data.date.toISOString(),
+  inLanguage: 'zh-CN',
+  url: new URL(base + '/posts/' + post.id + '/', siteUrl).toString(),
+  author: {
+    '@type': 'Person',
+    name: author.data.name,
+    url: new URL(base + '/authors/' + author.id + '/', siteUrl).toString(),
+  },
+  publisher: { '@type': 'Organization', name: 'GINLANG', url: new URL(base + '/', siteUrl).toString() },
+}).replace(/</g, '\\u003c');
 ---
 
 <SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true}>
+  <script type="application/ld+json" set:html={articleSchema} />
   <article class="article-page">
     <a class="back-link" href={base + '/'}>← 回到首页</a>
     <header class="article-header">

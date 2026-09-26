@@ -16,9 +16,23 @@ if (author.data.featuredPost && (!selected || selected.data.author.id !== author
   throw new Error(`作者 ${author.id} 的代表作无效或尚未发布`);
 }
 const bio = author.data.bio === '此处需要您亲自填写' ? undefined : author.data.bio;
+const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const authorSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  inLanguage: 'zh-CN',
+  url: new URL(base + '/authors/' + author.id + '/', siteUrl).toString(),
+  mainEntity: {
+    '@type': 'Person',
+    name: author.data.name,
+    description: author.data.tagline,
+    url: new URL(base + '/authors/' + author.id + '/', siteUrl).toString(),
+  },
+}).replace(/</g, '\\u003c');
 ---
 
 <SiteLayout title={author.data.name + ' · 作者'} description={author.data.tagline}>
+  <script type="application/ld+json" set:html={authorSchema} />
   <article class="listing-page author-page">
     <a class="back-link" href={base + '/authors/'}>← 全部作者</a>
     <header class="author-cover">

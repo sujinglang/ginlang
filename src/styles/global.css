@@ -57,7 +57,7 @@
 ::view-transition-new(root) { animation: 290ms cubic-bezier(0.2, 0.7, 0.2, 1) both page-arrive; }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; background: var(--paper); scroll-behavior: smooth; }
+html { min-width: 320px; background: var(--paper); scroll-behavior: smooth; scroll-padding-top: 84px; }
 body {
   min-width: 320px;
   margin: 0;
@@ -108,14 +108,23 @@ button { color: inherit; }
 .site-shell { width: min(calc(100% - 64px), var(--shell-width)); margin-inline: auto; }
 
 .site-header {
-  position: relative;
+  position: sticky;
+  z-index: 18;
+  top: 0;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 28px;
   min-height: 112px;
   border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  transition: min-height 260ms ease, padding 260ms ease, box-shadow 260ms ease;
 }
+.site-header.is-compact { min-height: 62px; box-shadow: 0 6px 22px rgb(28 32 26 / 5%); }
+.brand-note { transition: opacity 200ms ease; }
+.site-header.is-compact .brand-note { opacity: 0; }
 .brand-block { display: flex; flex-direction: column; gap: 6px; }
 .wordmark {
   display: inline-flex;
@@ -480,7 +489,9 @@ button { color: inherit; }
 .search-status { min-height: 22px; margin: 11px 0 7px; color: var(--muted); font: 10px/1.7 var(--sans); }
 .search-results { margin: 0; padding: 0; list-style: none; }
 .search-result { border-top: 1px solid var(--line); }
-.search-result a { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; text-decoration: none; }
+.search-result a { display: flex; flex-direction: column; gap: 4px; padding: 12px 6px; text-decoration: none; }
+.search-result a:focus-visible { outline-offset: 0; }
+.search-result mark { background: color-mix(in srgb, var(--clay) 24%, transparent); color: inherit; }
 .search-result-meta { color: var(--muted); font: 9px/1.5 var(--sans); }
 .search-result strong { font-size: 14px; font-weight: 500; }
 .search-result a > span:last-child { color: var(--muted); font-size: 11px; line-height: 1.6; }
@@ -505,6 +516,7 @@ button { color: inherit; }
 @media (max-width: 960px) {
   .site-shell { width: min(calc(100% - 48px), var(--shell-width)); }
   .site-header { grid-template-columns: 1fr auto; gap: 8px 18px; padding: 20px 0 10px; }
+  .site-header.is-compact { min-height: 0; padding: 11px 0 9px; }
   .primary-nav { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; gap: 5px 21px; }
   .header-tools { grid-column: 2; grid-row: 1; }
 }

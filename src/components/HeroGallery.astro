@@ -12,11 +12,12 @@ const slides = [
   { id: 'old-street', file: '07-old-street.webp', width: 1086, height: 1448, alt: '水彩画中，旧街屋檐上方是大片蓝天和层层白云。' },
 ];
 const slideIds = slides.map(({ id }) => id);
+const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/hero-watercolors/' + slide.file]));
 const number = (value: number) => String(value).padStart(2, '0');
 ---
 
 <!-- Run before the images exist so a refresh never paints a default slide first. -->
-<script is:inline define:vars={{ slideIds }}>
+<script is:inline define:vars={{ slideIds, slideSrcs }}>
   (() => {
     const key = 'ginlang-hero-current';
     let previous = '';
@@ -25,6 +26,16 @@ const number = (value: number) => String(value).padStart(2, '0');
     const start = choices[Math.floor(Math.random() * choices.length)] || slideIds[0];
     window.__ginlangHeroStartId = start;
     try { sessionStorage.setItem(key, start); } catch { /* Storage is optional. */ }
+    // Begin fetching the first painting while the rest of the page is still parsing.
+    const src = slideSrcs[start];
+    if (src) {
+      const preload = document.createElement('link');
+      preload.rel = 'preload';
+      preload.as = 'image';
+      preload.href = src;
+      preload.fetchPriority = 'high';
+      document.head.append(preload);
+    }
   })();
 </script>
 
@@ -51,8 +62,8 @@ const number = (value: number) => String(value).padStart(2, '0');
   <div class="hero-gallery-controls" data-gallery-controls hidden>
     <span class="hero-gallery-count" data-gallery-count aria-live="off">— / {number(slides.length)}</span>
     <div class="hero-gallery-actions" role="group" aria-label="画册操作">
-      <button type="button" data-gallery-prev aria-label="上一张画">← <span>上一张</span></button>
-      <button type="button" data-gallery-next aria-label="下一张画"><span>下一张</span> →</button>
+      <button type="button" data-gallery-prev aria-label="上一张画" aria-keyshortcuts="ArrowLeft">← <span>上一张</span></button>
+      <button type="button" data-gallery-next aria-label="下一张画" aria-keyshortcuts="ArrowRight"><span>下一张</span> →</button>
       <span class="hero-gallery-divider" aria-hidden="true"></span>
       <button type="button" data-gallery-play aria-label="暂停自动播放" aria-pressed="false">暂停</button>
     </div>
@@ -172,6 +183,15 @@ const number = (value: number) => String(value).padStart(2, '0');
 
     previousButton.addEventListener('click', () => { void move(-1); });
     nextButton.addEventListener('click', () => { void move(1); });
+    gallery.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        void move(-1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        void move(1);
+      }
+    });
     playButton.addEventListener('click', () => {
       if (isPaused()) {
         userPaused = false;
