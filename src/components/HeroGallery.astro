@@ -1,0 +1,233 @@
+---
+import Butterfly from './Butterfly.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const slides = [
+  { id: 'chongqing-night', file: '01-chongqing-night.webp', width: 1086, height: 1448, alt: '水彩画中，夜色里的临江步道、路灯和远处高楼。' },
+  { id: 'hillside-house', file: '02-hillside-house.webp', width: 1086, height: 1448, alt: '水彩画中，绿树间的石屋、台阶和远处的城市楼影。' },
+  { id: 'water-lane', file: '03-water-lane.webp', width: 1086, height: 1448, alt: '水彩画中，两侧房屋与绿植之间是一条通向水面的狭窄水巷。' },
+  { id: 'boat-under-clouds', file: '04-boat-under-clouds.webp', width: 1448, height: 1086, alt: '水彩画中，蓝色湖面上有一只小舟，远处是树林、山和层层云。' },
+  { id: 'lakeside-town', file: '05-lakeside-town.webp', width: 1448, height: 1086, alt: '水彩画中，湖边有浅色建筑和绿树，远处是青山。' },
+  { id: 'lakeside-terrace', file: '06-lakeside-terrace.webp', width: 1545, height: 1018, alt: '水彩画中，面向湖水和青山的廊台上摆着几张躺椅。' },
+  { id: 'old-street', file: '07-old-street.webp', width: 1086, height: 1448, alt: '水彩画中，旧街屋檐上方是大片蓝天和层层白云。' },
+];
+const slideIds = slides.map(({ id }) => id);
+const number = (value: number) => String(value).padStart(2, '0');
+---
+
+<!-- Run before the images exist so a refresh never paints a default slide first. -->
+<script is:inline define:vars={{ slideIds }}>
+  (() => {
+    const key = 'ginlang-hero-current';
+    let previous = '';
+    try { previous = sessionStorage.getItem(key) || ''; } catch { /* Storage is optional. */ }
+    const choices = slideIds.filter((id) => id !== previous);
+    const start = choices[Math.floor(Math.random() * choices.length)] || slideIds[0];
+    window.__ginlangHeroStartId = start;
+    try { sessionStorage.setItem(key, start); } catch { /* Storage is optional. */ }
+  })();
+</script>
+
+<figure class="hero-gallery" data-hero-gallery aria-label="首页水彩画册">
+  <div class="hero-gallery-frame" data-gallery-frame>
+    {slides.map((slide) => (
+      <img
+        class="hero-gallery-image"
+        data-gallery-slide
+        data-slide-id={slide.id}
+        data-src={base + '/hero-watercolors/' + slide.file}
+        width={slide.width}
+        height={slide.height}
+        alt={slide.alt}
+        aria-hidden="true"
+        decoding="async"
+      />
+    ))}
+    <p class="hero-gallery-fallback" data-gallery-fallback hidden>画面暂时无法加载，请稍后再试。</p>
+    <noscript>
+      <img class="hero-gallery-nojs" src={base + '/hero-watercolors/' + slides[0].file} width={slides[0].width} height={slides[0].height} alt={slides[0].alt} />
+    </noscript>
+  </div>
+  <div class="hero-gallery-controls" data-gallery-controls hidden>
+    <span class="hero-gallery-count" data-gallery-count aria-live="off">— / {number(slides.length)}</span>
+    <div class="hero-gallery-actions" role="group" aria-label="画册操作">
+      <button type="button" data-gallery-prev aria-label="上一张画">← <span>上一张</span></button>
+      <button type="button" data-gallery-next aria-label="下一张画"><span>下一张</span> →</button>
+      <span class="hero-gallery-divider" aria-hidden="true"></span>
+      <button type="button" data-gallery-play aria-label="暂停自动播放" aria-pressed="false">暂停</button>
+    </div>
+  </div>
+  <Butterfly size="md" />
+</figure>
+
+<script>
+  function initHeroGallery() {
+    const gallery = document.querySelector<HTMLElement>('[data-hero-gallery]:not([data-gallery-ready])');
+    if (!gallery) return;
+    gallery.dataset.galleryReady = 'true';
+
+    const images = [...gallery.querySelectorAll<HTMLImageElement>('[data-gallery-slide]')];
+    const frame = gallery.querySelector<HTMLElement>('[data-gallery-frame]');
+    const count = gallery.querySelector<HTMLElement>('[data-gallery-count]');
+    const controls = gallery.querySelector<HTMLElement>('[data-gallery-controls]');
+    const previousButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-prev]');
+    const nextButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-next]');
+    const playButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-play]');
+    const fallback = gallery.querySelector<HTMLElement>('[data-gallery-fallback]');
+    if (!images.length || !frame || !count || !controls || !previousButton || !nextButton || !playButton || !fallback) return;
+
+    const key = 'ginlang-hero-current';
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const loaded = new Map<number, Promise<boolean>>();
+    const failed = new Set<number>();
+    let current = -1;
+    let timer = 0;
+    let request = 0;
+    let hovering = false;
+    let focused = false;
+    let userPaused = false;
+    let userRequestedPlay = false;
+    let touchStart: { x: number; y: number } | null = null;
+
+    const isPaused = () => userPaused || (motion.matches && !userRequestedPlay);
+    const remember = (index: number) => {
+      try { sessionStorage.setItem(key, images[index].dataset.slideId || ''); } catch { /* Storage is optional. */ }
+    };
+    const clearTimer = () => {
+      if (timer) window.clearTimeout(timer);
+      timer = 0;
+    };
+    const updatePlayButton = () => {
+      const paused = isPaused();
+      playButton.textContent = paused ? '播放' : '暂停';
+      playButton.setAttribute('aria-label', paused ? '继续自动播放' : '暂停自动播放');
+      playButton.setAttribute('aria-pressed', String(paused));
+    };
+    const schedule = () => {
+      clearTimer();
+      if (current < 0 || isPaused() || hovering || focused || document.hidden || failed.size >= images.length - 1) return;
+      timer = window.setTimeout(() => { void move(1); }, 6000);
+    };
+    const ensureLoaded = (index: number) => {
+      if (failed.has(index)) return Promise.resolve(false);
+      const existing = loaded.get(index);
+      if (existing) return existing;
+      const image = images[index];
+      const pending = new Promise<boolean>((resolve) => {
+        image.onload = async () => {
+          try { await image.decode(); } catch { /* The loaded image can still be shown. */ }
+          resolve(true);
+        };
+        image.onerror = () => {
+          failed.add(index);
+          resolve(false);
+        };
+        image.loading = 'eager';
+        if (current < 0) image.fetchPriority = 'high';
+        image.src = image.dataset.src || '';
+        if (image.complete && image.naturalWidth > 0) image.onload?.(new Event('load'));
+      });
+      loaded.set(index, pending);
+      return pending;
+    };
+    const warmNext = (from: number) => {
+      for (let offset = 1; offset < images.length; offset += 1) {
+        const index = (from + offset) % images.length;
+        if (failed.has(index)) continue;
+        void ensureLoaded(index).then((ok) => { if (!ok) warmNext(from); });
+        return;
+      }
+    };
+    const activate = async (target: number, direction: number) => {
+      clearTimer();
+      const thisRequest = ++request;
+      let index = target;
+      for (let attempt = 0; attempt < images.length; attempt += 1) {
+        if (!failed.has(index) && await ensureLoaded(index)) {
+          if (thisRequest !== request) return;
+          images.forEach((image, imageIndex) => {
+            const active = imageIndex === index;
+            image.classList.toggle('is-active', active);
+            image.setAttribute('aria-hidden', String(!active));
+          });
+          current = index;
+          count.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(images.length).padStart(2, '0');
+          controls.hidden = false;
+          remember(index);
+          warmNext(index);
+          schedule();
+          return;
+        }
+        if (thisRequest !== request) return;
+        index = (index + direction + images.length) % images.length;
+      }
+      fallback.hidden = false;
+      controls.hidden = true;
+    };
+    const move = (direction: number) => {
+      clearTimer();
+      const index = current < 0 ? 0 : (current + direction + images.length) % images.length;
+      return activate(index, direction);
+    };
+
+    previousButton.addEventListener('click', () => { void move(-1); });
+    nextButton.addEventListener('click', () => { void move(1); });
+    playButton.addEventListener('click', () => {
+      if (isPaused()) {
+        userPaused = false;
+        userRequestedPlay = true;
+      } else {
+        userPaused = true;
+        userRequestedPlay = false;
+      }
+      updatePlayButton();
+      schedule();
+    });
+    gallery.addEventListener('mouseenter', () => { hovering = true; clearTimer(); });
+    gallery.addEventListener('mouseleave', () => { hovering = false; schedule(); });
+    gallery.addEventListener('focusin', (event) => {
+      if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
+        focused = true;
+        clearTimer();
+      }
+    });
+    gallery.addEventListener('focusout', (event) => {
+      if (event.relatedTarget instanceof Node && gallery.contains(event.relatedTarget)) return;
+      focused = false;
+      schedule();
+    });
+    document.addEventListener('visibilitychange', schedule);
+    motion.addEventListener('change', () => {
+      if (motion.matches) userRequestedPlay = false;
+      updatePlayButton();
+      schedule();
+    });
+    frame.addEventListener('touchstart', (event) => {
+      const touch = event.changedTouches[0];
+      if (touch) touchStart = { x: touch.clientX, y: touch.clientY };
+    }, { passive: true });
+    frame.addEventListener('touchend', (event) => {
+      if (!touchStart) return;
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      const dx = touch.clientX - touchStart.x;
+      const dy = touch.clientY - touchStart.y;
+      touchStart = null;
+      if (Math.abs(dx) >= 42 && Math.abs(dx) > Math.abs(dy) * 1.35) void move(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    frame.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
+
+    updatePlayButton();
+    const chosenId = (window as Window & { __ginlangHeroStartId?: string }).__ginlangHeroStartId;
+    const matchedStart = images.findIndex((image) => image.dataset.slideId === chosenId);
+    const start = matchedStart >= 0 ? matchedStart : Math.floor(Math.random() * images.length);
+    void activate(start, 1);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroGallery, { once: true });
+  } else {
+    initHeroGallery();
+  }
+  document.addEventListener('astro:page-load', initHeroGallery);
+</script>

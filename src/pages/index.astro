@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import Butterfly from '../components/Butterfly.astro';
+import HeroGallery from '../components/HeroGallery.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
 import { authorIntro } from '../data/author';
 import SiteLayout from '../layouts/SiteLayout.astro';
@@ -52,11 +52,7 @@ const landscapes = [
           <span class="hero-topics">随笔 · 日记 · 书摘 · 短句</span>
         </div>
       </div>
-      <figure class="hero-art">
-        <img src={base + '/hero-letter-animated.webp'} width="800" height="1200" alt="手绘的窗边信封与一枝细叶" fetchpriority="high" decoding="async" />
-        <figcaption>窗边来信 · 一张慢读的纸</figcaption>
-        <Butterfly size="md" />
-      </figure>
+      <HeroGallery />
     </div>
   </section>
 
