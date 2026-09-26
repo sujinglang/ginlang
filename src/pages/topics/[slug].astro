@@ -22,8 +22,8 @@ for (const post of posts) {
     <a class="back-link" href={base + '/topics/'}>← 全部专题</a>
     <header class="topic-cover">
       {topic.data.cover && <img src={base + '/' + topic.data.cover.replace(/^\/+/, '')} width={topic.data.coverWidth} height={topic.data.coverHeight} alt="" loading="eager" />}
-      <div><span class="folio-mark">GINLANG / 主题选集</span><h1>{topic.data.title}</h1><p>{topic.data.introduction}</p><span>{posts.length} 篇作品</span></div>
+      <div><span class="folio-mark">GINLANG / 主题选集</span><h1>{topic.data.title}</h1><p>{topic.data.introduction}</p></div>
     </header>
-    <ol class="topic-works">{posts.map((post, index) => <li><span>{String(index + 1).padStart(2, '0')}</span><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p><a class="topic-author" href={base + '/authors/' + post.data.author.id + '/'}>文 / {authors.get(post.data.author.id)?.data.name}</a></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol>
+    <ol class="topic-works">{posts.map((post) => <li><span class="topic-works-mark" aria-hidden="true">✳</span><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p><a class="topic-author" href={base + '/authors/' + post.data.author.id + '/'}>文 / {authors.get(post.data.author.id)?.data.name}</a></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol>
   </article>
 </SiteLayout>

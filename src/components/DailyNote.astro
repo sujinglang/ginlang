@@ -40,7 +40,7 @@ const prompts = [
     <p class="prompt" aria-live="polite" aria-atomic="true" data-prompt>{prompts[0]}</p>
     <div class="paper-footline" aria-hidden="true">
       <span>写作提议</span>
-      <span data-counter>01 / {String(prompts.length).padStart(2, '0')}</span>
+      <span>GINLANG</span>
     </div>
   </div>
 </section>
@@ -53,7 +53,6 @@ const prompts = [
       const button = root.querySelector<HTMLButtonElement>('[data-draw]');
       const paper = root.querySelector<HTMLElement>('[data-paper]');
       const prompt = root.querySelector<HTMLElement>('[data-prompt]');
-      const counter = root.querySelector<HTMLElement>('[data-counter]');
       let notes: string[] = [];
 
       try {
@@ -61,7 +60,7 @@ const prompts = [
       } catch {
         return;
       }
-      if (!button || !paper || !prompt || !counter || notes.length < 2) return;
+      if (!button || !paper || !prompt || notes.length < 2) return;
 
       root.dataset.ready = 'true';
       button.hidden = false;
@@ -79,7 +78,6 @@ const prompts = [
       const firstPick = Math.floor(Math.random() * (notes.length - 1));
       current = firstPick >= current ? firstPick + 1 : firstPick;
       prompt.textContent = notes[current];
-      counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(notes.length).padStart(2, '0')}`;
       try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
 
       button.addEventListener('click', () => {
@@ -90,7 +88,6 @@ const prompts = [
         const showNext = () => {
           current = next;
           prompt.textContent = notes[current];
-          counter.textContent = `${String(current + 1).padStart(2, '0')} / ${String(notes.length).padStart(2, '0')}`;
           paper.classList.remove('is-changing');
           try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
         };

@@ -15,7 +15,7 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
       <header class="page-intro">
         <p class="eyebrow">关于这里</p>
         <h1>GINLANG</h1>
-        <p>写一些迟到的文字。</p>
+        <p>写一些迟到的句子。</p>
       </header>
       <figure class="intro-art" data-reveal="image">
         <img src={base + '/about-notebook-animated.webp'} width="720" height="720" alt="手绘的摊开笔记本与一枝植物" loading="lazy" decoding="async" />
@@ -28,7 +28,6 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
       <p>这里是 GINLANG，放随笔、日记、读书笔记，还有一些短句。有东西想写的时候，就来更新一篇。</p>
       <p>页面留得宽松一些，方便阅读，也方便过段时间回来找一篇旧文章。</p>
       <p>这里也会陆续邀请其他作者写作。每篇作品写明作者，介绍与作品只展示作者同意公开的部分。</p>
-
       {publishedSections.map((section) => (
         <section aria-label={section.title}>
           <h2>{section.title}</h2>

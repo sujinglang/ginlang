@@ -9,16 +9,16 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort((a,
 const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
 ---
 
-<SiteLayout title="文字" description="阅读 GINLANG 的随笔、日记、书摘与短句。">
+<SiteLayout title="文章" description="阅读 GINLANG 的随笔、日记、书摘与短句。">
   <section class="listing-page writing-page" data-writing-index>
     <a class="back-link" href={base + '/'}>← 回到首页</a>
-    <header class="editorial-page-header"><span class="folio-mark">GINLANG / WRITING</span><h1>文字</h1><p>从一篇开始读，或者按你想看的类别慢慢找。</p></header>
-    <div class="writing-filter" role="group" aria-label="按类别筛选文字">
-      <button type="button" data-writing-filter="all" aria-pressed="true">全部 <span>{posts.length}</span></button>
-      {categories.map((category) => <button type="button" data-writing-filter={category.slug} aria-pressed="false">{category.label} <span>{posts.filter((post) => post.data.category === category.slug).length}</span></button>)}
+    <header class="editorial-page-header"><span class="folio-mark">GINLANG / WRITING</span><h1>文章</h1><p>从一篇开始读，或者按你想看的类别慢慢找。</p></header>
+    <div class="writing-filter" role="group" aria-label="按类别筛选文章">
+      <button type="button" data-writing-filter="all" aria-pressed="true">全部</button>
+      {categories.map((category) => <button type="button" data-writing-filter={category.slug} aria-pressed="false">{category.label}</button>)}
     </div>
-    <p class="writing-filter-status" data-writing-status aria-live="polite">共 {posts.length} 篇文字</p>
-    <ol class="writing-list">
+    <p class="writing-filter-status" data-writing-status aria-live="polite">显示全部文章</p>
+    <ol class="writing-list" data-reveal="stagger">
       {posts.map((post) => {
         const author = authors.get(post.data.author.id);
         if (!author) throw new Error(`作品 ${post.id} 引用了不存在的作者`);
@@ -29,7 +29,7 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
         </li>;
       })}
     </ol>
-    <p class="writing-empty" data-writing-empty hidden>这一类文字还没有文章。可以试试别的类别。</p>
+    <p class="writing-empty" data-writing-empty hidden>这一类还没有文章。可以试试别的类别。</p>
   </section>
 </SiteLayout>
 
@@ -43,6 +43,7 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
     const status = index.querySelector<HTMLElement>('[data-writing-status]');
     const empty = index.querySelector<HTMLElement>('[data-writing-empty]');
     const allowed = new Set(buttons.map((button) => button.dataset.writingFilter));
+    const labelFor = (choice: string) => buttons.find((button) => button.dataset.writingFilter === choice)?.textContent?.trim() || '全部';
     const applyFilter = (requested: string, updateUrl = false) => {
       const choice = allowed.has(requested) ? requested : 'all';
       let visible = 0;
@@ -51,7 +52,7 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
         if (!row.hidden) visible += 1;
       });
       buttons.forEach((item) => item.setAttribute('aria-pressed', String(item.dataset.writingFilter === choice)));
-      if (status) status.textContent = `显示 ${visible} 篇文字`;
+      if (status) status.textContent = choice === 'all' ? '显示全部文章' : '只显示「' + labelFor(choice) + '」';
       if (empty) empty.hidden = visible > 0;
       if (updateUrl) {
         const url = new URL(window.location.href);

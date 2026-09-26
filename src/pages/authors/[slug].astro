@@ -40,7 +40,7 @@ const authorSchema = JSON.stringify({
         {author.data.portrait ? <img src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.name + '的代表图'} /> : <span aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
       </div>
       <div>
-        <p class="person-role">{author.data.role === 'founder' ? '主理人' : '客席作者'}</p>
+        <p class="person-role">{author.data.role === 'founder' ? '创办人' : '客席作者'}</p>
         <h1>{author.data.name}</h1>
         <p class="author-tagline">{author.data.tagline}</p>
         {bio && <p class="author-bio">{bio}</p>}
@@ -49,7 +49,7 @@ const authorSchema = JSON.stringify({
     </header>
     {selected && <section class="author-selected" aria-labelledby="selected-title"><span class="folio-mark">编者选读</span><h2 id="selected-title"><a href={base + '/posts/' + selected.id + '/'}>{selected.data.title}</a></h2><p>{selected.data.excerpt}</p></section>}
     <section class="author-works" aria-labelledby="works-title">
-      <div class="section-heading"><h2 id="works-title">全部作品</h2><span class="section-kicker">{posts.length} 篇</span></div>
+      <div class="section-heading"><h2 id="works-title">全部作品</h2></div>
       {posts.length ? <ol class="editorial-index">{posts.map((post) => <li><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol> : <p class="empty-note">这位作者的作品尚未发布。</p>}
     </section>
   </article>

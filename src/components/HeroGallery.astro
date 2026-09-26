@@ -13,7 +13,6 @@ const slides = [
 ];
 const slideIds = slides.map(({ id }) => id);
 const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/hero-watercolors/' + slide.file]));
-const number = (value: number) => String(value).padStart(2, '0');
 ---
 
 <!-- Run before the images exist so a refresh never paints a default slide first. -->
@@ -60,7 +59,6 @@ const number = (value: number) => String(value).padStart(2, '0');
     </noscript>
   </div>
   <div class="hero-gallery-controls" data-gallery-controls hidden>
-    <span class="hero-gallery-count" data-gallery-count aria-live="off">— / {number(slides.length)}</span>
     <div class="hero-gallery-actions" role="group" aria-label="画册操作">
       <button type="button" data-gallery-prev aria-label="上一张画" aria-keyshortcuts="ArrowLeft">← <span>上一张</span></button>
       <button type="button" data-gallery-next aria-label="下一张画" aria-keyshortcuts="ArrowRight"><span>下一张</span> →</button>
@@ -79,13 +77,12 @@ const number = (value: number) => String(value).padStart(2, '0');
 
     const images = [...gallery.querySelectorAll<HTMLImageElement>('[data-gallery-slide]')];
     const frame = gallery.querySelector<HTMLElement>('[data-gallery-frame]');
-    const count = gallery.querySelector<HTMLElement>('[data-gallery-count]');
     const controls = gallery.querySelector<HTMLElement>('[data-gallery-controls]');
     const previousButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-prev]');
     const nextButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-next]');
     const playButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-play]');
     const fallback = gallery.querySelector<HTMLElement>('[data-gallery-fallback]');
-    if (!images.length || !frame || !count || !controls || !previousButton || !nextButton || !playButton || !fallback) return;
+    if (!images.length || !frame || !controls || !previousButton || !nextButton || !playButton || !fallback) return;
 
     const key = 'ginlang-hero-current';
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -162,7 +159,6 @@ const number = (value: number) => String(value).padStart(2, '0');
             image.setAttribute('aria-hidden', String(!active));
           });
           current = index;
-          count.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(images.length).padStart(2, '0');
           controls.hidden = false;
           remember(index);
           warmNext(index);

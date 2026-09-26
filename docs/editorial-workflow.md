@@ -1,10 +1,10 @@
 # GINLANG 编辑与发布手册
 
-目前由主理人邀请作者、确认稿件，再统一通过 GitHub 发布。线上没有登录、上传或投稿后台。
+目前由创办人邀请作者、确认稿件，再统一通过 GitHub 发布。线上没有登录、上传或投稿后台。
 
-## 需要主理人补充
+## 需要创办人补充
 
-- 主理人介绍：`src/content/authors/ginlang.json` 的 `bio`，以及 `src/data/author.ts` 的首页与关于页文字。
+- 创办人介绍：`src/content/authors/ginlang.json` 的 `bio`，以及 `src/data/author.ts` 的首页与关于页文字。
 - 可公开的联系渠道：确认后更新 `src/pages/contribute.astro`。目前网站只说明流程，不接收在线稿件。
 - 第一位客席作者的笔名、简介和作品：得到作者同意后再添加，不提前制作虚构档案。
 
@@ -46,7 +46,7 @@ draft: true
 
 `category` 可填 `essay`、`diary`、`book` 或 `short`。`author` 必须与作者 JSON 文件名一致。写作与核稿时保留 `draft: true`；本地运行 `npm run dev` 预览。作者确认文字和署名后改为 `draft: false`，构建并推送到 `main`，GitHub Pages 将自动发布。撤下作品时先改回 `draft: true`，再发布一次；旧地址会停止生成。
 
-作者数据中的 `featuredPost` 应填这位作者自己的、已经发布的文章 ID。作者页会验证这一关系。文章页、文字目录、分类、归档和搜索中的署名都自动引用作者数据，不需要手工复制简介。
+作者数据中的 `featuredPost` 应填这位作者自己的、已经发布的文章 ID。作者页会验证这一关系。文章页、全部文章、分类、归档和搜索中的署名都自动引用作者数据，不需要手工复制简介。
 
 ## 编排专题
 

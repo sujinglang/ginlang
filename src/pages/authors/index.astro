@@ -4,10 +4,8 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const authors = (await getCollection('authors')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name, 'zh-CN'));
-const posts = await getCollection('posts', ({ data }) => !data.draft);
 const guests = authors.filter((author) => author.data.role === 'guest');
 const founders = authors.filter((author) => author.data.role === 'founder');
-const countFor = (id: string) => posts.filter((post) => post.data.author.id === id).length;
 ---
 
 <SiteLayout title="作者" description="认识在 GINLANG 写作的人。">
@@ -15,20 +13,19 @@ const countFor = (id: string) => posts.filter((post) => post.data.author.id === 
     <a class="back-link" href={base + '/'}>← 回到首页</a>
     <header class="editorial-page-header">
       <span class="folio-mark">GINLANG / PEOPLE</span>
-      <h1>写字的人</h1>
-      <p>一本文字刊物，也由每一个留下名字的人组成。</p>
+      <h1>作者</h1>
+      <p>一本刊物，也由每一个留下名字的人组成。</p>
     </header>
 
     {founders.map((author) => (
       <article class="person-feature">
         <div class="person-monogram" aria-hidden="true">{author.data.name.slice(0, 1)}</div>
         <div>
-          <p class="person-role">主理人</p>
+          <p class="person-role">创办人</p>
           <h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2>
           <p>{author.data.tagline}</p>
           <a class="quiet-link" href={base + '/authors/' + author.id + '/'}>查看作者与作品 <span aria-hidden="true">↗</span></a>
         </div>
-        <span class="person-count">{countFor(author.id)} 篇作品</span>
       </article>
     ))}
 
@@ -40,7 +37,6 @@ const countFor = (id: string) => posts.filter((post) => post.data.author.id === 
             <article class="person-row">
               {author.data.portrait ? <img src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.name + '的代表图'} loading="lazy" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
               <div><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div>
-              <span>{countFor(author.id)} 篇作品</span>
             </article>
           ))}
         </div>

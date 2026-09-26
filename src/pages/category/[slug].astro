@@ -29,10 +29,9 @@ const categoryArt = {
     <a class="back-link" href={base + '/'}>← GINLANG</a>
     <div class="intro-spread">
       <header class="page-intro">
-        <p class="eyebrow">文字分类</p>
+        <p class="eyebrow">文章分类</p>
         <h1>{category.label}</h1>
         <p>{category.description}</p>
-        <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · 按时间慢慢排开</p>
       </header>
       <figure class="intro-art" data-reveal="image">
         <img src={base + '/' + categoryArt.file} width={categoryArt.width} height={categoryArt.height} alt={categoryArt.alt} loading="lazy" decoding="async" />
@@ -60,7 +59,7 @@ const categoryArt = {
         ))}
       </ol>
     ) : (
-      <p class="empty-note">这一页暂时留白。等有新的文字，再回来看看。</p>
+      <p class="empty-note">这一页暂时留白。等有新的文章，再回来看看。</p>
     )}
   </section>
 </SiteLayout>

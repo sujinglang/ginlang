@@ -21,7 +21,6 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
         <p class="eyebrow">慢慢积下的日子</p>
         <h1>归档</h1>
         <p>不按重要与否，只按它们来到的时间。</p>
-        <p class="listing-count">{String(posts.length).padStart(2, '0')} 篇文字 · {years.length} 个年份</p>
       </header>
       <figure class="intro-art" data-reveal="image">
         <img src={base + '/archive-ginkgo-animated.webp'} width="720" height="720" alt="手绘的银杏叶、旧卡片与书签" loading="lazy" decoding="async" />

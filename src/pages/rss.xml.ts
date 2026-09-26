@@ -27,7 +27,7 @@ export async function GET() {
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0"><channel>',
-    '<title>GINLANG · 写一些迟到的文字</title>',
+    '<title>GINLANG · 写一些迟到的句子</title>',
     '<link>' + escapeXml(homeUrl) + '</link>',
     '<description>随笔、日记、书摘与短句。给经过的日子留一页。</description>',
     '<language>zh-CN</language>',
