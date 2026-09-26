@@ -184,10 +184,11 @@
   .resume-title span { margin: 0 0.25em; color: var(--accent-deep); }
   .resume-privacy { margin: 3px 0 0; color: var(--muted); font: 10px/1.6 var(--sans); }
   .resume-actions { display: flex; align-items: center; gap: 13px; }
-  .resume-actions button { border: 0; background: none; cursor: pointer; font: 11px/1.5 var(--sans); white-space: nowrap; }
-  .resume-button { padding: 8px 0; color: var(--accent-deep); }
-  .resume-button span { display: inline-block; transition: transform 170ms ease; }
-  .resume-button:hover span { transform: translate(2px, -2px); }
+  .resume-actions button { min-height: 44px; border: 0; background: none; cursor: pointer; font: 11px/1.5 var(--sans); white-space: nowrap; }
+  .resume-actions .resume-button { display: inline-flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line); color: var(--accent-deep); }
+  .resume-actions .resume-button:hover { border-bottom-color: var(--clay); }
+  .resume-button span { display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid var(--line); border-radius: 50%; transition: background-color 220ms ease, transform 220ms ease; }
+  .resume-button:hover span { background: var(--accent-soft); transform: translate(2px, -2px); }
   .remove-button { padding: 8px 0; color: var(--muted); }
   .remove-button:hover { color: var(--clay); }
 

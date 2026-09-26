@@ -78,7 +78,7 @@ const webSiteSchema = JSON.stringify({
     <script type="application/ld+json" set:html={webSiteSchema}></script>
     <script is:inline>
       (() => {
-        const defaults = { theme: 'system', textSize: 'normal', font: 'serif', width: 'comfortable' };
+        const defaults = { theme: 'light', textSize: 'normal', font: 'serif', width: 'comfortable' };
         const valid = {
           theme: ['system', 'light', 'dark'],
           textSize: ['small', 'normal', 'large'],
@@ -266,7 +266,7 @@ const webSiteSchema = JSON.stringify({
       };
 
       const preferenceKey = 'ginlang-preferences';
-      const defaults: Preferences = { theme: 'system', textSize: 'normal', font: 'serif', width: 'comfortable' };
+      const defaults: Preferences = { theme: 'light', textSize: 'normal', font: 'serif', width: 'comfortable' };
       const root = document.documentElement;
       const header = document.querySelector<HTMLElement>('.site-header');
       const menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
@@ -299,7 +299,14 @@ const webSiteSchema = JSON.stringify({
       const settingsDialog = document.querySelector<HTMLDialogElement>('#reading-settings');
       const settingsForm = document.querySelector<HTMLFormElement>('#settings-form');
       const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
-      let preferences: Preferences = { ...defaults };
+      // The inline head script has already restored saved choices before this module runs.
+      // Start from those applied values so opening the dialog reflects the visible page.
+      let preferences: Preferences = {
+        theme: root.dataset.themeMode === 'system' || root.dataset.themeMode === 'dark' ? root.dataset.themeMode : 'light',
+        textSize: root.dataset.textSize === 'small' || root.dataset.textSize === 'large' ? root.dataset.textSize : 'normal',
+        font: root.dataset.font === 'sans' ? 'sans' : 'serif',
+        width: root.dataset.readingWidth === 'narrow' || root.dataset.readingWidth === 'wide' ? root.dataset.readingWidth : 'comfortable',
+      };
 
       function resolvedTheme(theme: Preferences['theme']) {
         if (theme !== 'system') return theme;

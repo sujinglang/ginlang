@@ -96,7 +96,7 @@ const articleSchema = JSON.stringify({
     <span class="sr-only" id="copy-status" aria-live="polite"></span>
 
     <aside class="article-author" aria-label="关于作者">
-      <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>
+      {author.data.portrait ? <img class="article-author-portrait" src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" loading="lazy" decoding="async" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
       <div><p>{author.data.role === 'founder' ? '创办人' : '客席作者'}</p><h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2><span>{author.data.tagline}</span></div>
       <a href={base + '/authors/' + author.id + '/'}>阅读这位作者的其他作品 ↗</a>
     </aside>

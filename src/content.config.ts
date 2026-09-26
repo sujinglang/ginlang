@@ -1,6 +1,14 @@
 import { defineCollection, reference } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { existsSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
+
+const publicRoot = resolve('./public');
+const publicImage = z.string().refine((asset) => {
+  const fullPath = resolve(publicRoot, asset);
+  return fullPath.startsWith(publicRoot + sep) && existsSync(fullPath);
+}, '图片必须是 public/ 中存在的相对路径');
 
 const posts = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/posts' }),
@@ -21,9 +29,14 @@ const authors = defineCollection({
     role: z.enum(['founder', 'guest']),
     tagline: z.string().min(1),
     bio: z.string().optional(),
-    portrait: z.string().optional(),
+    portrait: publicImage.optional(),
+    portraitAlt: z.string().optional(),
     portraitWidth: z.number().int().positive().default(720),
     portraitHeight: z.number().int().positive().default(720),
+    cover: publicImage.optional(),
+    coverAlt: z.string().optional(),
+    coverWidth: z.number().int().positive().default(1536),
+    coverHeight: z.number().int().positive().default(1024),
     links: z.array(z.object({ label: z.string(), url: z.url() })).default([]),
     featured: z.boolean().default(false),
     order: z.number().int().default(100),

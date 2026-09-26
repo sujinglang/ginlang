@@ -154,23 +154,24 @@ const prompts = [
 
   .draw-button {
     display: inline-flex;
+    min-height: 44px;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
     margin-top: 21px;
-    padding: 8px 0;
+    padding: 5px 0;
     border: 0;
-    border-bottom: 1px solid var(--accent);
+    border-bottom: 1px solid var(--line);
     background: transparent;
     color: var(--accent-deep);
     cursor: pointer;
     font: 12px/1.5 var(--sans);
-    letter-spacing: 0.03em;
-    transition: color 160ms ease, gap 160ms ease;
+    transition: color 220ms ease, border-color 220ms ease;
   }
 
   .draw-button[hidden] { display: none; }
-  .draw-button:hover { gap: 15px; color: var(--clay); }
-  .draw-button svg { width: 15px; height: 15px; }
+  .draw-button:hover { border-bottom-color: var(--clay); color: var(--ink); }
+  .draw-button svg { width: 30px; height: 30px; padding: 7px; border: 1px solid var(--line); border-radius: 50%; transition: background-color 220ms ease, transform 220ms ease; }
+  .draw-button:hover svg { background: var(--accent-soft); transform: rotate(28deg); }
   .draw-button:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
 
   .note-paper {

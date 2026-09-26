@@ -25,7 +25,7 @@
 }
 ```
 
-`bio`、`portrait`、`featuredPost` 和 `links` 都可省略。代表图放在 `public/`，`portrait` 填该目录下的相对路径，例如 `authors/lin-mu.webp`。图片和公开链接均须经作者确认。`featured` 控制首页是否推荐，作者目录仍展示所有作者。作品数量和作品列表由文章自动计算。
+`bio`、`portrait`、`cover`、`featuredPost` 和 `links` 都可省略。头像与背景图放在 `public/`，`portrait`、`cover` 填该目录下的相对路径，例如 `authors/lin-mu.webp`；构建时会检查文件是否存在。为两张图分别填 `portraitWidth`、`portraitHeight`、`portraitAlt` 与 `coverWidth`、`coverHeight`、`coverAlt`。头像和背景只使用作者确认公开的素材；插画头像不写成真实肖像。`featured` 控制首页是否推荐，作者目录仍展示所有作者。作品列表由文章自动生成。
 
 ## 添加作品
 
