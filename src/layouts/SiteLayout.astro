@@ -288,22 +288,22 @@ const webSiteSchema = JSON.stringify({
       }
       if (header && menuToggle && menu) {
         header.dataset.menuReady = 'true';
-        let menuOpenedAt = 0;
         const closeMenu = (restoreFocus = false) => {
           menuToggle.setAttribute('aria-expanded', 'false');
           if (restoreFocus) menuToggle.focus();
         };
         menuToggle.addEventListener('click', () => {
-          const opening = menuToggle.getAttribute('aria-expanded') !== 'true';
-          menuToggle.setAttribute('aria-expanded', String(opening));
-          if (opening) menuOpenedAt = window.scrollY;
+          menuToggle.setAttribute('aria-expanded', String(menuToggle.getAttribute('aria-expanded') !== 'true'));
         });
         menu.addEventListener('click', (event) => { if ((event.target as Element).closest('a')) closeMenu(); });
         document.addEventListener('click', (event) => { if (event.target instanceof Node && !header.contains(event.target)) closeMenu(); });
-        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') closeMenu(true); });
-        window.addEventListener('scroll', () => {
-          if (menuToggle.getAttribute('aria-expanded') === 'true' && Math.abs(window.scrollY - menuOpenedAt) > 24) closeMenu();
-        }, { passive: true });
+        document.addEventListener('keydown', (event) => {
+          if (menuToggle.getAttribute('aria-expanded') !== 'true') return;
+          if (event.key === 'Escape') closeMenu(true);
+          else if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) closeMenu();
+        });
+        window.addEventListener('wheel', () => { if (menuToggle.getAttribute('aria-expanded') === 'true') closeMenu(); }, { passive: true });
+        window.addEventListener('touchmove', () => { if (menuToggle.getAttribute('aria-expanded') === 'true') closeMenu(); }, { passive: true });
       }
       const settingsDialog = document.querySelector<HTMLDialogElement>('#reading-settings');
       const settingsForm = document.querySelector<HTMLFormElement>('#settings-form');
