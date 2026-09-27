@@ -28,6 +28,7 @@ const navItems = [
   { label: '文章', hint: '挑一篇来读', href: base + '/writing/' },
   { label: '客席作者', hint: '认识一起写的人', href: base + '/authors/' },
   ...(hasTopics ? [{ label: '专题', hint: '顺着线索读', href: base + '/topics/' }] : []),
+  { label: '相簿', hint: '翻看相册里的画面', href: base + '/album/' },
   { label: '归档', hint: '按时间翻阅', href: base + '/archive/' },
   { label: '关于', hint: '了解 GINLANG', href: base + '/about/' },
 ];
@@ -125,7 +126,7 @@ const webSiteSchema = JSON.stringify({
         </div>
 
         <button class="menu-toggle" type="button" data-menu-toggle aria-controls="primary-nav" aria-expanded="false">
-          <span class="menu-toggle-copy"><strong>目录</strong><small aria-hidden="true">文章 · 作者 · 归档</small></span>
+          <span class="menu-toggle-copy"><strong>目录</strong><small aria-hidden="true">文章 · 相簿 · 关于</small></span>
           <span class="menu-toggle-mark" aria-hidden="true"></span>
         </button>
         <nav class="primary-nav" id="primary-nav" aria-label="主导航">

@@ -280,6 +280,10 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
 .hero-gallery-actions button:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
 .hero-gallery-divider { height: 16px; border-left: 1px solid var(--line); }
 .hero-gallery .quiet-butterfly { top: -28px; right: -32px; opacity: 0.68; }
+.hero-gallery-caption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; margin-top: 6px; color: var(--muted); font: 11px/1.7 var(--serif); }
+.hero-gallery-caption a { display: inline-flex; min-height: 40px; align-items: center; border-bottom: 1px solid var(--line); color: var(--accent-deep); font: 11px/1.5 var(--sans); text-decoration: none; }
+.hero-gallery-caption a:hover { border-bottom-color: var(--clay); color: var(--ink); }
+.hero-gallery-caption a:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
 
 .home-content { padding: 37px 0 78px; }
 [data-reveal].will-reveal { opacity: 0; transform: translateY(13px); transition: opacity 440ms ease, transform 440ms cubic-bezier(0.2, 0.7, 0.2, 1); }

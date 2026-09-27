@@ -1,0 +1,141 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { albumImages } from '../data/album';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<SiteLayout title="相簿" description="GINLANG 从自己的相册里挑出的水彩画面。">
+  <section class="album-page" data-album>
+    <a class="back-link" href={base + '/'}>← 回到首页</a>
+    <header class="album-intro">
+      <div>
+        <p class="album-label">从我的相册里</p>
+        <h1>相簿</h1>
+      </div>
+      <p>挑了几张喜欢的画面，放在这里慢慢翻。点开一张，可以看得更仔细些。</p>
+    </header>
+
+    <div class="album-grid">
+      {albumImages.map((image, index) => (
+        <figure class="album-entry">
+          <a class="album-open" href={base + '/hero-watercolors/' + image.file} target="_blank" rel="noopener" data-album-open={index} aria-label={'放大查看：' + image.title}>
+            <span class="album-frame"><img src={base + '/hero-watercolors/' + image.file} width={image.width} height={image.height} alt={image.alt} loading={index < 2 ? 'eager' : 'lazy'} decoding="async" /></span>
+            <span class="album-entry-title">{image.title}</span>
+          </a>
+        </figure>
+      ))}
+    </div>
+
+    <p class="album-afterword">还有些画面先在相册里候场。等我攒够一点分享的勇气，再慢慢请它们出来见人。</p>
+
+    <dialog class="album-dialog" data-album-dialog aria-label="放大查看相簿图片">
+      <div class="album-dialog-inner">
+        <button class="album-close" type="button" data-album-close aria-label="关闭图片">关闭 <span aria-hidden="true">×</span></button>
+        <div class="album-dialog-picture"><img data-album-large alt="" /><p data-album-error hidden>这张画面暂时无法加载，可以试试前后翻看。</p></div>
+        <div class="album-dialog-foot">
+          <button type="button" data-album-previous aria-label="上一张图片">← 上一张</button>
+          <p data-album-title></p>
+          <button type="button" data-album-next aria-label="下一张图片">下一张 →</button>
+        </div>
+      </div>
+    </dialog>
+  </section>
+</SiteLayout>
+
+<script>
+  import { albumImages } from '../data/album';
+
+  function initAlbum() {
+    const root = document.querySelector<HTMLElement>('[data-album]:not([data-album-ready])');
+    if (!root) return;
+    const dialog = root.querySelector<HTMLDialogElement>('[data-album-dialog]');
+    const large = root.querySelector<HTMLImageElement>('[data-album-large]');
+    const title = root.querySelector<HTMLElement>('[data-album-title]');
+    const error = root.querySelector<HTMLElement>('[data-album-error]');
+    if (!dialog || !large || !title || !error || typeof dialog.showModal !== 'function') return;
+    root.dataset.albumReady = 'true';
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    let current = 0;
+
+    const show = (index: number) => {
+      current = (index + albumImages.length) % albumImages.length;
+      const image = albumImages[current];
+      error.hidden = true;
+      large.hidden = false;
+      large.alt = image.alt;
+      large.width = image.width;
+      large.height = image.height;
+      large.src = base + '/hero-watercolors/' + image.file;
+      title.textContent = image.title;
+    };
+
+    root.querySelectorAll<HTMLAnchorElement>('[data-album-open]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        show(Number(link.dataset.albumOpen));
+        dialog.showModal();
+      });
+    });
+    root.querySelector<HTMLButtonElement>('[data-album-close]')?.addEventListener('click', () => dialog.close());
+    root.querySelector<HTMLButtonElement>('[data-album-previous]')?.addEventListener('click', () => show(current - 1));
+    root.querySelector<HTMLButtonElement>('[data-album-next]')?.addEventListener('click', () => show(current + 1));
+    large.addEventListener('error', () => { large.hidden = true; error.hidden = false; });
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') { event.preventDefault(); show(current - 1); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); show(current + 1); }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAlbum, { once: true });
+  else initAlbum();
+  document.addEventListener('astro:page-load', initAlbum);
+</script>
+
+<style>
+  .album-page { padding: 42px 0 96px; }
+  .album-intro { display: grid; grid-template-columns: 1fr minmax(0, 410px); align-items: end; gap: 30px; padding: 10px 0 31px; border-bottom: 1px solid var(--line); }
+  .album-label { margin: 0 0 10px; color: var(--accent-deep); font: 12px/1.5 var(--sans); }
+  .album-intro h1 { margin: 0; font: 500 clamp(40px, 5vw, 60px)/1.25 var(--serif); }
+  .album-intro > p { max-width: 32em; margin: 0 0 4px; color: var(--muted); font: 15px/1.9 var(--serif); }
+  .album-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(28px, 5vw, 72px); row-gap: 48px; align-items: start; padding-top: 52px; }
+  .album-entry { min-width: 0; margin: 0; }
+  .album-entry:nth-child(even) { margin-top: 68px; }
+  .album-open { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: var(--ink); cursor: zoom-in; text-align: left; }
+  .album-frame { display: grid; min-height: 0; place-items: center; padding: 17px; border: 1px solid var(--line); background: var(--paper-raised); box-shadow: 0 8px 22px rgb(44 56 43 / 4%); transition: box-shadow 280ms ease, transform 280ms ease; }
+  .album-frame img { display: block; max-width: 100%; width: auto; height: auto; max-height: 560px; object-fit: contain; }
+  .album-open:hover .album-frame { box-shadow: 0 11px 25px rgb(44 56 43 / 9%); transform: translateY(-3px); }
+  .album-open:focus-visible { outline: 2px solid var(--focus); outline-offset: 5px; }
+  .album-entry-title { display: block; margin-top: 11px; color: var(--muted); font: 14px/1.6 var(--serif); }
+  .album-afterword { max-width: 36em; margin: 100px auto 0; padding: 34px 15px 0; border-top: 1px solid var(--line); color: var(--accent-deep); font: 16px/1.9 var(--serif); text-align: center; }
+  .album-dialog { width: min(92vw, 950px); max-height: 94dvh; padding: 16px 20px 18px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); box-shadow: 0 24px 60px rgb(15 22 19 / 19%); }
+  .album-dialog::backdrop { background: rgb(24 30 28 / 74%); }
+  .album-dialog-inner { display: flex; max-height: calc(94dvh - 36px); flex-direction: column; }
+  .album-close { align-self: flex-end; min-height: 44px; padding: 3px 4px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: 12px/1.5 var(--sans); }
+  .album-close span { margin-left: 8px; font-size: 19px; vertical-align: middle; }
+  .album-dialog-picture { display: grid; min-height: 0; flex: 1 1 auto; place-items: center; overflow: hidden; background: var(--paper-raised); }
+  .album-dialog-picture img { display: block; width: auto; max-width: 100%; height: auto; max-height: calc(94dvh - 140px); object-fit: contain; }
+  .album-dialog-picture p { padding: 30px; color: var(--muted); font: 14px/1.7 var(--serif); text-align: center; }
+  .album-dialog-foot { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-top: 8px; }
+  .album-dialog-foot p { margin: 0; font: 13px/1.6 var(--serif); text-align: center; }
+  .album-dialog-foot button { min-height: 44px; padding: 4px; border: 0; background: transparent; color: var(--accent-deep); cursor: pointer; font: 12px/1.5 var(--sans); }
+  .album-dialog-foot button:first-child { justify-self: start; }
+  .album-dialog-foot button:last-child { justify-self: end; }
+  .album-dialog button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  @media (max-width: 680px) {
+    .album-page { padding: 31px 0 66px; }
+    .album-intro { grid-template-columns: 1fr; gap: 14px; padding-bottom: 26px; }
+    .album-intro > p { font-size: 14px; }
+    .album-grid { grid-template-columns: 1fr; row-gap: 34px; padding-top: 32px; }
+    .album-entry:nth-child(even) { margin-top: 0; }
+    .album-frame { padding: 12px; }
+    .album-frame img { max-height: none; }
+    .album-afterword { margin-top: 63px; font-size: 15px; }
+    .album-dialog { width: 96vw; padding: 8px 10px 12px; }
+    .album-dialog-picture img { max-height: calc(94dvh - 128px); }
+    .album-dialog-foot { gap: 5px; }
+    .album-dialog-foot button { font-size: 11px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .album-frame { transition: none; } }
+</style>
