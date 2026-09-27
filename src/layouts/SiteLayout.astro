@@ -174,8 +174,20 @@ const webSiteSchema = JSON.stringify({
           <span>作品署名与权利归各自作者；转载前请征得作者同意。</span>
           <a href="#main-content">回到顶部 ↑</a>
         </div>
+        <div class="footer-visit" aria-label="本站累计访问人次">
+          <span>访问人次</span><strong id="busuanzi_site_pv">—</strong><small>由不蒜子统计</small>
+        </div>
       </footer>
     </div>
+
+    <script is:inline>
+      if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
+        const counter = document.createElement('script');
+        counter.src = 'https://cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js';
+        counter.defer = true;
+        document.body.append(counter);
+      }
+    </script>
 
     <button class="to-top" type="button" data-to-top hidden aria-label="回到页首">回到页首 <span aria-hidden="true">↑</span></button>
 
@@ -274,18 +286,6 @@ const webSiteSchema = JSON.stringify({
       const header = document.querySelector<HTMLElement>('.site-header');
       const menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
       const menu = document.querySelector<HTMLElement>('#primary-nav');
-      if (header) {
-        // The header settles into a slimmer bar once the cover has scrolled past.
-        let compactFrame = 0;
-        const updateCompact = () => {
-          compactFrame = 0;
-          header.classList.toggle('is-compact', window.scrollY > 160);
-        };
-        window.addEventListener('scroll', () => {
-          if (!compactFrame) compactFrame = window.requestAnimationFrame(updateCompact);
-        }, { passive: true });
-        updateCompact();
-      }
       if (header && menuToggle && menu) {
         header.dataset.menuReady = 'true';
         const closeMenu = (restoreFocus = false) => {

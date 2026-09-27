@@ -1,7 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import HeroGallery from '../components/HeroGallery.astro';
+import DailyNote from '../components/DailyNote.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
+import ProfileMeta from '../components/ProfileMeta.astro';
+import ProfileQuote from '../components/ProfileQuote.astro';
 import { authorIntro } from '../data/author';
 import topicRecords from '../content/topics.json';
 import SiteLayout from '../layouts/SiteLayout.astro';
@@ -83,15 +86,12 @@ const landscapes = [
             <div class="home-profile-identity">
               <p class="home-profile-label">关于作者</p>
               <h2 id="home-profile-name">{founder.data.name}</h2>
-              {(founder.data.location || founder.data.displayDate) && <p class="profile-meta">
-                {founder.data.location && <span aria-label={'地点：' + founder.data.location}>{founder.data.location}</span>}
-                {founder.data.displayDate && <span aria-label={'日期：' + founder.data.displayDate}>{founder.data.displayDate}</span>}
-              </p>}
+              <ProfileMeta location={founder.data.location} displayDate={founder.data.displayDate} />
             </div>
             <div class="home-profile-about">
               <h3>About</h3>
               <p>{founder.data.bio || '此处需要您亲自填写'}</p>
-              {founder.data.quote && <blockquote>“{founder.data.quote}”<cite>{founder.data.quoteSource}</cite></blockquote>}
+              {founder.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
               <a href={base + '/about/'}>更多关于我</a>
             </div>
           </div>
@@ -134,6 +134,8 @@ const landscapes = [
     {topics.length > 0 && <section class="home-topics" aria-labelledby="home-topics-title"><div class="section-heading"><h2 id="home-topics-title">主题选集</h2><a class="quiet-link" href={base + '/topics/'}>全部专题</a></div><div class="home-topic-list">{topics.slice(0, 2).map((topic) => <a href={base + '/topics/' + topic.id + '/'}><span>专题</span><h3>{topic.data.title}</h3><p>{topic.data.introduction}</p></a>)}</div></section>}
 
     <div class="home-whisper" data-reveal="quote"><MarginWhisper theme="home" /></div>
+
+    <div data-reveal="ink"><DailyNote /></div>
 
     <section class="landscape-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
       <div class="landscape-topline">

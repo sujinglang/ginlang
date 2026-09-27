@@ -1,0 +1,12 @@
+---
+interface Props { location?: string; displayDate?: string; className?: string }
+const { location, displayDate, className = '' } = Astro.props;
+---
+{(location || displayDate) && <p class:list={['profile-meta', className]}>
+  {location && <span aria-label={'地点：' + location}>
+    <svg class="profile-meta-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg>{location}
+  </span>}
+  {displayDate && <span aria-label={'日期：' + displayDate}>
+    <svg class="profile-meta-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="1.5"/><path d="M7.5 3v5M16.5 3v5M3.5 10h17"/></svg>{displayDate}
+  </span>}
+</p>}

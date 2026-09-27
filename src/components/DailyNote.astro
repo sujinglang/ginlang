@@ -1,20 +1,24 @@
 ---
-// A small writing invitation. Keep these lines short enough to read at a glance.
+// A small writing invitation: one concrete experience, one question worth keeping.
 const prompts = [
-  '写一扇你熟悉的窗，不写窗外的风景。',
-  '从一件被留下的小物开始，讲一个人的离开。',
-  '记下今天最轻的一声响。',
-  '给多年后的自己写一句不必解释的话。',
-  '写下走在熟悉的路上时，你注意到的一处变化。',
-  '描述一次没有说出口的道别。',
-  '写一场雨，但不要使用“雨”字。',
-  '把昨夜的梦压缩成三句话。',
-  '替一盏熄灭的灯写一段注脚。',
-  '写出某个城市在清晨六点的气味。',
-  '选一个反复出现的词，追问它从哪里来。',
-  '给一本未读完的书写封短信。',
-  '写下你曾误以为会永远存在的事物。',
-  '用一句话留住今天的光。',
+  '你以为自己在等待机会时，有没有可能是在等别人替你决定？',
+  '当“我愿意”和“我应该”不一致时，你通常听从哪一个？',
+  '一件事因为习惯而继续，它还算你自己的选择吗？',
+  '如果一段关系只能靠沉默维持，沉默保住的究竟是什么？',
+  '你是否曾把一个人的期待，错当成自己的方向？',
+  '接受无法改变的事，与过早妥协之间，界线在哪里？',
+  '你最近坚持的事，是因为它仍有意义，还是因为已经投入太多？',
+  '当无人知道你的努力，你还愿意继续做什么？',
+  '有没有一件事，你原谅了别人，却还没有原谅自己？',
+  '爱一个人，什么时候是在靠近，什么时候是在替他作决定？',
+  '你曾为了保持一种“正确”的样子，省略了什么真实的需要？',
+  '哪一次道歉是在承担责任，而不只是为了结束争执？',
+  '有些安稳会让人停住。你现在拥有的是安稳，还是停滞？',
+  '如果不按结果评价过去的一年，它在你身上留下了什么？',
+  '你不再羡慕某种生活之后，自己的生活发生了什么变化？',
+  '说“没有办法”之前，你已经排除了哪些办法？',
+  '某条路走不下去时，离开与逃避该如何区分？',
+  '你愿意为怎样的自由，承担它带来的不确定？',
 ];
 ---
 
@@ -22,7 +26,7 @@ const prompts = [
   <div class="note-intro">
     <p class="note-kicker">A LITTLE PROMPT</p>
     <h2 id="daily-note-title">抽一张<br /><em>今日笺。</em></h2>
-    <p class="note-description">从一句话开始，写下此刻想留住的东西。没有标准答案，也不必写完。</p>
+    <p class="note-description">留一处空白给正在读的人。抽一个问题，从自己的经历里找答案；写下来的句子，只属于你。</p>
     <button class="draw-button" type="button" data-draw hidden>
       <span>再抽一张</span>
       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
@@ -31,7 +35,7 @@ const prompts = [
     </button>
   </div>
 
-  <div class="note-paper" data-paper>
+  <div class="daily-note-workspace"><div class="note-paper" data-paper>
     <div class="paper-topline" aria-hidden="true">
       <span>GINLANG</span>
       <span>一页偶然</span>
@@ -39,9 +43,14 @@ const prompts = [
     <span class="opening-mark" aria-hidden="true">“</span>
     <p class="prompt" aria-live="polite" aria-atomic="true" data-prompt>{prompts[0]}</p>
     <div class="paper-footline" aria-hidden="true">
-      <span>写作提议</span>
+      <span>给读者的一个问题</span>
       <span>GINLANG</span>
     </div>
+  </div>
+    <label class="note-draft-label" for="note-draft">写在这里</label>
+    <textarea id="note-draft" data-note-draft rows="4" placeholder="从一件具体的事写起。"></textarea>
+    <div class="note-draft-tools"><small>草稿只保存在你当前的浏览器。</small><div><button type="button" data-note-copy>复制</button><button type="button" data-note-clear>清空</button></div></div>
+    <p class="note-draft-status" role="status" data-note-status></p>
   </div>
 </section>
 
@@ -64,6 +73,28 @@ const prompts = [
 
       root.dataset.ready = 'true';
       button.hidden = false;
+      const draft = root.querySelector<HTMLTextAreaElement>('[data-note-draft]');
+      const status = root.querySelector<HTMLElement>('[data-note-status]');
+      const draftKey = 'ginlang-reader-note';
+      if (draft) {
+        try { draft.value = localStorage.getItem(draftKey) ?? ''; } catch { /* Draft remains editable. */ }
+        draft.addEventListener('input', () => {
+          try { localStorage.setItem(draftKey, draft.value); } catch { /* Storage is optional. */ }
+          if (status) status.textContent = draft.value ? '已保存在当前浏览器' : '';
+        });
+      }
+      root.querySelector<HTMLButtonElement>('[data-note-clear]')?.addEventListener('click', () => {
+        if (!draft) return;
+        draft.value = '';
+        try { localStorage.removeItem(draftKey); } catch { /* Storage is optional. */ }
+        if (status) status.textContent = '已清空';
+        draft.focus();
+      });
+      root.querySelector<HTMLButtonElement>('[data-note-copy]')?.addEventListener('click', async () => {
+        if (!draft?.value.trim()) { draft?.focus(); if (status) status.textContent = '先写下你的想法，再复制。'; return; }
+        try { await navigator.clipboard.writeText(draft.value); if (status) status.textContent = '已复制'; }
+        catch { draft.focus(); draft.select(); if (status) status.textContent = '已选中草稿，请手动复制。'; }
+      });
       let current = 0;
       let changing = false;
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -186,6 +217,16 @@ const prompts = [
     box-shadow: 7px 7px 0 color-mix(in srgb, var(--paper-soft) 72%, transparent);
     transition: transform 220ms ease, box-shadow 220ms ease;
   }
+  .daily-note-workspace { min-width: 0; }
+  .note-draft-label { display: block; margin-top: 26px; color: var(--accent-deep); font: 14px/1.6 var(--sans); }
+  [data-note-draft] { display: block; width: 100%; min-height: 108px; margin-top: 9px; padding: 13px 15px; resize: vertical; border: 1px solid var(--line); border-radius: 2px; background: var(--paper-raised); color: var(--ink); font: 15px/1.8 var(--serif); }
+  [data-note-draft]::placeholder { color: var(--muted); opacity: .72; }
+  .note-draft-tools { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: center; margin-top: 7px; }
+  .note-draft-tools small { color: var(--muted); font: 11px/1.6 var(--sans); }
+  .note-draft-tools > div { display: flex; gap: 13px; }
+  .note-draft-tools button { min-height: 36px; padding: 5px 1px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--accent-deep); cursor: pointer; font: 12px/1.5 var(--sans); }
+  .note-draft-tools button:hover { border-bottom-color: var(--accent); }
+  .note-draft-status { min-height: 1.5em; margin: 3px 0 0; color: var(--muted); font: 11px/1.5 var(--sans); }
 
   .note-paper.is-changing {
     transform: rotate(-0.8deg) translateY(-3px);

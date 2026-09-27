@@ -91,6 +91,7 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     let current = -1;
     let timer = 0;
     let request = 0;
+    let leaveTimer = 0;
     let hovering = false;
     let focused = false;
     let userPaused = false;
@@ -153,11 +154,17 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
       for (let attempt = 0; attempt < images.length; attempt += 1) {
         if (!failed.has(index) && await ensureLoaded(index)) {
           if (thisRequest !== request) return;
+          if (leaveTimer) window.clearTimeout(leaveTimer);
           images.forEach((image, imageIndex) => {
             const active = imageIndex === index;
+            image.classList.toggle('is-leaving', imageIndex === current && !active);
             image.classList.toggle('is-active', active);
             image.setAttribute('aria-hidden', String(!active));
           });
+          leaveTimer = window.setTimeout(() => {
+            images.forEach((image) => image.classList.remove('is-leaving'));
+            leaveTimer = 0;
+          }, 760);
           current = index;
           controls.hidden = false;
           remember(index);

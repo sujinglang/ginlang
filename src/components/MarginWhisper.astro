@@ -1,14 +1,18 @@
 ---
-import { whispers, type WhisperTheme } from '../data/whispers';
+import { allWhispers, type WhisperTheme } from '../data/whispers';
 
 interface Props {
   theme: WhisperTheme;
 }
 
 const { theme } = Astro.props;
-const first = whispers[theme][0];
+const first = allWhispers[0];
 ---
 
+<script is:inline>
+  document.documentElement.classList.add('whisper-initializing');
+  window.setTimeout(() => document.documentElement.classList.remove('whisper-initializing'), 2500);
+</script>
 <aside class="margin-whisper" data-whisper data-whisper-theme={theme} aria-label="页边札记">
   <div class="margin-whisper-heading">
     <span>一则页边札记</span>
@@ -24,41 +28,62 @@ const first = whispers[theme][0];
 </aside>
 
 <script>
-  import { whispers, type WhisperTheme } from '../data/whispers';
+  import { allWhispers } from '../data/whispers';
 
   function initWhispers() {
     document.querySelectorAll<HTMLElement>('[data-whisper]:not([data-whisper-ready])').forEach((note) => {
-      const theme = note.dataset.whisperTheme as WhisperTheme;
-      const lines = whispers[theme];
+      const lines = allWhispers;
       const text = note.querySelector<HTMLElement>('[data-whisper-text]');
       const source = note.querySelector<HTMLElement>('[data-whisper-source]');
       const button = note.querySelector<HTMLButtonElement>('[data-whisper-next]');
       if (!lines?.length || !text || !source || !button) return;
 
       note.dataset.whisperReady = 'true';
-      const key = 'ginlang-whisper-' + theme;
+      const key = 'ginlang-whisper-bag-all-v2';
       let previous = -1;
+      let remaining: number[] = [];
       try {
         const raw = sessionStorage.getItem(key);
-        const saved = raw === null ? -1 : Number(raw);
-        if (Number.isInteger(saved) && saved >= 0 && saved < lines.length) previous = saved;
+        if (raw) {
+          const saved = JSON.parse(raw) as { count?: number; remaining?: number[]; last?: number };
+          if (saved.count === lines.length && Array.isArray(saved.remaining)
+            && saved.remaining.every((index) => Number.isInteger(index) && index >= 0 && index < lines.length)
+            && new Set(saved.remaining).size === saved.remaining.length) {
+            remaining = saved.remaining;
+            if (Number.isInteger(saved.last) && saved.last! >= 0 && saved.last! < lines.length) previous = saved.last!;
+          }
+        }
       } catch {
         // The note remains usable without browser storage.
       }
 
+      function refill() {
+        remaining = Array.from({ length: lines.length }, (_, index) => index);
+        for (let index = remaining.length - 1; index > 0; index -= 1) {
+          const other = Math.floor(Math.random() * (index + 1));
+          [remaining[index], remaining[other]] = [remaining[other], remaining[index]];
+        }
+        if (remaining.length > 1 && remaining[remaining.length - 1] === previous) {
+          [remaining[0], remaining[remaining.length - 1]] = [remaining[remaining.length - 1], remaining[0]];
+        }
+      }
+
       function nextLine() {
-        const count = lines.length;
-        const step = Math.floor(Math.random() * Math.max(1, count - 1)) + 1;
-        const index = previous < 0 ? Math.floor(Math.random() * count) : (previous + step) % count;
+        if (!remaining.length) refill();
+        const index = remaining.pop() ?? 0;
         previous = index;
         const line = lines[index];
         text.textContent = line.text;
         source.textContent = line.source ?? '';
         source.hidden = !line.source;
-        text.classList.remove('whisper-swapping');
-        void text.offsetWidth;
-        text.classList.add('whisper-swapping');
-        try { sessionStorage.setItem(key, String(index)); } catch { /* Storage is optional. */ }
+        if (note.dataset.whisperShown === 'true') {
+          text.classList.remove('whisper-swapping');
+          void text.offsetWidth;
+          text.classList.add('whisper-swapping');
+        }
+        note.dataset.whisperShown = 'true';
+        document.documentElement.classList.remove('whisper-initializing');
+        try { sessionStorage.setItem(key, JSON.stringify({ count: lines.length, remaining, last: index })); } catch { /* Storage is optional. */ }
       }
 
       nextLine();

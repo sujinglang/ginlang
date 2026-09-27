@@ -1,6 +1,8 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import ProfileMeta from '../../components/ProfileMeta.astro';
+import ProfileQuote from '../../components/ProfileQuote.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
 
@@ -45,10 +47,7 @@ const authorSchema = JSON.stringify({
         </div>
         <p class="person-role">{author.data.role === 'founder' ? '创办人' : '客席作者'}</p>
         <h1>{author.data.name}</h1>
-        {(author.data.location || author.data.displayDate) && <p class="profile-meta author-profile-meta">
-          {author.data.location && <span aria-label={'地点：' + author.data.location}>{author.data.location}</span>}
-          {author.data.displayDate && <span aria-label={'日期：' + author.data.displayDate}>{author.data.displayDate}</span>}
-        </p>}
+        <ProfileMeta location={author.data.location} displayDate={author.data.displayDate} className="author-profile-meta" />
         <p class="author-tagline">{author.data.tagline}</p>
       </div>
     </header>
@@ -56,7 +55,7 @@ const authorSchema = JSON.stringify({
       <h2 id="author-about-title">关于</h2>
       <div>
         <p class:list={['author-bio', { 'is-placeholder': bio === '此处需要您亲自填写' }]}>{bio}</p>
-        {author.data.quote && <blockquote class="author-quote">“{author.data.quote}”<cite>{author.data.quoteSource}</cite></blockquote>}
+        {author.data.quote && <ProfileQuote quote={author.data.quote} source={author.data.quoteSource} founder={author.data.role === 'founder'} />}
         {author.data.links.length > 0 && <div class="author-links">{author.data.links.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>)}</div>}
       </div>
     </section>

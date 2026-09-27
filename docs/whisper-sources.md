@@ -1,25 +1,21 @@
 # 页边札记：选句来源
 
-本站的页边札记选自已有作品，不使用拟写的句子。每条在网页上显示作者与篇名；这里记录核对资料。原文中少数异体字、繁简字和标点存在版本差异；截取短句时，句尾标点按摘录调整。仍受著作权保护的作品只摘录短句，不在此附全文链接；署名和出处不等同于获得使用许可。
+`src/data/whispers.ts` 按哲理、人生、爱情、自由、方向整理了 200 条不同的短摘录。全站共用这 200 条的洗牌袋，页面切换和同一标签页刷新继续从袋中取句；取完后重洗，避免只看到一小组。每条在页面上显示作者与篇名。选句优先使用白话文，删去了与这些主题无关的政治和爱国表达。
 
-## 白话散文
+早期白话文本核对时参考了下列全文。繁简、异体字按简体网页展示；短句可能从长句中截取，句尾标点随截取调整。
 
-- 朱自清：[《匆匆》](https://zh.wikisource.org/zh-hans/匆匆)、[《桨声灯影里的秦淮河》](https://zh.wikisource.org/zh-hans/桨声灯影里的秦淮河)、[《温州的踪迹》](https://zh.wikisource.org/zh-hans/温州的踪迹)（含《绿》《白水漈》）、[《荷塘月色》](https://zh.wikisource.org/zh-hans/荷塘月色)、[《背影》](https://zh.wikisource.org/zh-hans/背影)。
-- 鲁迅：[《从百草园到三味书屋》](https://zh.wikisource.org/zh-hans/从百草园到三味书屋)、[《阿长与山海经》](https://zh.wikisource.org/zh-hans/阿长与山海经)、[《故乡》](https://zh.wikisource.org/zh-hans/故乡)、[《社戏》](https://zh.wikisource.org/zh-hans/社戏)、[《兔和猫》](https://zh.wikisource.org/zh-hans/兔和猫)、[《鸭的喜剧》](https://zh.wikisource.org/zh-hans/鸭的喜剧)、[《秋夜》](https://zh.wikisource.org/zh-hans/秋夜_(鲁迅))、[《雪》](https://zh.wikisource.org/zh-hans/雪_(鲁迅))、[《好的故事》](https://zh.wikisource.org/zh-hans/好的故事)、[《热风·随感录四十一》](https://zh.wikisource.org/zh-hans/熱風/隨感錄/四十一)。
+## 早期白话作品
 
-## 近现代短句
+- 胡适：[《人生有何意义》](https://zh.wikisource.org/zh-hans/人生有何意義)、[《新生活》](https://zh.wikisource.org/wiki/新生活（為《新生活》雜誌第一期做的）)、[《人生问题》](https://zh.wikisource.org/zh-hans/人生問題)、[《容忍与自由》](https://zh.wikisource.org/zh-hans/容忍與自由（1959年3月16日）)。
+- 朱自清：[《匆匆》](https://zh.wikisource.org/zh-hans/匆匆)、[《论自己》](https://zh.wikisource.org/zh-hans/論自己)、[《论做作》](https://zh.wikisource.org/zh-hans/論做作)、[《给亡妇》](https://zh.wikisource.org/zh-hans/給亡婦)、[《荷塘月色》](https://zh.wikisource.org/zh-hans/荷塘月色)、[《背影》](https://zh.wikisource.org/zh-hans/背影)、[《一封信》](https://zh.wikisource.org/zh-hans/一封信)。
+- 鲁迅：[《伤逝》](https://zh.wikisource.org/zh-hans/傷逝_(魯迅))、[《过客》](https://zh.wikisource.org/zh-hans/過客)、[《故乡》](https://zh.wikisource.org/zh-hans/故鄉)、[《好的故事》](https://zh.wikisource.org/zh-hans/好的故事)、[《北京通信》](https://zh.wikisource.org/zh-hans/北京通信)、[《热风·随感录六十六》](https://zh.wikisource.org/zh-hans/生命的路)。
+- 萧红：[《呼兰河传》第三章](https://zh.wikisource.org/zh-hans/呼蘭河傳/第三章)。
 
-- 三毛：《撒哈拉的故事》选句见[四川旅游学院刊物的引文](https://www.sctu.edu.cn/__local/1/F1/CE/DD2AE7A84BF00B1B8BE0AB1574D_1726B6B7_3923F3.pdf)；《雨季不再来》选取连续的短句，未拼接前后不相连的部分。
-- 史铁生：《我与地坛》的选句可对照[人民网转载的节选](https://culture.people.com.cn/n1/2019/1025/c1013-31419531.html)。
-- 王开岭：《精神明亮的人》的晨曦选句见[正观新闻的作品介绍](https://wap.zhengguannews.cn/news/233125)。
+## 当代短句
 
-引用前仍应对照正式出版版本核对措辞与篇名；来源不够明确或引文被拼接的句子没有收入。
+- 李娟：[《昨日的情感》](https://www.chinawriter.com.cn/wxpl/2013/2013-05-16/162554.html)，是作者写给《阿勒泰的角落》再版的序言，收录少量摘录。
+- 三毛：《撒哈拉的故事》选句见[四川旅游学院刊物引文](https://www.sctu.edu.cn/__local/1/F1/CE/DD2AE7A84BF00B1B8BE0AB1574D_1726B6B7_3923F3.pdf)；《雨季不再来》仅摘一小句。
+- 史铁生：《我与地坛》的短句可对照[人民网转载节选](https://culture.people.com.cn/n1/2019/1025/c1013-31419531.html)。
+- 王开岭：《精神明亮的人》的晨曦短句见[作品介绍](https://wap.zhengguannews.cn/news/233125)。
 
-## 少量诗词
-
-- [《唐诗三百首》](https://zh.wikisource.org/zh-hans/唐诗三百首)
-- [《宋词三百首》](https://zh.wikisource.org/zh-hans/宋词三百首)
-- [朱熹《观书有感》](https://zh.wikisource.org/zh-hans/观书有感)
-- [陶渊明《读山海经》](https://zh.wikisource.org/zh-hans/读《山海经》)
-- [陶渊明《饮酒二十首》](https://zh.wikisource.org/zh-hans/饮酒二十首)
-- [贾岛《寻隐者不遇》](https://zh.wikisource.org/zh-hans/寻隐者不遇)
+当代作品的篇名和措辞仍应在正式出版物中复核。作者署名与出处并不等于获得使用许可。
