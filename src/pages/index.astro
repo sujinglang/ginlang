@@ -58,19 +58,19 @@ const landscapes = [
 ];
 ---
 
-<SiteLayout description="一本安静的文学小刊。随笔、日记、书摘与短句，给经过的日子留一页。">
+<SiteLayout description="GINLANG 的个人博客。记录随笔、日记和读书时的想法。">
   <section class="home-intro" aria-labelledby="home-title">
     <div class="hero-kicker">
-      <span>独立文学小刊</span>
+      <span>个人博客</span>
       <span>2026 · GINLANG</span>
     </div>
     <div class="home-hero">
       <div>
         <h1 id="home-title"><span class="hero-line">把日子写得</span><span class="hero-line"><em>慢一点。</em></span></h1>
-        <p class="intro-note">一本刚刚起步的小刊物。随笔、日记、读书时的停顿，都从这里开始。</p>
+        <p class="intro-note">我是 GINLANG。这里放我写的随笔、日记和读书笔记，偶尔也会邀请朋友来写。</p>
         <div class="hero-links">
-          <a class="hero-link" href="#latest-title"><span class="hero-link-copy">开始阅读<small>从本期选读进入</small></span></a>
-          <a class="hero-link hero-link-secondary" href={base + '/authors/'}><span class="hero-link-copy">认识客席作者</span></a>
+          <a class="hero-link" href="#latest-title"><span class="hero-link-copy">开始阅读<small>从最近的文章开始</small></span></a>
+          <a class="hero-link hero-link-secondary" href={base + '/authors/'}><span class="hero-link-copy">认识作者</span></a>
           <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden><span class="hero-link-copy">随机翻一页</span></button>
         </div>
       </div>
@@ -99,14 +99,14 @@ const landscapes = [
       )}
       <HeroGallery />
     </div>
-    {latest && <div class="cover-colophon"><span>本期从这里读起</span><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a><span>文 / {authorById.get(latest.data.author.id)?.data.name}</span><span>{formatDate(latest.data.date)}</span></div>}
+    {latest && <div class="cover-colophon"><span>最近更新</span><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a><span>文 / {authorById.get(latest.data.author.id)?.data.name}</span><span>{formatDate(latest.data.date)}</span></div>}
   </section>
 
   <div class="home-content">
     <section class="selection-section" aria-labelledby="latest-title" data-reveal="ink">
       <div class="section-heading">
         <div class="section-heading-main">
-          <p class="section-kicker">本期选读</p>
+          <p class="section-kicker">最近写的</p>
           <h2 id="latest-title">从这些文章开始</h2>
         </div>
         <a class="quiet-link" href={base + '/writing/'}>查看全部文章</a>
@@ -126,9 +126,9 @@ const landscapes = [
     </section>
 
     <section class="home-people" aria-labelledby="home-people-title" data-reveal="list">
-      <div class="section-heading"><div class="section-heading-main"><p class="section-kicker">作者</p><h2 id="home-people-title">从一个人，到更多署名</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>
-      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <div class="home-guest-empty"><div><span class="folio-mark">客席写作</span><h3>留出一个位置，给接下来加入的作者。</h3><p>目前只有创办人的文章。受邀作者的介绍与作品，会在确认后出现在这里。</p></div><a class="quiet-link" href={base + '/contribute/'}>了解参与写作</a></div>}
-      {founder && <p class="home-founder-note">目前由 <a href={base + '/authors/' + founder.id + '/'}>{founder.data.name}</a> 整理与发布</p>}
+      <div class="section-heading"><div class="section-heading-main"><p class="section-kicker">作者</p><h2 id="home-people-title">写这些文章的人</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>
+      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <div class="home-guest-empty"><div><span class="folio-mark">客席写作</span><h3>以后也会有朋友的文章。</h3><p>目前发布的是我自己的文章。朋友的介绍和作品，会在征得同意后放到这里。</p></div><a class="quiet-link" href={base + '/contribute/'}>了解参与写作</a></div>}
+      {founder && <p class="home-founder-note">由 <a href={base + '/authors/' + founder.id + '/'}>{founder.data.name}</a> 整理与更新</p>}
     </section>
 
     {topics.length > 0 && <section class="home-topics" aria-labelledby="home-topics-title"><div class="section-heading"><h2 id="home-topics-title">主题选集</h2><a class="quiet-link" href={base + '/topics/'}>全部专题</a></div><div class="home-topic-list">{topics.slice(0, 2).map((topic) => <a href={base + '/topics/' + topic.id + '/'}><span>专题</span><h3>{topic.data.title}</h3><p>{topic.data.introduction}</p></a>)}</div></section>}
@@ -189,11 +189,11 @@ const landscapes = [
 
     <aside class="home-endnote" aria-labelledby="author-teaser-title" data-reveal="ink">
       <div>
-        <p class="section-kicker">关于刊物</p>
-        <h2 id="author-teaser-title">还会继续往这本刊物里加页。</h2>
+        <p class="section-kicker">关于我</p>
+        <h2 id="author-teaser-title">我会继续在这里写。</h2>
         <p class="author-placeholder">{authorIntro}</p>
       </div>
-      <div class="endnote-links"><a class="quiet-link" href={base + '/about/'}>关于这本刊物</a><a class="quiet-link" href={base + '/contribute/'}>参与写作</a></div>
+      <div class="endnote-links"><a class="quiet-link" href={base + '/about/'}>更多关于我</a><a class="quiet-link" href={base + '/contribute/'}>参与写作</a></div>
     </aside>
   </div>
 </SiteLayout>

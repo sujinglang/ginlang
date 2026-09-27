@@ -15,7 +15,7 @@ const founders = authors.filter((author) => author.data.role === 'founder');
     <header class="editorial-page-header">
       <span class="folio-mark">GINLANG / PEOPLE</span>
       <h1>作者</h1>
-      <p>一本刊物，也由每一个留下名字的人组成。</p>
+      <p>我的文章在这里；以后受邀写作的朋友，也会有自己的页面。</p>
     </header>
 
     {founders.map((author) => (
@@ -27,7 +27,7 @@ const founders = authors.filter((author) => author.data.role === 'founder');
           </div>
         </div>
         <div class="person-feature-copy">
-          <p class="person-role">创办人</p>
+          <p class="person-role">作者</p>
           <h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2>
           <p>{author.data.tagline}</p>
           <a class="quiet-link" href={base + '/authors/' + author.id + '/'}>查看作者与作品</a>

@@ -24,7 +24,7 @@ const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const hasTopics = Object.keys(topicRecords).length > 0 && (await getCollection('topics', ({ data }) => !data.draft)).length > 0;
 const navItems = [
-  { label: '首页', hint: '回到封面', href: base + '/' },
+  { label: '首页', hint: '回到首页', href: base + '/' },
   { label: '文章', hint: '挑一篇来读', href: base + '/writing/' },
   { label: '客席作者', hint: '认识一起写的人', href: base + '/authors/' },
   ...(hasTopics ? [{ label: '专题', hint: '顺着线索读', href: base + '/topics/' }] : []),
@@ -121,7 +121,7 @@ const webSiteSchema = JSON.stringify({
           <a class="wordmark" href={base + '/'} aria-label="GINLANG 首页">
             <span translate="no">GINLANG</span><span class="wordmark-flower" aria-hidden="true">✳</span>
           </a>
-          <span class="brand-note">A QUIET PLACE FOR WORDS</span>
+          <span class="brand-note">PERSONAL BLOG</span>
         </div>
 
         <button class="menu-toggle" type="button" data-menu-toggle aria-controls="primary-nav" aria-expanded="false">
@@ -195,7 +195,7 @@ const webSiteSchema = JSON.stringify({
       <div class="dialog-topline">
         <div>
           <p class="dialog-kicker">PASS THE LETTER ALONG</p>
-          <h2 id="share-title">把这本刊物分享给朋友</h2>
+          <h2 id="share-title">把我的博客分享给朋友</h2>
         </div>
         <button class="dialog-close" type="button" data-dialog-close aria-label="关闭分享窗口">×</button>
       </div>
@@ -536,7 +536,7 @@ const webSiteSchema = JSON.stringify({
         nativeShareButton.addEventListener('click', async () => {
           if (!shareUrl) return;
           try {
-            await navigator.share({ title: 'GINLANG', text: '一本安静的文学小刊', url: shareUrl });
+            await navigator.share({ title: 'GINLANG', text: 'GINLANG 的个人博客', url: shareUrl });
             shareDialog?.close();
           } catch (error) {
             if (error instanceof DOMException && error.name === 'AbortError') return;
