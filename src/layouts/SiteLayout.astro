@@ -24,12 +24,12 @@ const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const hasTopics = Object.keys(topicRecords).length > 0 && (await getCollection('topics', ({ data }) => !data.draft)).length > 0;
 const navItems = [
-  { label: '首页', href: base + '/' },
-  { label: '文章', href: base + '/writing/' },
-  { label: '客席作者', href: base + '/authors/' },
-  ...(hasTopics ? [{ label: '专题', href: base + '/topics/' }] : []),
-  { label: '归档', href: base + '/archive/' },
-  { label: '关于', href: base + '/about/' },
+  { label: '首页', hint: '回到封面', href: base + '/' },
+  { label: '文章', hint: '挑一篇来读', href: base + '/writing/' },
+  { label: '客席作者', hint: '认识一起写的人', href: base + '/authors/' },
+  ...(hasTopics ? [{ label: '专题', hint: '顺着线索读', href: base + '/topics/' }] : []),
+  { label: '归档', hint: '按时间翻阅', href: base + '/archive/' },
+  { label: '关于', hint: '了解 GINLANG', href: base + '/about/' },
 ];
 const isCurrent = (href: string) => {
   const target = href.replace(/\/+$/, '') || '/';
@@ -124,10 +124,13 @@ const webSiteSchema = JSON.stringify({
           <span class="brand-note">A QUIET PLACE FOR WORDS</span>
         </div>
 
-        <button class="menu-toggle" type="button" data-menu-toggle aria-controls="primary-nav" aria-expanded="false">目录 <span aria-hidden="true">☰</span></button>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-controls="primary-nav" aria-expanded="false">
+          <span class="menu-toggle-copy"><strong>目录</strong><small aria-hidden="true">文章 · 作者 · 归档，往里看看</small></span>
+          <span class="menu-toggle-mark" aria-hidden="true"></span>
+        </button>
         <nav class="primary-nav" id="primary-nav" aria-label="主导航">
           {navItems.map((item) => (
-            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}><span>{item.label}</span><small>{item.hint}</small></a>
           ))}
         </nav>
 
@@ -164,7 +167,7 @@ const webSiteSchema = JSON.stringify({
             <a class="rss-link" href={base + '/rss.xml'} aria-label="订阅 GINLANG RSS">订阅 RSS</a>
           </div>
         </div>
-        <nav class="footer-nav" aria-label="页脚导航">{navItems.map((item) => <a href={item.href}>{item.label}</a>)}</nav>
+        <nav class="footer-nav" aria-label="页脚导航">{navItems.map((item) => <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}><span>{item.label}</span><small>{item.hint}</small></a>)}</nav>
         <div class="footer-bottom">
           <span>© {year} GINLANG</span>
           {updatedLabel && <span>最近更新 · {updatedLabel}</span>}
