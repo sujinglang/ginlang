@@ -211,15 +211,46 @@ const direction: Whisper[] = [
   w("这正如地上的路，其实地上本没有路；走的人多了，也便成了路。", "鲁迅《故乡》"),
   w("我真爱这一篇好的故事，趁碎影还在，我要追回他，完成他，留下他。", "鲁迅《好的故事》"),
 ];
-// One shared bag lets a reader encounter the whole library while moving
-// between pages; the named groups remain available for future curation.
+// Additional voices are selected from the cited works, not generic quote lists.
+const moreVoices: Whisper[] = [
+  w("我们浑朴的天真是像含羞草似的，一经同伴的抵触，他就卷了起来。", "徐志摩《翡冷翠山居闲话》"),
+  w("你在这世界上寂寞时便不寂寞，穷困时不穷困，苦恼时有安慰，挫折时有鼓励。", "徐志摩《翡冷翠山居闲话》"),
+  w("你一个人漫游的时候，你就会在青草里坐地仰卧。", "徐志摩《翡冷翠山居闲话》"),
+  w("有好茶喝，会喝好茶，是一种‘清福’。", "鲁迅《喝茶》"),
+  w("感觉的细腻和锐敏，较之麻木，那当然算是进步的，然而以有助于生命的进化为限。", "鲁迅《喝茶》"),
+  w("美并不是天上掉下来的；它一半在物，一在你，在你的手里。", "朱光潜《谈美》"),
+  w("生活上的艺术家也不但能认真而且能摆脱。在认真时见出他的严肃，在摆脱时见出他的豁达。", "朱光潜《谈美》"),
+  w("两人各认取个生活的模样。", "林徽因《那一晚》"),
+  w("心在转，你曾说过的几句话，白鸽似的盘旋。", "林徽因《忆》"),
+  w("我不曾忘，也不能忘，那天的天澄清的透蓝。", "林徽因《忆》"),
+  w("在过去的追忆中活著的人，过去的可惊可喜的情景，都环绕在他的左右。", "郁达夫《空虚》"),
+  w("我常想，他好像一个小孩子；像小孩子的天真，也像小孩子的离不开家里人。", "朱自清《我所见的叶圣陶》"),
+];
+
+// Context-dependent fragments sound thin when lifted onto a page by themselves.
+const retired = new Set([
+  "不过——难也罢，易也罢，人反正有时候得装。",
+  "清福究竟也不容易享的。",
+  "唉唉，那是怎样的宁静而幸福的夜呵！",
+  "今天连一个小水洼也遇不到，也就是少走了路的缘故罢。",
+  "你也会遇见心底的眼泪，为你的悲哀。",
+  "我只记得那时以前的十几天，曾经很仔细地研究过表示的态度，排列过措辞的先后，以及倘或遭了拒绝以后的情形。",
+  "我的路也铸定了，每星期中的六天，是由家到局，又由局到家。",
+  "从我还能记得的时候起，我就只一个人，我不知道我本来叫什么。",
+  "我单记得走了许多路，现在来到这里了。",
+  "那样的生活可以叫做新生活呢？",
+  "你听了，必定要问我，有意思的生活又是什么样子的生活呢？",
+]);
+
+// One shared collection lets a reader encounter the whole edited library.
 export const allWhispers: Whisper[] = [
   ...philosophy,
   ...life,
   ...love,
   ...freedom,
   ...direction,
-];
+  ...moreVoices,
+].filter((line) => !retired.has(line.text));
 export const whispers = {
   home: life,
   archive: direction,

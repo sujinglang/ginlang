@@ -595,6 +595,7 @@ const webSiteSchema = JSON.stringify({
         // Article pages already have a floating bookmark in the corner; sit above it.
         if (document.querySelector('.article-page')) toTop.classList.add('to-top-raised');
         const homeArtwork = document.querySelectorAll<HTMLElement>('.home-profile-visual, .hero-gallery, .landscape-frame');
+        const footer = document.querySelector<HTMLElement>('.site-footer');
         let topFrame = 0;
         const updateToTop = () => {
           topFrame = 0;
@@ -602,7 +603,9 @@ const webSiteSchema = JSON.stringify({
             const bounds = artwork.getBoundingClientRect();
             return bounds.top < window.innerHeight && bounds.bottom > 0;
           });
-          toTop.hidden = window.scrollY < 640 || artworkInView;
+          // The footer has its own return link. Avoid covering the visit count.
+          const footerInView = footer ? footer.getBoundingClientRect().top < window.innerHeight : false;
+          toTop.hidden = window.scrollY < 640 || artworkInView || footerInView;
         };
         window.addEventListener('scroll', () => {
           if (!topFrame) topFrame = window.requestAnimationFrame(updateToTop);

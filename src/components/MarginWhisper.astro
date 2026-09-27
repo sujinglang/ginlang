@@ -39,7 +39,7 @@ const first = allWhispers[0];
       if (!lines?.length || !text || !source || !button) return;
 
       note.dataset.whisperReady = 'true';
-      const key = 'ginlang-whisper-bag-all-v2';
+      const key = 'ginlang-whisper-bag-all-v3';
       let previous = -1;
       let remaining: number[] = [];
       try {
@@ -57,15 +57,41 @@ const first = allWhispers[0];
         // The note remains usable without browser storage.
       }
 
+      const authorOf = (index: number) => lines[index].source.split('《')[0].trim();
       function refill() {
-        remaining = Array.from({ length: lines.length }, (_, index) => index);
-        for (let index = remaining.length - 1; index > 0; index -= 1) {
-          const other = Math.floor(Math.random() * (index + 1));
-          [remaining[index], remaining[other]] = [remaining[other], remaining[index]];
+        const groups = new Map<string, number[]>();
+        lines.forEach((_, index) => {
+          const author = authorOf(index);
+          if (!groups.has(author)) groups.set(author, []);
+          groups.get(author)!.push(index);
+        });
+        for (const group of groups.values()) {
+          for (let index = group.length - 1; index > 0; index -= 1) {
+            const other = Math.floor(Math.random() * (index + 1));
+            [group[index], group[other]] = [group[other], group[index]];
+          }
         }
-        if (remaining.length > 1 && remaining[remaining.length - 1] === previous) {
-          [remaining[0], remaining[remaining.length - 1]] = [remaining[remaining.length - 1], remaining[0]];
+
+        const order: number[] = [];
+        let lastAuthor = previous < 0 ? '' : authorOf(previous);
+        while (order.length < lines.length) {
+          const left = lines.length - order.length;
+          const valid = [...groups.entries()].filter(([author, group]) => {
+            if (!group.length || author === lastAuthor) return false;
+            const counts = [...groups.entries()].map(([name, entries]) => entries.length - Number(name === author));
+            const largest = Math.max(...counts);
+            const largestAuthor = [...groups.keys()][counts.indexOf(largest)];
+            return largest <= left - 1 - largest + Number(largestAuthor !== author);
+          });
+          // A single-author library cannot alternate; still show every line.
+          const choices = valid.length ? valid : [...groups.entries()].filter(([, group]) => group.length);
+          const total = choices.reduce((sum, [, group]) => sum + group.length, 0);
+          let ticket = Math.floor(Math.random() * total);
+          const [author, group] = choices.find(([, entries]) => (ticket -= entries.length) < 0)!;
+          order.push(group.pop()!);
+          lastAuthor = author;
         }
+        remaining = order.reverse();
       }
 
       function nextLine() {

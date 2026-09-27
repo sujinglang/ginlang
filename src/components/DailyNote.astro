@@ -1,32 +1,32 @@
 ---
-// A small writing invitation: one concrete experience, one question worth keeping.
+// A short thought to carry into the reader's own writing.
 const prompts = [
-  '你以为自己在等待机会时，有没有可能是在等别人替你决定？',
-  '当“我愿意”和“我应该”不一致时，你通常听从哪一个？',
-  '一件事因为习惯而继续，它还算你自己的选择吗？',
-  '如果一段关系只能靠沉默维持，沉默保住的究竟是什么？',
-  '你是否曾把一个人的期待，错当成自己的方向？',
-  '接受无法改变的事，与过早妥协之间，界线在哪里？',
-  '你最近坚持的事，是因为它仍有意义，还是因为已经投入太多？',
-  '当无人知道你的努力，你还愿意继续做什么？',
-  '有没有一件事，你原谅了别人，却还没有原谅自己？',
-  '爱一个人，什么时候是在靠近，什么时候是在替他作决定？',
-  '你曾为了保持一种“正确”的样子，省略了什么真实的需要？',
-  '哪一次道歉是在承担责任，而不只是为了结束争执？',
-  '有些安稳会让人停住。你现在拥有的是安稳，还是停滞？',
-  '如果不按结果评价过去的一年，它在你身上留下了什么？',
-  '你不再羡慕某种生活之后，自己的生活发生了什么变化？',
-  '说“没有办法”之前，你已经排除了哪些办法？',
-  '某条路走不下去时，离开与逃避该如何区分？',
-  '你愿意为怎样的自由，承担它带来的不确定？',
+  '傍晚的街道会慢慢安静下来，白天没有听清的话，常在这时重新响起。把那句话写下来，也许能看见自己真正介意的事。',
+  '有些决定并没有一个响亮的开始。只是某天起，你不再按照别人的期待安排自己的时间。',
+  '一段关系里最难忘的，未必是郑重的承诺。也可能是一个人记得你的习惯，在普通的一天为你留了一盏灯。',
+  '人会在熟悉的路上走很久，直到某个平常的早晨，才察觉自己想看的风景已经变了。',
+  '真正属于自己的时间，有时只有晚饭后的一小段。那一小段如何度过，也在悄悄决定生活的样子。',
+  '道歉之后，事情不一定立刻变好。但愿意把话说清楚，已经让沉默不再替两个人作决定。',
+  '有些离开没有戏剧性的告别。只是下一次想分享见闻时，你不再第一个想到那个人。',
+  '坚持并不总是向前跑。照常起床，认真吃饭，在失意的日子里把日子过下去，也是一种坚持。',
+  '自由并不只发生在远方。关掉一则让人焦虑的消息，留下一个不被打扰的下午，也是自由的形状。',
+  '有些愿望迟迟没有实现，并不说明那些年白过了。你走过的路，已经改变了你看待世界的方式。',
+  '在亲近的人面前，我们常以为对方能听懂没有说出的部分。那些被省略的话，久了也会成为距离。',
+  '一天结束时，真正留下来的常是很小的事。一顿合口的饭，一句恰好的回应，或者一段没有赶路的时间。',
+  '生活不会替人把每条路的尽头照亮。先走一段，再停下来辨认方向，也是一种认真的选择。',
+  '有些安稳让人安心，有些安稳只是让人不敢挪动。它们看起来相似，身在其中的感受却不会相同。',
+  '不再羡慕另一种生活的时候，眼前的生活未必立刻变好。但你终于可以看清，哪些地方值得自己动手改变。',
+  '一件事做得久了，热爱与习惯会长得很像。偶尔放慢脚步，才听得见心里那一点细微的差别。',
+  '爱不是替另一个人把路走完。并肩走过一程，允许彼此有不同的步子，也是一种靠近。',
+  '雨停之后，路面不会马上干。很多事情也是如此，结束已经发生，心里仍需要一点时间。',
 ];
 ---
 
 <section class="daily-note" aria-labelledby="daily-note-title" data-daily-note data-prompts={JSON.stringify(prompts)}>
   <div class="note-intro">
-    <p class="note-kicker">A LITTLE PROMPT</p>
+    <p class="note-kicker">留给读者的一页</p>
     <h2 id="daily-note-title">抽一张<br /><em>今日笺。</em></h2>
-    <p class="note-description">留一处空白给正在读的人。抽一个问题，从自己的经历里找答案；写下来的句子，只属于你。</p>
+    <p class="note-description">读完这一段，停一会儿。把想到的人和事写在下面；这些句子只留在你的浏览器里。</p>
     <button class="draw-button" type="button" data-draw hidden>
       <span>再抽一张</span>
       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
@@ -43,7 +43,7 @@ const prompts = [
     <span class="opening-mark" aria-hidden="true">“</span>
     <p class="prompt" aria-live="polite" aria-atomic="true" data-prompt>{prompts[0]}</p>
     <div class="paper-footline" aria-hidden="true">
-      <span>给读者的一个问题</span>
+      <span>读完，再写自己的那一段</span>
       <span>GINLANG</span>
     </div>
   </div>
@@ -208,7 +208,7 @@ const prompts = [
   .note-paper {
     position: relative;
     display: flex;
-    min-height: 270px;
+    min-height: 300px;
     flex-direction: column;
     overflow: hidden;
     padding: 20px clamp(24px, 4vw, 42px) 22px;
@@ -263,13 +263,11 @@ const prompts = [
   }
 
   .prompt {
-    max-width: 23em;
-    min-height: 2.8em;
+    max-width: 26em;
+    min-height: 6.3em;
     margin: 0 0 20px;
-    font-size: clamp(19px, 2.8vw, 25px);
-    font-weight: 500;
-    letter-spacing: 0.025em;
-    line-height: 1.65;
+    font: 400 clamp(18px, 2.1vw, 22px)/1.85 var(--editorial-cn);
+    letter-spacing: 0.015em;
     transition: opacity 140ms ease, transform 140ms ease;
   }
 
@@ -280,10 +278,10 @@ const prompts = [
     .note-intro h2 br { display: none; }
     .note-description { margin-top: 8px; font-size: 12px; }
     .draw-button { margin-top: 12px; }
-    .note-paper { min-height: 230px; padding: 18px 22px 20px; }
+    .note-paper { min-height: 290px; padding: 18px 22px 20px; }
     .note-paper::before { left: 22px; }
     .opening-mark { margin-top: 8px; }
-    .prompt { font-size: 21px; }
+    .prompt { min-height: 7em; font-size: 19px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
