@@ -4,7 +4,7 @@
 
 ## 需要创办人补充
 
-- 创办人介绍：`src/content/authors/ginlang.json` 的 `bio`，以及 `src/data/author.ts` 的首页与关于页文字。
+- 创办人介绍：`src/content/authors/ginlang.json` 已有简短的 About 开头、选用引文、地点与原样日期；更详细的个人经历仍留在 `src/data/author.ts`，等创办人亲自填写。
 - 可公开的联系渠道：确认后更新 `src/pages/contribute.astro`。目前网站只说明流程，不接收在线稿件。
 - 第一位客席作者的笔名、简介和作品：得到作者同意后再添加，不提前制作虚构档案。
 
@@ -25,7 +25,7 @@
 }
 ```
 
-`bio`、`portrait`、`cover`、`featuredPost` 和 `links` 都可省略。头像与背景图放在 `public/`，`portrait`、`cover` 填该目录下的相对路径，例如 `authors/lin-mu.webp`；构建时会检查文件是否存在。为两张图分别填 `portraitWidth`、`portraitHeight`、`portraitAlt` 与 `coverWidth`、`coverHeight`、`coverAlt`。头像和背景只使用作者确认公开的素材；插画头像不写成真实肖像。`featured` 控制首页是否推荐，作者目录仍展示所有作者。作品列表由文章自动生成。
+`bio`、`location`、`displayDate`、`quote`、`quoteSource`、`portrait`、`cover`、`featuredPost` 和 `links` 都可省略。`displayDate` 只按提供的字样展示，不会自动推断它的含义；引用他人作品时同时填写 `quoteSource`。头像与背景图放在 `public/`，`portrait`、`cover` 填该目录下的相对路径，例如 `authors/lin-mu.webp`；构建时会检查文件是否存在。为两张图分别填 `portraitWidth`、`portraitHeight`、`portraitAlt` 与 `coverWidth`、`coverHeight`、`coverAlt`。头像和背景只使用作者确认公开的素材；插画头像不写成真实肖像。`featured` 控制首页是否推荐，作者目录仍展示所有作者。作品列表由文章自动生成。
 
 ## 添加作品
 

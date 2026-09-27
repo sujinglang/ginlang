@@ -29,6 +29,10 @@ const authors = defineCollection({
     role: z.enum(['founder', 'guest']),
     tagline: z.string().min(1),
     bio: z.string().optional(),
+    location: z.string().optional(),
+    displayDate: z.string().optional(),
+    quote: z.string().optional(),
+    quoteSource: z.string().optional(),
     portrait: publicImage.optional(),
     portraitAlt: z.string().optional(),
     portraitWidth: z.number().int().positive().default(720),
@@ -41,7 +45,7 @@ const authors = defineCollection({
     featured: z.boolean().default(false),
     order: z.number().int().default(100),
     featuredPost: reference('posts').optional(),
-  }),
+  }).refine((data) => !data.quote || Boolean(data.quoteSource), '引文需要标注作者与出处'),
 });
 
 const topics = defineCollection({

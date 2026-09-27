@@ -71,6 +71,32 @@ const landscapes = [
           <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden><span class="hero-link-copy">随机翻一页</span></button>
         </div>
       </div>
+      {founder && (
+        <section class="home-profile" aria-labelledby="home-profile-name" data-reveal="image">
+          <div class="home-profile-visual">
+            {founder.data.cover && <img class="home-profile-cover" src={base + '/' + founder.data.cover.replace(/^\/+/, '')} width={founder.data.coverWidth} height={founder.data.coverHeight} alt={founder.data.coverAlt || ''} loading="lazy" decoding="async" />}
+            <span class="home-profile-portrait">
+              {founder.data.portrait ? <img src={base + '/' + founder.data.portrait.replace(/^\/+/, '')} width={founder.data.portraitWidth} height={founder.data.portraitHeight} alt={founder.data.portraitAlt || founder.data.name + '选用的头像'} loading="lazy" decoding="async" /> : <span aria-hidden="true">{founder.data.name.slice(0, 1)}</span>}
+            </span>
+          </div>
+          <div class="home-profile-copy">
+            <div class="home-profile-identity">
+              <p class="home-profile-label">关于作者</p>
+              <h2 id="home-profile-name">{founder.data.name}</h2>
+              {(founder.data.location || founder.data.displayDate) && <p class="profile-meta">
+                {founder.data.location && <span aria-label={'地点：' + founder.data.location}>{founder.data.location}</span>}
+                {founder.data.displayDate && <span aria-label={'日期：' + founder.data.displayDate}>{founder.data.displayDate}</span>}
+              </p>}
+            </div>
+            <div class="home-profile-about">
+              <h3>About</h3>
+              <p>{founder.data.bio || '此处需要您亲自填写'}</p>
+              {founder.data.quote && <blockquote>“{founder.data.quote}”<cite>{founder.data.quoteSource}</cite></blockquote>}
+              <a href={base + '/about/'}>更多关于我</a>
+            </div>
+          </div>
+        </section>
+      )}
       <HeroGallery />
     </div>
     {latest && <div class="cover-colophon"><span>本期从这里读起</span><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a><span>文 / {authorById.get(latest.data.author.id)?.data.name}</span><span>{formatDate(latest.data.date)}</span></div>}

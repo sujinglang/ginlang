@@ -1,4 +1,5 @@
 ---
+import { getEntry } from 'astro:content';
 import Butterfly from '../components/Butterfly.astro';
 import DailyNote from '../components/DailyNote.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
@@ -6,6 +7,7 @@ import { authorSections } from '../data/author';
 import SiteLayout from '../layouts/SiteLayout.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const publishedSections = authorSections.filter((section) => section.text.trim().length > 0);
+const founder = await getEntry('authors', 'ginlang');
 ---
 
 <SiteLayout title="关于" description="关于 GINLANG。">
@@ -15,7 +17,10 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
       <header class="page-intro">
         <p class="eyebrow">关于这里</p>
         <h1>GINLANG</h1>
-        <p>写一些迟到的句子。</p>
+        {(founder?.data.location || founder?.data.displayDate) && <p class="profile-meta about-profile-meta">
+          {founder.data.location && <span aria-label={'地点：' + founder.data.location}>{founder.data.location}</span>}
+          {founder.data.displayDate && <span aria-label={'日期：' + founder.data.displayDate}>{founder.data.displayDate}</span>}
+        </p>}
       </header>
       <figure class="intro-art" data-reveal="image">
         <img src={base + '/about-notebook-animated.webp'} width="720" height="720" alt="手绘的摊开笔记本与一枝植物" loading="lazy" decoding="async" />
@@ -25,6 +30,8 @@ const publishedSections = authorSections.filter((section) => section.text.trim()
     </div>
     <MarginWhisper theme="about" />
     <div class="prose about-copy">
+      {founder?.data.bio && <p class="about-greeting">{founder.data.bio}</p>}
+      {founder?.data.quote && <blockquote class="about-quote">“{founder.data.quote}”<cite>{founder.data.quoteSource}</cite></blockquote>}
       <p>这里是 GINLANG，放随笔、日记、读书笔记，还有一些短句。有东西想写的时候，就来更新一篇。</p>
       <p>页面留得宽松一些，方便阅读，也方便过段时间回来找一篇旧文章。</p>
       <p>这里也会陆续邀请其他作者写作。每篇作品写明作者，介绍与作品只展示作者同意公开的部分。</p>
