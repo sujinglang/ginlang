@@ -1,9 +1,9 @@
 ---
 import Butterfly from './Butterfly.astro';
-import { albumImages } from '../data/album';
+import { heroImages } from '../data/heroWatercolors';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const slides = albumImages;
+const slides = heroImages;
 const slideIds = slides.map(({ id }) => id);
 const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/hero-watercolors/' + slide.file]));
 ---
