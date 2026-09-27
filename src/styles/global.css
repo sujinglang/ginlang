@@ -1,5 +1,5 @@
-@font-face { font-family: 'GINLANG Handlee'; src: url('../assets/fonts/handlee-latin.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
-@font-face { font-family: 'GINLANG WenKai'; src: url('../assets/fonts/lxgw-wenkai.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'GINLANG Marck Script'; src: url('../assets/fonts/marck-script-latin.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'GINLANG Zhi Mang Xing'; src: url('../assets/fonts/zhi-mang-xing-quote.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
 
 :root {
   color-scheme: light;
@@ -16,8 +16,8 @@
   --focus: #936749;
   --serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'SimSun', Georgia, serif;
   --sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  --hand-cn: 'GINLANG WenKai', 'KaiTi', 'STKaiti', serif;
-  --hand-en: 'GINLANG Handlee', 'Segoe Print', cursive;
+  --hand-cn: 'GINLANG Zhi Mang Xing', 'KaiTi', 'STKaiti', cursive;
+  --hand-en: 'GINLANG Marck Script', 'Segoe Script', cursive;
   --shell-width: 1040px;
   --reading-width: 690px;
   --body-size: 17px;
