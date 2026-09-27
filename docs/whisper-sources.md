@@ -16,6 +16,7 @@
 - 林徽因：[《忆》](https://zh.wikisource.org/zh-hans/憶)、[《那一晚》](https://zh.wikisource.org/zh-hans/那一晚_(林徽因))。
 - 郁达夫：[《空虚》](https://zh.wikisource.org/zh-hans/空虛_(郁達夫))。
 - 朱自清：[《我所见的叶圣陶》](https://zh.wikisource.org/zh-hans/我所見的葉聖陶)。
+- 周作人：[《苦雨》](https://zh.wikisource.org/zh-hans/苦雨_(周作人))。
 
 ## 当代短句
 
