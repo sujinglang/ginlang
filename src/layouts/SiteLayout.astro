@@ -594,14 +594,20 @@ const webSiteSchema = JSON.stringify({
       if (toTop) {
         // Article pages already have a floating bookmark in the corner; sit above it.
         if (document.querySelector('.article-page')) toTop.classList.add('to-top-raised');
+        const homeArtwork = document.querySelectorAll<HTMLElement>('.home-profile-visual, .hero-gallery, .landscape-frame');
         let topFrame = 0;
         const updateToTop = () => {
           topFrame = 0;
-          toTop.hidden = window.scrollY < 640;
+          const artworkInView = window.innerWidth <= 680 && Array.from(homeArtwork).some((artwork) => {
+            const bounds = artwork.getBoundingClientRect();
+            return bounds.top < window.innerHeight && bounds.bottom > 0;
+          });
+          toTop.hidden = window.scrollY < 640 || artworkInView;
         };
         window.addEventListener('scroll', () => {
           if (!topFrame) topFrame = window.requestAnimationFrame(updateToTop);
         }, { passive: true });
+        window.addEventListener('resize', updateToTop, { passive: true });
         toTop.addEventListener('click', () => {
           const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
