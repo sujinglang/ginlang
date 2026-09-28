@@ -1,5 +1,6 @@
 ---
 // A short thought to carry into the reader's own writing.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const prompts = [
   '每天走同一条路，熟悉会使人安心，也会替人省去重新选择的力气。某天站在路口迟迟没有迈步，并不一定是迷路，也许是心里已经走向了另一处。先承认这种变化，方向才会慢慢变得清楚。',
   '我们总想等事情有了结果，再判断一段时间值不值得。可许多改变发生得很慢，像一张纸被反复折过，展开后仍留着痕。没有到达预想的地方，也不等于一路上什么都没有得到。',
@@ -49,7 +50,7 @@ const prompts = [
   </div>
     <label class="note-draft-label" for="note-draft">写在这里</label>
     <textarea id="note-draft" data-note-draft rows="4" placeholder="从一件具体的事写起。"></textarea>
-    <div class="note-draft-tools"><small>草稿只保存在你当前的浏览器。</small><div><button type="button" data-note-copy>复制</button><button type="button" data-note-clear>清空</button></div></div>
+    <div class="note-draft-tools"><small>草稿只保存在你当前的浏览器。<a href={base + '/desk/'}>到我的书桌查看</a></small><div><button type="button" data-note-copy>复制</button><button type="button" data-note-clear>清空</button></div></div>
     <p class="note-draft-status" role="status" data-note-status></p>
   </div>
 </section>
@@ -75,21 +76,19 @@ const prompts = [
       button.hidden = false;
       const draft = root.querySelector<HTMLTextAreaElement>('[data-note-draft]');
       const status = root.querySelector<HTMLElement>('[data-note-status]');
-      const draftKey = 'ginlang-reader-note';
-      if (draft) {
-        try { draft.value = localStorage.getItem(draftKey) ?? ''; } catch { /* Draft remains editable. */ }
-        draft.addEventListener('input', () => {
-          try { localStorage.setItem(draftKey, draft.value); } catch { /* Storage is optional. */ }
-          if (status) status.textContent = draft.value ? '已保存在当前浏览器' : '';
-        });
-      }
-      root.querySelector<HTMLButtonElement>('[data-note-clear]')?.addEventListener('click', () => {
-        if (!draft) return;
-        draft.value = '';
-        try { localStorage.removeItem(draftKey); } catch { /* Storage is optional. */ }
-        if (status) status.textContent = '已清空';
-        draft.focus();
-      });
+      const draftKey = 'ginlang-reader-notes-v1';
+      type ReaderNote = { prompt: string; text: string; updatedAt: string };
+      const readDrafts = (): ReaderNote[] => {
+        try {
+          const stored = JSON.parse(localStorage.getItem(draftKey) || '[]');
+          return Array.isArray(stored) ? stored.filter((item): item is ReaderNote =>
+            typeof item?.prompt === 'string' && typeof item?.text === 'string' && typeof item?.updatedAt === 'string') : [];
+        } catch { return []; }
+      };
+      const writeDrafts = (items: ReaderNote[]) => {
+        try { localStorage.setItem(draftKey, JSON.stringify(items)); return true; }
+        catch { return false; }
+      };
       root.querySelector<HTMLButtonElement>('[data-note-copy]')?.addEventListener('click', async () => {
         if (!draft?.value.trim()) { draft?.focus(); if (status) status.textContent = '先写下你的想法，再复制。'; return; }
         try { await navigator.clipboard.writeText(draft.value); if (status) status.textContent = '已复制'; }
@@ -111,6 +110,39 @@ const prompts = [
       prompt.textContent = notes[current];
       try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
 
+      // Carry the original single draft into the first selected note once.
+      try {
+        const legacy = localStorage.getItem('ginlang-reader-note');
+        if (legacy?.trim()) {
+          const entries = readDrafts();
+          let destination = notes[current];
+          if (entries.some((item) => item.prompt === destination)) {
+            destination = '早先写下的一页';
+            while (entries.some((item) => item.prompt === destination)) destination += ' ·';
+          }
+          if (writeDrafts([...entries, { prompt: destination, text: legacy, updatedAt: new Date().toISOString() }]))
+            localStorage.removeItem('ginlang-reader-note');
+        }
+      } catch { /* Storage is optional. */ }
+      const loadDraft = () => {
+        if (draft) draft.value = readDrafts().find((item) => item.prompt === notes[current])?.text ?? '';
+        if (status) status.textContent = '';
+      };
+      loadDraft();
+      draft?.addEventListener('input', () => {
+        const entries = readDrafts().filter((item) => item.prompt !== notes[current]);
+        if (draft.value.trim()) entries.push({ prompt: notes[current], text: draft.value, updatedAt: new Date().toISOString() });
+        const saved = writeDrafts(entries);
+        if (status) status.textContent = saved ? (draft.value ? '已保存在当前浏览器' : '') : '当前浏览器无法保存草稿';
+      });
+      root.querySelector<HTMLButtonElement>('[data-note-clear]')?.addEventListener('click', () => {
+        if (!draft) return;
+        draft.value = '';
+        const saved = writeDrafts(readDrafts().filter((item) => item.prompt !== notes[current]));
+        if (status) status.textContent = saved ? '已清空这一张草稿' : '当前浏览器无法保存更改';
+        draft.focus();
+      });
+
       button.addEventListener('click', () => {
         if (changing) return;
         const nextPick = Math.floor(Math.random() * (notes.length - 1));
@@ -119,6 +151,7 @@ const prompts = [
         const showNext = () => {
           current = next;
           prompt.textContent = notes[current];
+          loadDraft();
           paper.classList.remove('is-changing');
           try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
         };
@@ -223,6 +256,8 @@ const prompts = [
   [data-note-draft]::placeholder { color: var(--muted); opacity: .72; }
   .note-draft-tools { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: center; margin-top: 7px; }
   .note-draft-tools small { color: var(--muted); font: 11px/1.6 var(--sans); }
+  .note-draft-tools small a { margin-left: 8px; color: var(--accent-deep); text-decoration-color: var(--line); text-underline-offset: 3px; }
+  .note-draft-tools small a:hover { text-decoration-color: var(--clay); }
   .note-draft-tools > div { display: flex; gap: 13px; }
   .note-draft-tools button { min-height: 36px; padding: 5px 1px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--accent-deep); cursor: pointer; font: 12px/1.5 var(--sans); }
   .note-draft-tools button:hover { border-bottom-color: var(--accent); }

@@ -31,8 +31,23 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
   })();
 </script>
 
-<figure class="hero-gallery" data-hero-gallery aria-label="首页水彩画册">
-  <div class="hero-gallery-frame" data-gallery-frame>
+<style>
+  .hero-gallery-frame { display: block; padding: 0; color: inherit; cursor: zoom-in; }
+  .hero-gallery-frame:disabled { cursor: default; }
+  .hero-gallery-frame:hover:not(:disabled) { border-color: var(--accent); }
+  .gallery-lightbox { width: min(94vw, 960px); max-width: none; max-height: 94vh; padding: 18px; border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); box-shadow: 0 20px 75px rgb(29 35 29 / 18%); }
+  .gallery-lightbox::backdrop { background: rgb(33 39 34 / 70%); }
+  .gallery-lightbox > img { display: block; width: 100%; height: min(76vh, 760px); object-fit: contain; background: var(--paper); }
+  .gallery-lightbox-close { position: absolute; top: 22px; right: 22px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--paper-raised); color: var(--ink); cursor: pointer; font: 25px/1 var(--sans); }
+  .gallery-lightbox-bottom { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding-top: 12px; color: var(--muted); font: 12px/1.6 var(--serif); }
+  .gallery-lightbox-bottom > div { display: flex; gap: 16px; flex: 0 0 auto; }
+  .gallery-lightbox-bottom button { min-height: 44px; padding: 5px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--accent-deep); cursor: pointer; font: 12px/1.5 var(--sans); }
+  .gallery-lightbox-bottom button:hover { border-bottom-color: var(--clay); color: var(--ink); }
+  @media (max-width: 680px) { .gallery-lightbox { width: calc(100vw - 20px); padding: 10px; } .gallery-lightbox > img { height: min(73vh, 700px); } .gallery-lightbox-close { top: 14px; right: 14px; } .gallery-lightbox-bottom { align-items: flex-start; flex-direction: column; gap: 2px; } }
+</style>
+
+<figure class="hero-gallery" id="home-gallery" data-hero-gallery aria-label="首页水彩画册">
+  <button class="hero-gallery-frame" type="button" data-gallery-frame aria-label="细看当前画作" disabled>
     {slides.map((slide) => (
       <img
         class="hero-gallery-image"
@@ -46,11 +61,11 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
         decoding="async"
       />
     ))}
-    <p class="hero-gallery-fallback" data-gallery-fallback hidden>画面暂时无法加载，请稍后再试。</p>
+    <span class="hero-gallery-fallback" data-gallery-fallback hidden>画面暂时无法加载，请稍后再试。</span>
     <noscript>
       <img class="hero-gallery-nojs" src={base + '/hero-watercolors/' + slides[0].file} width={slides[0].width} height={slides[0].height} alt={slides[0].alt} />
     </noscript>
-  </div>
+  </button>
   <div class="hero-gallery-controls" data-gallery-controls hidden>
     <div class="hero-gallery-actions" role="group" aria-label="画册操作">
       <button type="button" data-gallery-prev aria-label="上一张画" aria-keyshortcuts="ArrowLeft">← <span>上一张</span></button>
@@ -60,6 +75,11 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     </div>
   </div>
   <figcaption class="hero-gallery-caption"><span>首页这几张，来自我的相册。</span><a href={base + '/album/'}>看看相簿</a></figcaption>
+  <dialog class="gallery-lightbox" aria-label="细看水彩画" data-gallery-lightbox>
+    <button class="gallery-lightbox-close" type="button" data-gallery-lightbox-close aria-label="关闭画作">×</button>
+    <img data-gallery-lightbox-image alt="" width="1536" height="1536" />
+    <div class="gallery-lightbox-bottom"><span data-gallery-lightbox-caption></span><div><button type="button" data-gallery-lightbox-prev>上一张</button><button type="button" data-gallery-lightbox-next>下一张</button></div></div>
+  </dialog>
   <Butterfly size="md" />
 </figure>
 
@@ -70,12 +90,15 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     gallery.dataset.galleryReady = 'true';
 
     const images = [...gallery.querySelectorAll<HTMLImageElement>('[data-gallery-slide]')];
-    const frame = gallery.querySelector<HTMLElement>('[data-gallery-frame]');
+    const frame = gallery.querySelector<HTMLButtonElement>('[data-gallery-frame]');
     const controls = gallery.querySelector<HTMLElement>('[data-gallery-controls]');
     const previousButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-prev]');
     const nextButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-next]');
     const playButton = gallery.querySelector<HTMLButtonElement>('[data-gallery-play]');
     const fallback = gallery.querySelector<HTMLElement>('[data-gallery-fallback]');
+    const lightbox = gallery.querySelector<HTMLDialogElement>('[data-gallery-lightbox]');
+    const lightboxImage = gallery.querySelector<HTMLImageElement>('[data-gallery-lightbox-image]');
+    const lightboxCaption = gallery.querySelector<HTMLElement>('[data-gallery-lightbox-caption]');
     if (!images.length || !frame || !controls || !previousButton || !nextButton || !playButton || !fallback) return;
 
     const key = 'ginlang-hero-current';
@@ -91,6 +114,8 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     let userPaused = false;
     let userRequestedPlay = false;
     let touchStart: { x: number; y: number } | null = null;
+    let modalOpen = false;
+    let swiped = false;
 
     const isPaused = () => userPaused || (motion.matches && !userRequestedPlay);
     const remember = (index: number) => {
@@ -108,7 +133,7 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     };
     const schedule = () => {
       clearTimer();
-      if (current < 0 || isPaused() || hovering || focused || document.hidden || failed.size >= images.length - 1) return;
+      if (current < 0 || isPaused() || hovering || focused || modalOpen || document.hidden || failed.size >= images.length - 1) return;
       timer = window.setTimeout(() => { void move(1); }, 6000);
     };
     const ensureLoaded = (index: number) => {
@@ -160,6 +185,13 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
             leaveTimer = 0;
           }, 760);
           current = index;
+          frame.disabled = false;
+          frame.setAttribute('aria-label', '细看画作：' + images[index].alt);
+          if (modalOpen && lightboxImage) {
+            lightboxImage.src = images[index].src;
+            lightboxImage.alt = images[index].alt;
+            if (lightboxCaption) lightboxCaption.textContent = images[index].alt;
+          }
           controls.hidden = false;
           remember(index);
           warmNext(index);
@@ -180,6 +212,21 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
 
     previousButton.addEventListener('click', () => { void move(-1); });
     nextButton.addEventListener('click', () => { void move(1); });
+    frame.addEventListener('click', (event) => {
+      if (swiped) { event.preventDefault(); swiped = false; return; }
+      if (!lightbox || !lightboxImage || current < 0) return;
+      modalOpen = true;
+      clearTimer();
+      lightboxImage.src = images[current].src;
+      lightboxImage.alt = images[current].alt;
+      if (lightboxCaption) lightboxCaption.textContent = images[current].alt;
+      lightbox.showModal();
+      gallery.querySelector<HTMLButtonElement>('[data-gallery-lightbox-close]')?.focus();
+    });
+    gallery.querySelector<HTMLButtonElement>('[data-gallery-lightbox-close]')?.addEventListener('click', () => lightbox?.close());
+    gallery.querySelector<HTMLButtonElement>('[data-gallery-lightbox-prev]')?.addEventListener('click', () => { void move(-1); });
+    gallery.querySelector<HTMLButtonElement>('[data-gallery-lightbox-next]')?.addEventListener('click', () => { void move(1); });
+    lightbox?.addEventListener('close', () => { modalOpen = false; frame.focus(); focused = frame.matches(':focus-visible'); schedule(); });
     gallery.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
@@ -230,9 +277,26 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
       const dx = touch.clientX - touchStart.x;
       const dy = touch.clientY - touchStart.y;
       touchStart = null;
-      if (Math.abs(dx) >= 42 && Math.abs(dx) > Math.abs(dy) * 1.35) void move(dx < 0 ? 1 : -1);
+      if (Math.abs(dx) >= 42 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+        swiped = true;
+        void move(dx < 0 ? 1 : -1);
+        window.setTimeout(() => { swiped = false; }, 500);
+      }
     }, { passive: true });
     frame.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
+    lightboxImage?.addEventListener('touchstart', (event) => {
+      const touch = event.changedTouches[0];
+      if (touch) touchStart = { x: touch.clientX, y: touch.clientY };
+    }, { passive: true });
+    lightboxImage?.addEventListener('touchend', (event) => {
+      if (!touchStart) return;
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      const dx = touch.clientX - touchStart.x;
+      const dy = touch.clientY - touchStart.y;
+      touchStart = null;
+      if (Math.abs(dx) >= 42 && Math.abs(dx) > Math.abs(dy) * 1.35) void move(dx < 0 ? 1 : -1);
+    }, { passive: true });
 
     updatePlayButton();
     const chosenId = (window as Window & { __ginlangHeroStartId?: string }).__ginlangHeroStartId;

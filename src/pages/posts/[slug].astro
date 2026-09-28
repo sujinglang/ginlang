@@ -2,6 +2,7 @@
 import { getCollection, getEntry, render } from 'astro:content';
 import BookmarkWidget from '../../components/BookmarkWidget.astro';
 import MarginWhisper from '../../components/MarginWhisper.astro';
+import SaveArticle from '../../components/SaveArticle.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
@@ -65,6 +66,8 @@ const articleSchema = JSON.stringify({
         <span>文 / <a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></span>
       </div>
     </header>
+
+    <SaveArticle postId={post.id} />
 
     <BookmarkWidget />
 

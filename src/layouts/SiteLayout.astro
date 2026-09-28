@@ -218,11 +218,11 @@ const webSiteSchema = JSON.stringify({
         </div>
         <button class="dialog-close" type="button" data-dialog-close aria-label="关闭搜索">×</button>
       </div>
-      <label class="sr-only" for="search-input">搜索标题、摘要、作者和分类</label>
+      <label class="sr-only" for="search-input">搜索文章正文、标题、摘要、作者和分类</label>
       <input class="search-input" id="search-input" type="search" name="query" placeholder="试试「九月」或「读书」…" autocomplete="off" />
       <p class="search-status" id="search-status" aria-live="polite">输入关键词，慢慢找。</p>
       <ol class="search-results" id="search-results"></ol>
-      <div class="dialog-foot"><span>标题 · 摘要 · 作者 · 分类 · <kbd>↑</kbd><kbd>↓</kbd> 选择</span><kbd>ESC</kbd></div>
+      <div class="dialog-foot"><span>正文 · 标题 · 作者 · 分类 · <kbd>↑</kbd><kbd>↓</kbd> 选择</span><kbd>ESC</kbd></div>
     </dialog>
 
     <dialog class="utility-dialog settings-dialog" id="reading-settings" aria-labelledby="settings-title">
@@ -389,7 +389,7 @@ const webSiteSchema = JSON.stringify({
       const searchResults = document.querySelector<HTMLOListElement>('#search-results');
       const searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
       const indexUrl = searchDialog?.dataset.indexUrl ?? '/search-index.json';
-      type SearchItem = { title: string; excerpt: string; category: string; author: string; date: string; url: string };
+      type SearchItem = { title: string; excerpt: string; body: string; category: string; author: string; date: string; url: string };
       let searchItemsPromise: Promise<SearchItem[]> | undefined;
       let searchRevision = 0;
 
@@ -437,7 +437,11 @@ const webSiteSchema = JSON.stringify({
         meta.className = 'search-result-meta';
         meta.textContent = item.date + '  ·  ' + item.category + '  ·  ' + item.author;
         title.append(highlighted(item.title, query));
-        excerpt.append(highlighted(item.excerpt, query));
+        const bodyIndex = item.body.toLocaleLowerCase().indexOf(query);
+        const source = bodyIndex >= 0 && !item.excerpt.toLocaleLowerCase().includes(query)
+          ? (bodyIndex > 42 ? '…' : '') + item.body.slice(Math.max(0, bodyIndex - 42), bodyIndex + query.length + 84) + (bodyIndex + query.length + 84 < item.body.length ? '…' : '')
+          : item.excerpt;
+        excerpt.append(highlighted(source, query));
         link.append(meta, title, excerpt);
         row.append(link);
         searchResults?.append(row);
@@ -456,8 +460,9 @@ const webSiteSchema = JSON.stringify({
         const items = await getSearchItems();
         if (revision !== searchRevision || !searchDialog?.open) return;
         const matches = items.filter((item) =>
-          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + item.author).toLocaleLowerCase().includes(query),
-        ).slice(0, 8);
+          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + item.author + ' ' + item.body).toLocaleLowerCase().includes(query),
+        ).sort((a, b) => Number(b.title.toLocaleLowerCase().includes(query)) - Number(a.title.toLocaleLowerCase().includes(query))
+          || Number(b.excerpt.toLocaleLowerCase().includes(query)) - Number(a.excerpt.toLocaleLowerCase().includes(query))).slice(0, 8);
         if (matches.length) {
           searchStatus.textContent = '找到这些相关的文章';
           matches.forEach((item) => showSearchResult(item, query));
@@ -478,9 +483,21 @@ const webSiteSchema = JSON.stringify({
       });
       searchDialog?.addEventListener('close', () => {
         if (searchInput) searchInput.value = '';
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('q')) {
+          url.searchParams.delete('q');
+          window.history.replaceState(null, '', url);
+        }
         void updateSearch();
       });
-      searchInput?.addEventListener('input', () => void updateSearch());
+      searchInput?.addEventListener('input', () => {
+        const url = new URL(window.location.href);
+        const query = searchInput.value.trim();
+        if (query) url.searchParams.set('q', query);
+        else url.searchParams.delete('q');
+        window.history.replaceState(null, '', url);
+        void updateSearch();
+      });
       searchInput?.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           event.preventDefault();
@@ -516,6 +533,12 @@ const webSiteSchema = JSON.stringify({
           openSearch();
         }
       });
+      const sharedQuery = new URL(window.location.href).searchParams.get('q');
+      if (sharedQuery && searchInput && searchDialog) {
+        searchInput.value = sharedQuery;
+        openSearch();
+        void updateSearch();
+      }
 
       const shareDialog = document.querySelector<HTMLDialogElement>('#share-dialog');
       const shareUrlInput = document.querySelector<HTMLInputElement>('#share-url');

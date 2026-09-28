@@ -1115,6 +1115,10 @@ body { background: var(--paper); }
 .profile-quote p { margin: 0; }
 .profile-quote .profile-quote-english { max-width: 39em; color: var(--accent-deep); font: 400 clamp(27px, 2.3vw, 31px)/1.5 var(--hand-en); letter-spacing: 0.005em; }
 .profile-quote .profile-quote-chinese { max-width: 38em; margin-top: 23px; color: var(--ink); font: 400 clamp(26px, 2.2vw, 30px)/1.62 var(--hand-cn); letter-spacing: 0.01em; }
+.mobile-home-guide { display: none; }
+.desk-entry { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin: 0 0 38px; padding: 0 0 19px; border-bottom: 1px solid var(--line); color: var(--muted); font: 13px/1.7 var(--serif); }
+.desk-entry a { flex: 0 0 auto; min-height: 44px; display: inline-flex; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--line); color: var(--accent-deep); font: 12px/1.5 var(--sans); text-decoration: none; }
+.desk-entry a:hover { border-bottom-color: var(--clay); color: var(--ink); }
 .profile-quote cite { display: block; margin-top: 10px; color: var(--muted); font: normal 12px/1.6 var(--sans); }
 .about-reading-path { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 24px; align-items: center; margin: 55px 0 0; padding: 25px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .about-reading-path .folio-mark { grid-column: 1 / -1; }
@@ -1129,6 +1133,10 @@ body { background: var(--paper); }
 .footer-visit small { font-size: 10px; opacity: .85; }
 
 @media (max-width: 680px) {
+  .mobile-home-guide { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; padding-top: 11px; border-top: 1px solid var(--line); }
+  .mobile-home-guide a { display: inline-flex; min-height: 44px; align-items: center; color: var(--accent-deep); font: 12px/1.5 var(--sans); text-decoration: none; }
+  .mobile-home-guide a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .desk-entry { align-items: flex-start; flex-direction: column; gap: 3px; margin-bottom: 30px; }
   .home-hero > .hero-gallery { grid-column: 1; grid-row: 3; }
   .home-profile { display: block; grid-column: 1; grid-row: 2; margin-top: 0; padding: 0 0 26px; border-top: 0; }
   .home-profile-visual { width: calc(100% + 36px); margin-top: 0; margin-left: -18px; gap: 20px; }

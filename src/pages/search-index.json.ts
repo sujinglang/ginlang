@@ -15,6 +15,14 @@ export async function GET() {
     return {
       title: post.data.title,
       excerpt: post.data.excerpt,
+      body: (post.body ?? '')
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/[#*_`>~]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim(),
       category: categoryLabel(post.data.category),
       author: author.data.name,
       date: formatDate(post.data.date),

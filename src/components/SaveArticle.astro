@@ -1,0 +1,58 @@
+---
+interface Props { postId: string }
+const { postId } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<div class="save-article" data-save-article={postId}>
+  <button type="button" aria-pressed="false" hidden data-save-toggle>存到我的书桌</button>
+  <a href={base + '/desk/'}>打开我的书桌</a>
+  <span role="status" aria-live="polite" data-save-status></span>
+</div>
+
+<script>
+  function initSaveArticle() {
+    document.querySelectorAll<HTMLElement>('[data-save-article]:not([data-save-ready])').forEach((root) => {
+      const id = root.dataset.saveArticle;
+      const button = root.querySelector<HTMLButtonElement>('[data-save-toggle]');
+      const status = root.querySelector<HTMLElement>('[data-save-status]');
+      if (!id || !button || !status) return;
+      root.dataset.saveReady = 'true';
+      const key = 'ginlang-saved-posts-v1';
+      const read = (): string[] => {
+        try {
+          const stored = JSON.parse(localStorage.getItem(key) || '[]');
+          return Array.isArray(stored) ? stored.filter((item): item is string => typeof item === 'string') : [];
+        } catch { return []; }
+      };
+      const refresh = () => {
+        const saved = read().includes(id);
+        button.textContent = saved ? '已存到书桌 · 取下' : '存到我的书桌';
+        button.setAttribute('aria-pressed', String(saved));
+      };
+      button.hidden = false;
+      refresh();
+      button.addEventListener('click', () => {
+        const saved = new Set(read());
+        if (saved.has(id)) saved.delete(id);
+        else saved.add(id);
+        try {
+          localStorage.setItem(key, JSON.stringify([...saved]));
+          refresh();
+          status.textContent = saved.has(id) ? '文章已放进书桌' : '已从书桌取下';
+        } catch { status.textContent = '当前浏览器无法保存文章'; }
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSaveArticle, { once: true });
+  else initSaveArticle();
+  document.addEventListener('astro:page-load', initSaveArticle);
+</script>
+
+<style>
+  .save-article { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 22px 0 2px; font: 12px/1.6 var(--sans); }
+  .save-article button, .save-article a { min-height: 44px; display: inline-flex; align-items: center; padding: 7px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--accent-deep); cursor: pointer; text-decoration: none; }
+  .save-article button[aria-pressed="true"] { color: var(--clay); border-bottom-color: var(--clay); }
+  .save-article button:hover, .save-article a:hover { border-bottom-color: var(--accent); color: var(--ink); }
+  .save-article [role="status"] { color: var(--muted); font-size: 11px; }
+</style>

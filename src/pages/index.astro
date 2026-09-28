@@ -73,6 +73,9 @@ const landscapes = [
           <a class="hero-link hero-link-secondary" href={base + '/authors/'}><span class="hero-link-copy">认识作者</span></a>
           <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden><span class="hero-link-copy">随机翻一页</span></button>
         </div>
+        <nav class="mobile-home-guide" aria-label="首页段落导览">
+          <a href="#home-gallery">看画</a><a href="#latest-title">读文章</a><a href="#daily-note-title">写今日笺</a>
+        </nav>
       </div>
       {founder && (
         <section class="home-profile" aria-labelledby="home-profile-name" data-reveal="image">
@@ -103,6 +106,10 @@ const landscapes = [
   </section>
 
   <div class="home-content">
+    <aside class="desk-entry" aria-label="我的书桌">
+      <span>读到想留下的文章，写下还没写完的句子。</span>
+      <a href={base + '/desk/'}>打开我的书桌</a>
+    </aside>
     <section class="selection-section" aria-labelledby="latest-title" data-reveal="ink">
       <div class="section-heading">
         <div class="section-heading-main">

@@ -1,0 +1,199 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { categoryLabel } from '../lib/categories';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).map((post) => ({
+  id: post.id,
+  title: post.data.title,
+  category: categoryLabel(post.data.category),
+  url: base + '/posts/' + post.id + '/',
+}));
+---
+
+<SiteLayout title="我的书桌" description="保存在当前浏览器里的文章、书签与今日笺。">
+  <section class="desk-page" data-reading-desk data-posts={JSON.stringify(posts)}>
+    <a class="back-link" href={base + '/'}>← 回到首页</a>
+    <header class="desk-intro">
+      <span class="folio-mark">A READING DESK</span>
+      <h1>我的书桌</h1>
+      <p>读过的文章、夹过的书签和写下的今日笺，放在同一处。它们只保存在当前浏览器。</p>
+    </header>
+    <div class="desk-actions"><button type="button" data-desk-export hidden>导出我的书桌</button><span role="status" aria-live="polite" data-desk-status></span></div>
+    <section class="desk-section" aria-labelledby="desk-saved-title">
+      <div class="desk-heading"><h2 id="desk-saved-title">留下的文章</h2><a href={base + '/writing/'}>去文章里看看</a></div>
+      <p class="desk-empty" data-saved-empty>还没有存下文章。读到想回来的那篇，可以在文章页放进书桌。</p>
+      <ul data-saved-list></ul>
+    </section>
+    <section class="desk-section" aria-labelledby="desk-bookmarks-title">
+      <div class="desk-heading"><h2 id="desk-bookmarks-title">夹过的书签</h2></div>
+      <p class="desk-empty" data-bookmarks-empty>还没有阅读书签。读文章时可以把当前页夹起来。</p>
+      <ul data-bookmarks-list></ul>
+    </section>
+    <section class="desk-section" aria-labelledby="desk-notes-title">
+      <div class="desk-heading"><h2 id="desk-notes-title">今日笺草稿</h2><a href={base + '/#daily-note-title'}>回到今日笺</a></div>
+      <p class="desk-empty" data-notes-empty>这里还没有草稿。写下的每一张今日笺都会留在这里。</p>
+      <ul data-notes-list></ul>
+    </section>
+  </section>
+</SiteLayout>
+
+<script>
+  type Post = { id: string; title: string; category: string; url: string };
+  type Note = { prompt: string; text: string; updatedAt: string };
+  const savedKey = 'ginlang-saved-posts-v1';
+  const notesKey = 'ginlang-reader-notes-v1';
+  const bookmarkPrefix = 'ginlang-reading-bookmark:';
+  const readArray = (key: string): unknown[] => {
+    try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; }
+    catch { return []; }
+  };
+
+  function initReadingDesk() {
+    const root = document.querySelector<HTMLElement>('[data-reading-desk]:not([data-desk-ready])');
+    if (!root) return;
+    root.dataset.deskReady = 'true';
+    const catalog: Post[] = JSON.parse(root.dataset.posts || '[]');
+    const known = new Map(catalog.map((post) => [post.id, post]));
+    const savedList = root.querySelector<HTMLUListElement>('[data-saved-list]');
+    const bookmarkList = root.querySelector<HTMLUListElement>('[data-bookmarks-list]');
+    const notesList = root.querySelector<HTMLUListElement>('[data-notes-list]');
+    const exportButton = root.querySelector<HTMLButtonElement>('[data-desk-export]');
+    const status = root.querySelector<HTMLElement>('[data-desk-status]');
+    if (!savedList || !bookmarkList || !notesList || !exportButton || !status) return;
+
+    const savedIds = () => readArray(savedKey).filter((id): id is string => typeof id === 'string' && known.has(id));
+    const notes = () => readArray(notesKey).filter((item): item is Note =>
+      typeof (item as Note)?.prompt === 'string' && typeof (item as Note)?.text === 'string' && typeof (item as Note)?.updatedAt === 'string');
+    const bookmarks = () => catalog.filter((post) => {
+      try { return localStorage.getItem(bookmarkPrefix + post.url) !== null; }
+      catch { return false; }
+    });
+    const makeLink = (post: Post) => {
+      const link = document.createElement('a');
+      link.href = post.url;
+      link.textContent = post.title;
+      return link;
+    };
+    const setEmpty = (selector: string, empty: boolean) => {
+      const element = root.querySelector<HTMLElement>(selector);
+      if (element) element.hidden = !empty;
+    };
+    const render = () => {
+      const saved = savedIds();
+      const marked = bookmarks();
+      const drafts = notes();
+      savedList.replaceChildren();
+      bookmarkList.replaceChildren();
+      notesList.replaceChildren();
+      setEmpty('[data-saved-empty]', !saved.length);
+      setEmpty('[data-bookmarks-empty]', !marked.length);
+      setEmpty('[data-notes-empty]', !drafts.length);
+      exportButton.hidden = !saved.length && !marked.length && !drafts.length;
+
+      saved.forEach((id) => {
+        const post = known.get(id)!;
+        const row = document.createElement('li');
+        const info = document.createElement('div');
+        const category = document.createElement('small');
+        const remove = document.createElement('button');
+        category.textContent = post.category;
+        info.append(category, makeLink(post));
+        remove.type = 'button';
+        remove.textContent = '取下';
+        remove.setAttribute('aria-label', `从书桌取下《${post.title}》`);
+        remove.addEventListener('click', () => {
+          try { localStorage.setItem(savedKey, JSON.stringify(savedIds().filter((item) => item !== id))); render(); status.textContent = '文章已取下'; }
+          catch { status.textContent = '当前浏览器无法保存更改'; }
+        });
+        row.append(info, remove);
+        savedList.append(row);
+      });
+      marked.forEach((post) => {
+        const row = document.createElement('li');
+        const info = document.createElement('div');
+        const label = document.createElement('small');
+        label.textContent = '阅读书签';
+        info.append(label, makeLink(post));
+        row.append(info);
+        bookmarkList.append(row);
+      });
+      drafts.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).forEach((note) => {
+        const row = document.createElement('li');
+        row.className = 'desk-note-row';
+        const lead = document.createElement('p');
+        const field = document.createElement('textarea');
+        const remove = document.createElement('button');
+        lead.textContent = note.prompt;
+        field.value = note.text;
+        field.rows = 4;
+        field.setAttribute('aria-label', '编辑这张今日笺的草稿');
+        field.addEventListener('input', () => {
+          note.text = field.value;
+          note.updatedAt = new Date().toISOString();
+          try { localStorage.setItem(notesKey, JSON.stringify(notes().map((item) => item.prompt === note.prompt ? note : item))); status.textContent = '草稿已保存'; }
+          catch { status.textContent = '当前浏览器无法保存更改'; }
+        });
+        remove.type = 'button';
+        remove.textContent = '删除草稿';
+        remove.addEventListener('click', () => {
+          if (remove.dataset.confirm !== 'true') {
+            remove.dataset.confirm = 'true';
+            remove.textContent = '再次点击以删除';
+            window.setTimeout(() => { if (remove.isConnected) { remove.dataset.confirm = 'false'; remove.textContent = '删除草稿'; } }, 4000);
+            return;
+          }
+          try { localStorage.setItem(notesKey, JSON.stringify(notes().filter((item) => item.prompt !== note.prompt))); render(); status.textContent = '草稿已删除'; }
+          catch { status.textContent = '当前浏览器无法保存更改'; }
+        });
+        row.append(lead, field, remove);
+        notesList.append(row);
+      });
+    };
+
+    exportButton.addEventListener('click', () => {
+      const saved = savedIds().map((id) => known.get(id)!).filter(Boolean);
+      const marked = bookmarks();
+      const drafts = notes();
+      const lines = ['# 我的书桌', '', '## 留下的文章', ...saved.map((post) => `- [${post.title}](${new URL(post.url, location.origin)})`), '', '## 阅读书签', ...marked.map((post) => `- [${post.title}](${new URL(post.url, location.origin)})`), '', '## 今日笺草稿'];
+      drafts.forEach((note) => lines.push('', `### ${note.prompt}`, '', note.text));
+      const url = URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/markdown;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'ginlang-我的书桌.md';
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = '书桌已导出为 Markdown 文件';
+    });
+    render();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initReadingDesk, { once: true });
+  else initReadingDesk();
+  document.addEventListener('astro:page-load', initReadingDesk);
+</script>
+
+<style>
+  .desk-page { max-width: 830px; margin: 0 auto; padding: 38px 0 96px; }
+  .desk-intro { max-width: 620px; padding: 28px 0 34px; }
+  .desk-intro h1 { margin: 13px 0 16px; font: 500 clamp(38px, 5vw, 58px)/1.25 var(--serif); }
+  .desk-intro p { margin: 0; color: var(--muted); font: 16px/1.9 var(--serif); }
+  .desk-actions { display: flex; align-items: center; gap: 20px; min-height: 52px; border-top: 1px solid var(--line); }
+  .desk-actions button, .desk-heading a, .desk-section button { min-height: 44px; padding: 7px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--accent-deep); cursor: pointer; font: 12px/1.6 var(--sans); text-decoration: none; }
+  .desk-actions button:hover, .desk-heading a:hover, .desk-section button:hover { border-bottom-color: var(--clay); color: var(--ink); }
+  .desk-actions span { color: var(--muted); font: 11px/1.5 var(--sans); }
+  .desk-section { padding: 42px 0 20px; border-top: 1px solid var(--line); }
+  .desk-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; }
+  .desk-heading h2 { margin: 0; font: 500 27px/1.4 var(--serif); }
+  .desk-empty { margin: 23px 0 10px; color: var(--muted); font: 14px/1.8 var(--serif); }
+  .desk-section ul { margin: 19px 0 0; padding: 0; list-style: none; }
+  .desk-section li { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 0; border-top: 1px solid var(--line); }
+  .desk-section li > div { display: grid; gap: 6px; min-width: 0; }
+  .desk-section li small { color: var(--muted); font: 11px/1.5 var(--sans); }
+  .desk-section li a { color: var(--ink); font: 19px/1.5 var(--serif); text-decoration: none; }
+  .desk-section li a:hover { color: var(--accent-deep); text-decoration: underline; text-underline-offset: 5px; }
+  .desk-section .desk-note-row { display: grid; justify-content: stretch; gap: 13px; }
+  .desk-note-row p { margin: 0; color: var(--muted); font: 14px/1.85 var(--serif); }
+  .desk-note-row textarea { width: 100%; min-height: 110px; resize: vertical; padding: 12px; border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); font: 15px/1.8 var(--serif); }
+  .desk-note-row button { justify-self: end; }
+  @media (max-width: 680px) { .desk-page { padding: 30px 0 72px; } .desk-section { padding-top: 33px; } .desk-heading h2 { font-size: 23px; } .desk-section li a { font-size: 17px; } }
+</style>
