@@ -1,5 +1,6 @@
 ---
 import Butterfly from './Butterfly.astro';
+import CardMaker from './CardMaker.astro';
 import { heroImages } from '../data/heroWatercolors';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -74,7 +75,7 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
       <button type="button" data-gallery-play aria-label="暂停自动播放" aria-pressed="false">暂停</button>
     </div>
   </div>
-  <figcaption class="hero-gallery-caption"><span>首页这几张，来自我的相册。</span><a href={base + '/album/'}>看看相簿</a></figcaption>
+  <figcaption class="hero-gallery-caption"><span>首页这几张，来自我的相册。</span><div class="hero-gallery-caption-actions"><CardMaker /><a href={base + '/album/'}>看看相簿</a></div></figcaption>
   <dialog class="gallery-lightbox" aria-label="细看水彩画" data-gallery-lightbox>
     <button class="gallery-lightbox-close" type="button" data-gallery-lightbox-close aria-label="关闭画作">×</button>
     <img data-gallery-lightbox-image alt="" width="1536" height="1536" />
@@ -133,7 +134,7 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     };
     const schedule = () => {
       clearTimer();
-      if (current < 0 || isPaused() || hovering || focused || modalOpen || document.hidden || failed.size >= images.length - 1) return;
+      if (current < 0 || isPaused() || hovering || focused || modalOpen || gallery.querySelector<HTMLDialogElement>('[data-card-dialog]')?.open || document.hidden || failed.size >= images.length - 1) return;
       timer = window.setTimeout(() => { void move(1); }, 6000);
     };
     const ensureLoaded = (index: number) => {
@@ -249,6 +250,8 @@ const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/h
     });
     gallery.addEventListener('mouseenter', () => { hovering = true; clearTimer(); });
     gallery.addEventListener('mouseleave', () => { hovering = false; schedule(); });
+    gallery.addEventListener('card-maker-open', clearTimer);
+    gallery.addEventListener('card-maker-close', schedule);
     gallery.addEventListener('focusin', (event) => {
       if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
         focused = true;

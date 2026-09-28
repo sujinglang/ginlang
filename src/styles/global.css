@@ -281,6 +281,7 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
 .hero-gallery-divider { height: 16px; border-left: 1px solid var(--line); }
 .hero-gallery .quiet-butterfly { top: -28px; right: -32px; opacity: 0.68; }
 .hero-gallery-caption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; margin-top: 6px; color: var(--muted); font: 11px/1.7 var(--serif); }
+.hero-gallery-caption-actions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; }
 .hero-gallery-caption a { display: inline-flex; min-height: 40px; align-items: center; border-bottom: 1px solid var(--line); color: var(--accent-deep); font: 11px/1.5 var(--sans); text-decoration: none; }
 .hero-gallery-caption a:hover { border-bottom-color: var(--clay); color: var(--ink); }
 .hero-gallery-caption a:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }

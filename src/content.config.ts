@@ -16,6 +16,7 @@ const posts = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     category: z.enum(['essay', 'diary', 'book', 'short']),
+    themes: z.array(z.enum(['philosophy', 'life', 'love', 'freedom', 'direction'])).default([]),
     excerpt: z.string(),
     author: reference('authors'),
     draft: z.boolean().default(false),

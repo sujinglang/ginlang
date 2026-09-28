@@ -4,16 +4,25 @@ import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
+import { buildReadingRoutes, readingThemeLabels } from '../lib/readingRoutes';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
+const routes = buildReadingRoutes(posts);
 ---
 
 <SiteLayout title="文章" description="阅读 GINLANG 的随笔、日记、书摘与短句。">
   <section class="listing-page writing-page" data-writing-index>
     <a class="back-link" href={base + '/'}>← 回到首页</a>
     <header class="editorial-page-header"><span class="folio-mark">GINLANG / WRITING</span><h1>文章</h1><p>从一篇开始读，或者按你想看的类别慢慢找。</p></header>
+    {routes.length > 0 && <section class="reading-routes" aria-labelledby="reading-routes-title">
+      <div class="reading-routes-heading"><h2 id="reading-routes-title">主题阅读路线</h2><p>从较早的一篇开始，沿着同一个主题继续读。</p></div>
+      <div class="reading-route-list">{routes.map((route) => <div class="reading-route">
+        <h3>{readingThemeLabels[route.theme]}</h3>
+        <ol>{route.posts.map((post, index) => <li><span>{index === 0 ? '从这里读起' : '接着读'}</span><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a></li>)}</ol>
+      </div>)}</div>
+    </section>}
     <div class="writing-filter" role="group" aria-label="按类别筛选文章">
       <button type="button" data-writing-filter="all" aria-pressed="true">全部</button>
       {categories.map((category) => <button type="button" data-writing-filter={category.slug} aria-pressed="false">{category.label}</button>)}
@@ -71,3 +80,19 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
   else initWritingIndex();
   document.addEventListener('astro:page-load', initWritingIndex);
 </script>
+
+<style>
+  .reading-routes { margin: 44px 0 48px; padding: 27px 0 6px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .reading-routes-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 5px 22px; margin-bottom: 17px; }
+  .reading-routes-heading h2 { margin: 0; font: 500 25px/1.5 var(--serif); }
+  .reading-routes-heading p { margin: 0; color: var(--muted); font: 12px/1.7 var(--sans); }
+  .reading-route-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 36px; }
+  .reading-route { min-width: 0; padding: 0 0 27px; }
+  .reading-route h3 { margin: 0 0 11px; color: var(--accent-deep); font: 500 18px/1.6 var(--serif); }
+  .reading-route ol { margin: 0; padding: 0; list-style: none; }
+  .reading-route li { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--line); }
+  .reading-route li span { color: var(--muted); font: 11px/1.5 var(--sans); }
+  .reading-route li a { color: var(--ink); font: 16px/1.7 var(--serif); text-decoration: none; }
+  .reading-route li a:hover { color: var(--accent-deep); text-decoration: underline; text-underline-offset: 4px; }
+  @media (max-width: 680px) { .reading-routes { margin: 30px 0 35px; } .reading-route-list { grid-template-columns: 1fr; gap: 6px; } .reading-route li { grid-template-columns: 75px minmax(0, 1fr); gap: 10px; } }
+</style>

@@ -1,0 +1,219 @@
+---
+import { heroImages } from '../data/heroWatercolors';
+import { allWhispers } from '../data/whispers';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const selectedTexts = [
+  '人生的意义不在于何以有生，而在于自己怎样生活。',
+  '力量怎样微弱，可是是自己的。',
+  '我走不动的时候，祖父就抱著我；我走动了，祖父就拉著我。',
+  '像今晚上，一个人在这苍茫的月下，甚么都可以想，甚么都可以不想，便觉是个自由的人。',
+  '生命是我自己的东西，所以我不妨大步走去，向著我自以为可以走去的路。',
+  '我不曾忘，也不能忘，那天的天澄清的透蓝。',
+];
+const quotes = selectedTexts.map((text) => {
+  const line = allWhispers.find((entry) => entry.text === text);
+  if (!line?.source) throw new Error(`小卡片选句缺少已核对的出处：${text}`);
+  return line;
+});
+const paintings = heroImages.map(({ id, file, title, alt }) => ({ id, title, alt, src: base + '/hero-watercolors/' + file }));
+---
+
+<div class="card-maker" data-card-maker data-paintings={JSON.stringify(paintings)} data-quotes={JSON.stringify(quotes)}>
+  <button class="card-maker-trigger" type="button" data-card-open hidden>做张小卡片</button>
+  <dialog class="card-maker-dialog" data-card-dialog aria-labelledby="card-maker-title">
+    <div class="card-maker-heading">
+      <div><h2 id="card-maker-title">做张小卡片</h2><p>挑一幅画、一句话，留作自己的书签。</p></div>
+      <button type="button" class="card-maker-close" data-card-close aria-label="关闭小卡片制作">×</button>
+    </div>
+    <div class="card-maker-body">
+      <div class="card-maker-preview"><canvas width="1200" height="1600" role="img" aria-label="小卡片预览" data-card-canvas></canvas></div>
+      <div class="card-maker-controls">
+        <label for="card-painting">画面</label>
+        <select id="card-painting" data-card-painting>{paintings.map((painting) => <option value={painting.id}>{painting.title}</option>)}</select>
+        <label for="card-quote">句子</label>
+        <select id="card-quote" data-card-quote>{quotes.map((quote, index) => <option value={index}>{quote.text} · {quote.source}</option>)}</select>
+        <div class="card-maker-actions"><button type="button" data-card-shuffle>换一种搭配</button><button type="button" class="card-maker-download" data-card-download disabled>下载图片</button></div>
+        <p role="status" aria-live="polite" data-card-status>画面和句子来自本站现有内容。</p>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  type Painting = { id: string; title: string; alt: string; src: string };
+  type Quote = { text: string; source: string };
+  function initCardMakers() {
+    document.querySelectorAll<HTMLElement>('[data-card-maker]:not([data-card-ready])').forEach((root) => {
+      const trigger = root.querySelector<HTMLButtonElement>('[data-card-open]');
+      const dialog = root.querySelector<HTMLDialogElement>('[data-card-dialog]');
+      const close = root.querySelector<HTMLButtonElement>('[data-card-close]');
+      const paintingSelect = root.querySelector<HTMLSelectElement>('[data-card-painting]');
+      const quoteSelect = root.querySelector<HTMLSelectElement>('[data-card-quote]');
+      const shuffle = root.querySelector<HTMLButtonElement>('[data-card-shuffle]');
+      const download = root.querySelector<HTMLButtonElement>('[data-card-download]');
+      const canvas = root.querySelector<HTMLCanvasElement>('[data-card-canvas]');
+      const status = root.querySelector<HTMLElement>('[data-card-status]');
+      if (!trigger || !dialog || !close || !paintingSelect || !quoteSelect || !shuffle || !download || !canvas || !status) return;
+      let paintings: Painting[] = [];
+      let quotes: Quote[] = [];
+      try {
+        paintings = JSON.parse(root.dataset.paintings || '[]');
+        quotes = JSON.parse(root.dataset.quotes || '[]');
+      } catch { return; }
+      if (!paintings.length || !quotes.length) return;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      root.dataset.cardReady = 'true';
+      trigger.hidden = false;
+      let revision = 0;
+      let ready = false;
+
+      const wrap = (value: string, maxWidth: number, size: number) => {
+        context.font = `${size}px "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif`;
+        const lines: string[] = [];
+        let line = '';
+        const characters = Array.from(value);
+        const closingMarks = '，。！？；：、》”』）';
+        for (let index = 0; index < characters.length; index += 1) {
+          const character = characters[index];
+          const next = characters[index + 1] || '';
+          const wouldOrphanMark = next && closingMarks.includes(next)
+            && context.measureText(line + character + next).width > maxWidth;
+          if (line && (context.measureText(line + character).width > maxWidth || wouldOrphanMark)) {
+            lines.push(line);
+            line = character;
+          } else line += character;
+        }
+        if (line) lines.push(line);
+        return lines;
+      };
+      const paint = async () => {
+        const thisRevision = ++revision;
+        ready = false;
+        download.disabled = true;
+        status.textContent = '正在排版…';
+        const painting = paintings.find((item) => item.id === paintingSelect.value) || paintings[0];
+        const quote = quotes[Number(quoteSelect.value)] || quotes[0];
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = painting.src;
+        try {
+          await Promise.all([image.decode(), document.fonts.ready]);
+        } catch {
+          if (thisRevision === revision) status.textContent = '这幅画暂时无法加载，请换一幅。';
+          return;
+        }
+        if (thisRevision !== revision) return;
+
+        const width = canvas.width;
+        const height = canvas.height;
+        context.fillStyle = '#f6f4ee';
+        context.fillRect(0, 0, width, height);
+        context.fillStyle = '#fbfaf6';
+        context.fillRect(70, 70, 1060, 1010);
+        context.strokeStyle = '#dedbd1';
+        context.lineWidth = 2;
+        context.strokeRect(70, 70, 1060, 1010);
+        const bounds = { x: 92, y: 92, width: 1016, height: 966 };
+        const scale = Math.min(bounds.width / image.naturalWidth, bounds.height / image.naturalHeight);
+        const imageWidth = image.naturalWidth * scale;
+        const imageHeight = image.naturalHeight * scale;
+        context.drawImage(image, bounds.x + (bounds.width - imageWidth) / 2, bounds.y + (bounds.height - imageHeight) / 2, imageWidth, imageHeight);
+
+        context.strokeStyle = '#a66d52';
+        context.beginPath();
+        context.moveTo(86, 1130);
+        context.lineTo(162, 1130);
+        context.stroke();
+        let size = 43;
+        let lines = wrap(`“${quote.text}”`, 1000, size);
+        while (lines.length > 4 && size > 34) { size -= 2; lines = wrap(`“${quote.text}”`, 1000, size); }
+        context.fillStyle = '#292a26';
+        context.textBaseline = 'top';
+        context.font = `${size}px "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif`;
+        lines.forEach((line, index) => context.fillText(line, 86, 1172 + index * (size * 1.65)));
+        context.fillStyle = '#596d5b';
+        context.font = '25px "Noto Sans SC", "Microsoft YaHei", sans-serif';
+        context.fillText(quote.source, 88, 1490);
+        context.textAlign = 'right';
+        context.font = '26px Georgia, serif';
+        context.letterSpacing = '4px';
+        context.fillText('GINLANG', width - 88, 1490);
+        context.textAlign = 'left';
+        context.letterSpacing = '0px';
+        canvas.setAttribute('aria-label', `${painting.alt} ${quote.text} ${quote.source}`);
+        ready = true;
+        download.disabled = false;
+        status.textContent = '可以下载这张小卡片。';
+      };
+      trigger.addEventListener('click', () => {
+        const gallery = root.closest('[data-hero-gallery]');
+        const current = gallery?.querySelector<HTMLImageElement>('[data-gallery-slide].is-active');
+        if (current?.dataset.slideId) paintingSelect.value = current.dataset.slideId;
+        dialog.showModal();
+        gallery?.dispatchEvent(new Event('card-maker-open'));
+        void paint();
+        close.focus();
+      });
+      close.addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+      dialog.addEventListener('close', () => { revision += 1; root.closest('[data-hero-gallery]')?.dispatchEvent(new Event('card-maker-close')); trigger.focus(); });
+      paintingSelect.addEventListener('change', () => { void paint(); });
+      quoteSelect.addEventListener('change', () => { void paint(); });
+      shuffle.addEventListener('click', () => {
+        const currentPainting = paintingSelect.value;
+        const currentQuote = quoteSelect.value;
+        if (paintings.length > 1) {
+          const choices = paintings.filter((item) => item.id !== currentPainting);
+          paintingSelect.value = choices[Math.floor(Math.random() * choices.length)].id;
+        }
+        if (quotes.length > 1) {
+          const choices = quotes.map((_, index) => String(index)).filter((item) => item !== currentQuote);
+          quoteSelect.value = choices[Math.floor(Math.random() * choices.length)];
+        }
+        void paint();
+      });
+      download.addEventListener('click', () => {
+        if (!ready) return;
+        canvas.toBlob((blob) => {
+          if (!blob) { status.textContent = '图片生成失败，请再试一次。'; return; }
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `ginlang-card-${paintingSelect.value}.png`;
+          link.click();
+          window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+          status.textContent = '小卡片已生成。';
+        }, 'image/png');
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCardMakers, { once: true });
+  else initCardMakers();
+  document.addEventListener('astro:page-load', initCardMakers);
+</script>
+
+<style>
+  .card-maker-trigger { min-height: 40px; padding: 0; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--accent-deep); cursor: pointer; font: 11px/1.5 var(--sans); }
+  .card-maker-trigger:hover { border-bottom-color: var(--clay); color: var(--ink); }
+  .card-maker-trigger[hidden] { display: none; }
+  .card-maker-dialog { width: min(94vw, 870px); max-width: none; max-height: 92vh; padding: clamp(20px, 3vw, 35px); border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); box-shadow: 0 20px 75px rgb(29 35 29 / 18%); }
+  .card-maker-dialog::backdrop { background: rgb(33 39 34 / 65%); }
+  .card-maker-heading { display: flex; justify-content: space-between; gap: 20px; align-items: start; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .card-maker-heading h2 { margin: 0; font: 500 clamp(25px, 3vw, 34px)/1.4 var(--serif); }
+  .card-maker-heading p { margin: 5px 0 0; color: var(--muted); font: 12px/1.7 var(--sans); }
+  .card-maker-close { flex: 0 0 auto; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; cursor: pointer; font: 25px/1 var(--sans); }
+  .card-maker-body { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 38px); align-items: start; padding-top: 24px; }
+  .card-maker-preview { max-height: 64vh; overflow: auto; padding: 8px; background: var(--paper-soft); }
+  .card-maker-preview canvas { display: block; width: 100%; height: auto; background: #f6f4ee; }
+  .card-maker-controls { display: grid; gap: 8px; align-content: start; }
+  .card-maker-controls label { margin-top: 12px; color: var(--accent-deep); font: 12px/1.5 var(--sans); }
+  .card-maker-controls select { width: 100%; min-height: 45px; padding: 8px 10px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font: 13px/1.5 var(--sans); }
+  .card-maker-actions { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 26px; }
+  .card-maker-actions button { min-height: 44px; padding: 7px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--accent-deep); cursor: pointer; font: 12px/1.5 var(--sans); }
+  .card-maker-actions button:hover { border-bottom-color: var(--clay); color: var(--ink); }
+  .card-maker-actions button:disabled { opacity: .5; cursor: default; }
+  .card-maker-controls [role='status'] { min-height: 2em; margin: 12px 0 0; color: var(--muted); font: 11px/1.6 var(--sans); }
+  @media (max-width: 680px) { .card-maker-dialog { width: calc(100vw - 20px); max-height: 94vh; padding: 16px; } .card-maker-body { grid-template-columns: 1fr; gap: 18px; } .card-maker-preview { width: min(54vw, 250px); max-height: 34vh; margin: 0 auto; } .card-maker-controls label { margin-top: 4px; } .card-maker-actions { margin-top: 10px; } }
+</style>

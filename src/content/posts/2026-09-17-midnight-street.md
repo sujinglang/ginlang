@@ -2,6 +2,7 @@
 title: 凌晨两点的街道
 date: 2026-09-17
 category: diary
+themes: [freedom, direction]
 author: ginlang
 excerpt: 夜深以后，城市没有睡着，只是把声音调得很低。
 draft: false
