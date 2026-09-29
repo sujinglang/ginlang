@@ -5,7 +5,6 @@ import DailyNote from '../components/DailyNote.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
 import ProfileMeta from '../components/ProfileMeta.astro';
 import ProfileQuote from '../components/ProfileQuote.astro';
-import { authorIntro } from '../data/author';
 import topicRecords from '../content/topics.json';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
@@ -70,54 +69,50 @@ const landscapes = [
         <h1 id="home-title"><span class="hero-line">把日子写得</span><span class="hero-line"><em>慢一点。</em></span></h1>
         <p class="intro-note">我是 GINLANG。这里放我写的随笔、日记和读书笔记，偶尔也会邀请朋友来写。</p>
         <div class="hero-links">
-          <a class="hero-link" href="#latest-title"><span class="hero-link-copy">开始阅读<small>从最近的文章开始</small></span></a>
-          <a class="hero-link hero-link-secondary" href={base + '/authors/'}><span class="hero-link-copy">认识作者</span></a>
-          <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden><span class="hero-link-copy">随机翻一页</span></button>
+          <a class="hero-link" href="#latest-title">开始阅读</a>
+          <a class="hero-link hero-link-secondary" href={base + '/authors/'}>认识作者</a>
         </div>
-        <nav class="mobile-home-guide" aria-label="首页段落导览">
-          <a href="#home-gallery">看画</a><a href="#latest-title">读文章</a><a href="#daily-note-title">写今日笺</a>
-        </nav>
       </div>
-      {founder && (
-        <section class="home-profile" aria-labelledby="home-profile-name" data-reveal="image">
-          <div class="home-profile-visual">
-            {founder.data.cover && <img class="home-profile-cover" src={base + '/' + founder.data.cover.replace(/^\/+/, '')} width={founder.data.coverWidth} height={founder.data.coverHeight} alt={founder.data.coverAlt || ''} loading="lazy" decoding="async" />}
-            <span class="home-profile-portrait">
-              {founder.data.portrait ? <img src={base + '/' + founder.data.portrait.replace(/^\/+/, '')} width={founder.data.portraitWidth} height={founder.data.portraitHeight} alt={founder.data.portraitAlt || founder.data.name + '选用的头像'} loading="lazy" decoding="async" /> : <span aria-hidden="true">{founder.data.name.slice(0, 1)}</span>}
-            </span>
-          </div>
-          <div class="home-profile-copy">
-            <div class="home-profile-identity">
-              <p class="home-profile-label">关于作者</p>
-              <h2 id="home-profile-name">{founder.data.name}</h2>
-              <ProfileMeta location={founder.data.location} displayDate={founder.data.displayDate} />
-            </div>
-            <div class="home-profile-about">
-              <h3>About</h3>
-              <p>{founderGreetingParts?.length === 2 ? <>{founderGreetingParts[0]}<span class="home-greeting-name">{founder.data.name.toUpperCase()}</span>{founderGreetingParts[1]}</> : founder.data.bio || '此处需要您亲自填写'}</p>
-              {founder.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
-              <a href={base + '/about/'}>更多关于我</a>
-            </div>
-          </div>
-        </section>
-      )}
       <HeroGallery />
     </div>
     {latest && <div class="cover-colophon"><span>最近更新</span><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a><span>文 / {authorById.get(latest.data.author.id)?.data.name}</span><span>{formatDate(latest.data.date)}</span></div>}
   </section>
 
+  {founder && (
+    <section class="home-profile" aria-labelledby="home-profile-name" data-reveal="image">
+      <div class="home-profile-visual">
+        {founder.data.cover && <img class="home-profile-cover" src={base + '/' + founder.data.cover.replace(/^\/+/, '')} width={founder.data.coverWidth} height={founder.data.coverHeight} alt={founder.data.coverAlt || ''} loading="lazy" decoding="async" />}
+        <span class="home-profile-portrait">
+          {founder.data.portrait ? <img src={base + '/' + founder.data.portrait.replace(/^\/+/, '')} width={founder.data.portraitWidth} height={founder.data.portraitHeight} alt={founder.data.portraitAlt || founder.data.name + '选用的头像'} loading="lazy" decoding="async" /> : <span aria-hidden="true">{founder.data.name.slice(0, 1)}</span>}
+        </span>
+      </div>
+      <div class="home-profile-copy">
+        <div class="home-profile-identity">
+          <p class="home-profile-label">关于作者</p>
+          <h2 id="home-profile-name">{founder.data.name}</h2>
+          <ProfileMeta location={founder.data.location} displayDate={founder.data.displayDate} />
+        </div>
+        <div class="home-profile-about">
+          <h3>About</h3>
+          <p>{founderGreetingParts?.length === 2 ? <>{founderGreetingParts[0]}<span class="home-greeting-name">{founder.data.name.toUpperCase()}</span>{founderGreetingParts[1]}</> : founder.data.bio || '此处需要您亲自填写'}</p>
+          {founder.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
+          <a href={base + '/about/'}>更多关于我</a>
+        </div>
+      </div>
+    </section>
+  )}
+
   <div class="home-content">
-    <aside class="desk-entry" aria-label="我的书桌">
-      <span>读到想留下的文章，写下还没写完的句子。</span>
-      <a href={base + '/desk/'}>打开我的书桌</a>
-    </aside>
     <section class="selection-section" aria-labelledby="latest-title" data-reveal="ink">
       <div class="section-heading">
         <div class="section-heading-main">
           <p class="section-kicker">最近写的</p>
           <h2 id="latest-title">从这些文章开始</h2>
         </div>
-        <a class="quiet-link" href={base + '/writing/'}>查看全部文章</a>
+        <div class="heading-actions">
+          <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden>随机翻一页</button>
+          <a class="quiet-link" href={base + '/writing/'}>查看全部文章</a>
+        </div>
       </div>
 
       {latest ? (
@@ -144,6 +139,7 @@ const landscapes = [
     <div class="home-whisper" data-reveal="quote"><MarginWhisper theme="home" /></div>
 
     <div data-reveal="ink"><DailyNote /></div>
+    <p class="desk-note">读到想留下的文章，写下还没写完的句子。<a href={base + '/desk/'}>打开我的书桌</a></p>
 
     <section class="landscape-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
       <div class="landscape-topline">
@@ -195,14 +191,6 @@ const landscapes = [
       </ol>
     </section>
 
-    <aside class="home-endnote" aria-labelledby="author-teaser-title" data-reveal="ink">
-      <div>
-        <p class="section-kicker">关于我</p>
-        <h2 id="author-teaser-title">我会继续在这里写。</h2>
-        <p class="author-placeholder">{authorIntro}</p>
-      </div>
-      <div class="endnote-links"><a class="quiet-link" href={base + '/about/'}>更多关于我</a><a class="quiet-link" href={base + '/contribute/'}>参与写作</a></div>
-    </aside>
   </div>
 </SiteLayout>
 
