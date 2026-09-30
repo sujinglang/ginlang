@@ -43,6 +43,7 @@ const founders = authors.filter((author) => author.data.role === 'founder');
             <article class="person-row">
               {author.data.portrait ? <img src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.portraitAlt || author.data.name + '选用的头像'} loading="lazy" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
               <div><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div>
+              {author.data.cover && <img class="person-row-preview" src={base + '/' + author.data.cover.replace(/^\/+/, '')} width={author.data.coverWidth} height={author.data.coverHeight} alt="" loading="lazy" decoding="async" />}
             </article>
           ))}
         </div>

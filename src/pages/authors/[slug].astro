@@ -18,6 +18,10 @@ if (author.data.featuredPost && (!selected || selected.data.author.id !== author
   throw new Error(`作者 ${author.id} 的代表作无效或尚未发布`);
 }
 const bio = author.data.bio || '此处需要您亲自填写';
+// The album file (src/content/albums/<id>.json) is the single source for both
+// the recommendations here and the author's own album page.
+const album = (await getCollection('albums')).find((item) => item.id === author.id);
+const albumPhotos = album?.data.photos ?? [];
 const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
 const authorSchema = JSON.stringify({
   '@context': 'https://schema.org',
@@ -64,5 +68,32 @@ const authorSchema = JSON.stringify({
       <div class="section-heading"><h2 id="works-title">文章</h2></div>
       {posts.length ? <ol class="editorial-index">{posts.map((post) => <li><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol> : <p class="empty-note">这位作者的作品尚未发布。</p>}
     </section>
+    {album && (
+      <section class="author-album" aria-labelledby="author-album-title">
+        <div class="section-heading">
+          <div class="section-heading-main"><p class="section-kicker">相簿</p><h2 id="author-album-title">相册</h2></div>
+          <a class="quiet-link" href={base + '/album/' + author.id + '/'}>查看作者相册</a>
+        </div>
+        {albumPhotos.length ? (
+          <div class="author-album-preview">
+            {albumPhotos.slice(0, 3).map((photo) => (
+              <a href={base + '/album/' + author.id + '/'}>
+                <img
+                  src={base + '/' + photo.src.replace(/^\/+/, '')}
+                  width={photo.width}
+                  height={photo.height}
+                  alt={photo.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+                {photo.caption && <span>{photo.caption}</span>}
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p class="empty-note">暂未公开照片。</p>
+        )}
+      </section>
+    )}
   </article>
 </SiteLayout>

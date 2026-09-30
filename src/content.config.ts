@@ -63,4 +63,20 @@ const topics = defineCollection({
   }),
 });
 
-export const collections = { posts, authors, topics };
+// One album file per author, named after the author id (e.g. ginlang.json).
+// The file may stay empty until real photos exist; pages handle the empty state.
+const albums = defineCollection({
+  loader: glob({ pattern: '**/*.json', base: './src/content/albums' }),
+  schema: z.object({
+    photos: z.array(z.object({
+      src: publicImage,
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+      alt: z.string().min(1),
+      caption: z.string().optional(),
+      date: z.coerce.date().optional(),
+    })).default([]),
+  }),
+});
+
+export const collections = { posts, authors, topics, albums };

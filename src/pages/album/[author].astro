@@ -1,0 +1,88 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { formatDate } from '../../lib/date';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export async function getStaticPaths() {
+  const albums = await getCollection('albums');
+  const authorIds = new Set((await getCollection('authors')).map((author) => author.id));
+  for (const album of albums) {
+    if (!authorIds.has(album.id)) throw new Error(`相册 ${album.id} 没有对应的作者`);
+  }
+  return albums.map((album) => ({ params: { author: album.id }, props: { album } }));
+}
+
+const { album } = Astro.props;
+const author = await getEntry('authors', album.id);
+if (!author) throw new Error(`相册 ${album.id} 没有对应的作者`);
+const photos = album.data.photos;
+---
+
+<SiteLayout title={author.data.name + '的相册'} description={author.data.name + '的相簿，只放作者本人愿意公开的照片。'}>
+  <article class="listing-page album-page">
+    <a class="back-link" href={base + '/album/'}>← 相簿</a>
+    <header class="editorial-page-header">
+      <span class="folio-mark">{author.data.role === 'founder' ? '创办人' : '客席作者'} · <a href={base + '/authors/' + author.id + '/'}>作者主页</a></span>
+      <h1>{author.data.name}的相册</h1>
+      <p>{author.data.tagline}</p>
+    </header>
+
+    {photos.length ? (
+      <div class="album-grid">
+        {photos.map((photo) => (
+          <figure class="album-photo">
+            <img
+              src={base + '/' + photo.src.replace(/^\/+/, '')}
+              width={photo.width}
+              height={photo.height}
+              alt={photo.alt}
+              loading="lazy"
+              decoding="async"
+            />
+            {(photo.caption || photo.date) && (
+              <figcaption>{photo.caption}{photo.date ? (photo.caption ? ' · ' : '') + formatDate(photo.date) : ''}</figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+    ) : (
+      <div class="album-empty" role="status">
+        <p class="album-empty-heading">暂未公开照片。</p>
+      </div>
+    )}
+  </article>
+</SiteLayout>
+
+<style>
+  .album-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 18px;
+    margin-top: 36px;
+  }
+  .album-photo { margin: 0; }
+  .album-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    background: var(--accent-soft);
+  }
+  .album-photo figcaption {
+    margin-top: 7px;
+    color: var(--muted);
+    font: 11px/1.7 var(--sans);
+  }
+  .album-empty {
+    margin-top: clamp(80px, 14vh, 150px);
+    text-align: center;
+  }
+  .album-empty-heading { margin: 0; color: var(--muted); font: 500 22px/1.6 var(--serif); }
+  @media (max-width: 680px) {
+    .album-grid { grid-template-columns: 1fr; gap: 18px; margin-top: 26px; }
+    .album-empty { margin-top: 90px; }
+    .album-empty-heading { font-size: 19px; }
+  }
+</style>

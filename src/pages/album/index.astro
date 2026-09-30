@@ -1,0 +1,119 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const albums = await getCollection('albums');
+const albumById = new Map(albums.map((album) => [album.id, album]));
+const authors = (await getCollection('authors')).sort(
+  (a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name, 'zh-CN'),
+);
+const founder = authors.find((author) => author.data.role === 'founder');
+const founderAlbum = founder ? albumById.get(founder.id) : undefined;
+if (founder && !founderAlbum) throw new Error(`缺少 src/content/albums/${founder.id}.json，创办人相册必须存在`);
+const founderPhoto = founderAlbum?.data.photos[0];
+// Guest albums exist only once the author (and their photos) are real.
+const guestAlbums = authors.filter((author) => author.data.role === 'guest' && albumById.has(author.id));
+---
+
+<SiteLayout title="相簿" description="GINLANG 与客席作者的相簿，按作者分开，各有稳定地址。">
+  <section class="listing-page album-page">
+    <a class="back-link" href={base + '/'}>← 回到首页</a>
+    <header class="editorial-page-header">
+      <span class="folio-mark">PHOTO ALBUMS</span>
+      <h1>相簿</h1>
+      <p>照片按作者分开，各有稳定地址；还没有公开照片的相册会保持空白。</p>
+    </header>
+
+    {founder && founderAlbum && (
+      <a class="album-feature" href={base + '/album/' + founder.id + '/'}>
+        <div class="album-feature-copy">
+          <p class="person-role">创办人</p>
+          <h2>{founder.data.name}的相册</h2>
+          <p>{founderAlbum.data.photos.length ? '翻开看一看。' : '暂未公开照片。'}</p>
+        </div>
+        {founderPhoto ? (
+          <img
+            class="album-feature-preview"
+            src={base + '/' + founderPhoto.src.replace(/^\/+/, '')}
+            width={founderPhoto.width}
+            height={founderPhoto.height}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <span class="album-feature-blank" aria-hidden="true">✳</span>
+        )}
+      </a>
+    )}
+
+    <section class="album-guests" aria-labelledby="album-guests-title">
+      <div class="section-heading"><h2 id="album-guests-title">客席作者的相册</h2></div>
+      {guestAlbums.length ? (
+        <ul class="album-guest-list">
+          {guestAlbums.map((author) => {
+            const album = albumById.get(author.id);
+            const count = album?.data.photos.length ?? 0;
+            return (
+              <li>
+                <a href={base + '/album/' + author.id + '/'}>
+                  <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>
+                  <span class="album-guest-copy">
+                    <strong>{author.data.name}的相册</strong>
+                    <small>{count ? '翻开看一看' : '暂未公开照片'}</small>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p class="empty-note">客席作者有了自己的照片后，相册会出现在这里。</p>
+      )}
+    </section>
+  </section>
+</SiteLayout>
+
+<style>
+  .album-feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 280px);
+    align-items: center;
+    gap: clamp(22px, 5vw, 62px);
+    margin-top: 38px;
+    padding: 27px 30px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper-raised) 82%, transparent);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 220ms ease, background-color 220ms ease;
+  }
+  .album-feature:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: var(--paper-raised); }
+  .album-feature:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .album-feature-copy h2 { margin: 7px 0; font-size: clamp(24px, 3vw, 32px); font-weight: 500; }
+  .album-feature-copy p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
+  .album-feature-preview { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border: 1px solid var(--line); background: var(--accent-soft); }
+  .album-feature-blank { display: grid; min-height: 120px; place-items: center; aspect-ratio: 3 / 2; border: 1px dashed var(--line); background: var(--paper-soft); color: var(--clay); font-size: 30px; }
+  .album-guests { margin-top: 46px; }
+  .album-guest-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+  .album-guest-list li { border-bottom: 1px solid var(--line); }
+  .album-guest-list a {
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+    padding: 16px 0;
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 180ms ease;
+  }
+  .album-guest-list a:hover { background: var(--paper-raised); }
+  .album-guest-list a:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .album-guest-copy strong { display: block; font-size: 17px; font-weight: 500; }
+  .album-guest-copy small { display: block; margin-top: 3px; color: var(--muted); font: 11px/1.6 var(--sans); }
+  @media (max-width: 680px) {
+    .album-feature { grid-template-columns: 1fr; gap: 16px; padding: 22px; }
+    .album-feature-blank { min-height: 96px; }
+  }
+</style>
