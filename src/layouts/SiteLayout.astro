@@ -8,18 +8,20 @@ interface Props {
   title?: string;
   description?: string;
   articlePage?: boolean;
+  ogImage?: string;
 }
 
 const {
   title = 'GINLANG · 写一些迟到的句子',
   description = '随笔、日记、书摘与短句，给经过的日子留一页。',
   articlePage = false,
+  ogImage,
 } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
 const homeUrl = new URL(base + '/', siteUrl).toString();
-const socialImage = new URL(base + '/social-card.svg', siteUrl).toString();
+const socialImage = new URL(ogImage ? base + ogImage : base + '/social-card.svg', siteUrl).toString();
 const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const hasTopics = Object.keys(topicRecords).length > 0 && (await getCollection('topics', ({ data }) => !data.draft)).length > 0;
@@ -58,7 +60,7 @@ const webSiteSchema = JSON.stringify({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" id="theme-color" content="#f6f4ee" />
+    <meta name="theme-color" id="theme-color" content="#f5f2eb" />
     <meta name="description" content={description} />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href={canonicalUrl} />
@@ -70,6 +72,9 @@ const webSiteSchema = JSON.stringify({
     <meta property="og:type" content={articlePage ? 'article' : 'website'} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={pageTitle} />
     <meta property="og:locale" content="zh_CN" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
@@ -110,7 +115,7 @@ const webSiteSchema = JSON.stringify({
         document.documentElement.dataset.font = preferences.font;
         document.documentElement.dataset.readingWidth = preferences.width;
         const themeColor = document.querySelector('meta[name="theme-color"]');
-        if (themeColor) themeColor.content = document.documentElement.dataset.theme === 'dark' ? '#20221f' : '#f6f4ee';
+        if (themeColor) themeColor.content = document.documentElement.dataset.theme === 'dark' ? '#20221f' : '#f5f2eb';
       })();
     </script>
   </head>
@@ -348,7 +353,7 @@ const webSiteSchema = JSON.stringify({
         root.dataset.textSize = preferences.textSize;
         root.dataset.font = preferences.font;
         root.dataset.readingWidth = preferences.width;
-        if (themeColor) themeColor.content = resolvedTheme(preferences.theme) === 'dark' ? '#20221f' : '#f6f4ee';
+        if (themeColor) themeColor.content = resolvedTheme(preferences.theme) === 'dark' ? '#20221f' : '#f5f2eb';
         if (save) {
           try {
             localStorage.setItem(preferenceKey, JSON.stringify(preferences));

@@ -32,11 +32,13 @@ const relatedPosts = allPosts
     || b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 2);
 const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const shareImage = '/og/' + post.id + '.png';
 const articleSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: post.data.title,
   description: post.data.excerpt,
+  image: new URL(base + shareImage, siteUrl).toString(),
   datePublished: post.data.date.toISOString(),
   inLanguage: 'zh-CN',
   url: new URL(base + '/posts/' + post.id + '/', siteUrl).toString(),
@@ -49,9 +51,9 @@ const articleSchema = JSON.stringify({
 }).replace(/</g, '\\u003c');
 ---
 
-<SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true}>
+<SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true} ogImage={shareImage}>
   <script type="application/ld+json" set:html={articleSchema} />
-  <article class="article-page" data-article-neighbors data-neighbor-prev={olderPost ? base + '/posts/' + olderPost.id + '/' : undefined} data-neighbor-next={newerPost ? base + '/posts/' + newerPost.id + '/' : undefined}>
+  <article class="article-page" data-article-neighbors data-post-id={post.id} data-post-title={post.data.title} data-neighbor-prev={olderPost ? base + '/posts/' + olderPost.id + '/' : undefined} data-neighbor-next={newerPost ? base + '/posts/' + newerPost.id + '/' : undefined}>
     <a class="back-link" href={base + '/'}>← 回到首页</a>
     <header class="article-header">
       {post.data.draft && <p class="draft-banner">草稿预览 · 这篇文章不会出现在正式网站</p>}
@@ -144,6 +146,50 @@ const articleSchema = JSON.stringify({
     const article = document.querySelector<HTMLElement>('[data-article-neighbors]:not([data-neighbors-ready])');
     if (!article) return;
     article.dataset.neighborsReady = 'true';
+
+    // Leave a quiet local trace so the home page can show where reading stopped.
+    if (article.dataset.postId && article.dataset.postTitle) {
+      try {
+        localStorage.setItem('ginlang-last-read', JSON.stringify({
+          id: article.dataset.postId,
+          title: article.dataset.postTitle,
+          at: new Date().toISOString(),
+        }));
+      } catch { /* Storage is optional. */ }
+    }
+
+    // Follow the section the reader is in, and mark it in the table of contents.
+    const toc = document.querySelector<HTMLElement>('.article-toc');
+    const tocLinks = toc ? [...toc.querySelectorAll<HTMLAnchorElement>('a')] : [];
+    const tocPairs = tocLinks
+      .map((link) => ({ link, heading: document.getElementById((link.getAttribute('href') || '').slice(1)) }))
+      .filter((pair): pair is { link: HTMLAnchorElement; heading: Element } => Boolean(pair.heading));
+    if (tocPairs.length) {
+      let currentId = '';
+      let tocFrame = 0;
+      const updateToc = () => {
+        tocFrame = 0;
+        // Just below the 84px anchor offset, so scrolling to a heading highlights it.
+        const sightLine = 132;
+        let active: Element | null = null;
+        for (const pair of tocPairs) {
+          if (pair.heading.getBoundingClientRect().top <= sightLine) active = pair.heading;
+          else break;
+        }
+        const nextId = active?.id ?? '';
+        if (nextId === currentId) return;
+        currentId = nextId;
+        for (const pair of tocPairs) {
+          if (pair.heading.id === currentId) pair.link.setAttribute('aria-current', 'location');
+          else pair.link.removeAttribute('aria-current');
+        }
+      };
+      window.addEventListener('scroll', () => {
+        if (!tocFrame) tocFrame = window.requestAnimationFrame(updateToc);
+      }, { passive: true });
+      window.addEventListener('resize', updateToc, { passive: true });
+      updateToc();
+    }
 
     const shareButton = document.querySelector<HTMLButtonElement>('#share-post');
     if (shareButton && typeof navigator.share === 'function') {

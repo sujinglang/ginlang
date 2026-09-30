@@ -139,6 +139,7 @@ const landscapes = [
     <div class="home-whisper" data-reveal="quote"><MarginWhisper theme="home" /></div>
 
     <div data-reveal="ink"><DailyNote /></div>
+    <p class="last-read-note" data-last-read hidden></p>
     <p class="desk-note">读到想留下的文章，写下还没写完的句子。<a href={base + '/desk/'}>打开我的书桌</a></p>
 
     <section class="landscape-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
@@ -195,6 +196,33 @@ const landscapes = [
 </SiteLayout>
 
 <script>
+  const homeBase = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+  function initLastRead() {
+    const note = document.querySelector<HTMLElement>('[data-last-read]:not([data-last-ready])');
+    if (!note) return;
+    note.dataset.lastReady = 'true';
+    let raw = '';
+    try {
+      raw = localStorage.getItem('ginlang-last-read') || '';
+    } catch {
+      return; // Without storage the line simply stays hidden.
+    }
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw);
+      if (!saved || typeof saved.id !== 'string' || typeof saved.title !== 'string' || !saved.title) return;
+      const link = document.createElement('a');
+      link.href = homeBase + '/posts/' + encodeURIComponent(saved.id) + '/';
+      link.textContent = '《' + saved.title + '》';
+      note.textContent = '上次读到';
+      note.append(link);
+      note.hidden = false;
+    } catch {
+      // A malformed record is ignored rather than shown.
+    }
+  }
+
   function initRandomPost() {
     const button = document.querySelector<HTMLButtonElement>('[data-random-post]');
     if (!button || button.dataset.ready === 'true') return;
@@ -214,11 +242,18 @@ const landscapes = [
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initRandomPost, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      initLastRead();
+      initRandomPost();
+    }, { once: true });
   } else {
+    initLastRead();
     initRandomPost();
   }
-  document.addEventListener('astro:page-load', initRandomPost);
+  document.addEventListener('astro:page-load', () => {
+    initLastRead();
+    initRandomPost();
+  });
 
   function initLandscape() {
     const gallery = document.querySelector<HTMLElement>('[data-landscape]:not([data-landscape-ready])');
