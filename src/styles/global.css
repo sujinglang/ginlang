@@ -1,4 +1,5 @@
 @font-face { font-family: 'GINLANG Marck Script'; src: url('../assets/fonts/marck-script-latin.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'GINLANG Dancing Script'; src: url('../assets/fonts/dancing-script-latin.woff2') format('woff2'); font-style: normal; font-weight: 400 700; font-display: swap; }
 @font-face { font-family: 'GINLANG Zhi Mang Xing'; src: url('../assets/fonts/zhi-mang-xing-quote.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
 
 :root {
@@ -19,6 +20,7 @@
   --sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
   --hand-cn: 'GINLANG Zhi Mang Xing', 'KaiTi', 'STKaiti', cursive;
   --hand-en: 'GINLANG Marck Script', 'Segoe Script', cursive;
+  --hand-greeting: 'GINLANG Dancing Script', 'Segoe Script', cursive;
   --shell-width: 1120px;
   --reading-width: 690px;
   --body-size: 17px;
@@ -1124,16 +1126,10 @@ body { background: var(--paper); }
 .home-profile-about > p, .about-greeting, .author-bio { color: var(--ink); font: 400 18px/1.7 var(--serif); }
 .about-copy .about-greeting { font-size: 20px; }
 .home-profile-about h3 { margin-bottom: 13px; color: var(--accent-deep); font: 400 clamp(37px, 3.5vw, 46px)/1.2 var(--hand-en); }
-.home-profile-about > p { color: var(--ink); font: 400 clamp(31px, 2.8vw, 38px)/1.3 var(--hand-en); }
-/* The greeting keeps the handwritten voice, but the name itself is set like the
-   header wordmark: Marck Script's uppercase glyphs do not read as G-I-N-L-A-N-G. */
-.home-profile-about .home-greeting-name {
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 0.62em;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
+.home-profile-about > p { color: var(--ink); font: 400 clamp(31px, 2.8vw, 38px)/1.3 var(--hand-greeting); }
+/* The greeting keeps one handwritten voice, with the name emboldened:
+   Marck Script's uppercase L does not read as an L, Dancing Script's does. */
+.home-profile-about .home-greeting-name { font-weight: 700; letter-spacing: 0.015em; }
 .home-profile-about .profile-quote, .about-copy .profile-quote, .author-about .profile-quote { margin: 21px 0 24px; padding: 0 0 0 19px; border-left: 1px solid var(--clay); color: var(--ink); }
 .profile-quote p { margin: 0; }
 .profile-quote .profile-quote-english { max-width: 39em; color: var(--accent-deep); font: 400 clamp(27px, 2.3vw, 31px)/1.5 var(--hand-en); letter-spacing: 0.005em; }
