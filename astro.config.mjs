@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://sujinglang.github.io',
-  base: '/ginlang',
+  site: 'https://ginlang.vip',
+  base: '/',
   trailingSlash: 'always',
 });
