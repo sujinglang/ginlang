@@ -152,6 +152,7 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
   view-transition-name: site-wordmark;
 }
 .wordmark-flower { color: var(--clay); font-size: 12px; }
+.wordmark-flower svg, .footer-wordmark svg { display: inline-block; width: 1em; height: 1em; vertical-align: -0.1em; }
 .brand-note, .dialog-kicker {
   color: var(--muted);
   font: 9px/1.4 var(--sans);
@@ -1364,8 +1365,14 @@ body { background: var(--paper); }
   }
 }
 @media (max-width: 680px) {
-  .landscape-controls { gap: 20px; }
-  .landscape-controls button { min-height: 44px; padding: 10px 4px; font-size: 13px; }
+  .landscape-bottomline { gap: 12px; }
+  .landscape-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 3px; }
+  .landscape-controls button { min-height: 48px; padding: 11px 8px; font-size: 13px; }
+  .landscape-controls button + button { border-left: 1px solid var(--line); }
+  .landscape-controls button[aria-pressed='true'] { background-color: color-mix(in srgb, var(--accent) 7%, transparent); color: var(--accent-deep); font-weight: 500; }
+  .site-shell :is(.quiet-link, .random-post, .rss-link, .back-link, .copy-link,
+    .card-maker-trigger, .draw-button, .home-profile-about > a, .author-links a,
+    .article-author > a) { min-height: 48px; --sweep-progress: 12px; }
   .heading-actions { gap: 20px; }
   .footer-actions { gap: 10px 24px; }
   .margin-whisper-content button { min-height: 44px; padding-left: 12px; }
