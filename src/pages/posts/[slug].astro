@@ -6,6 +6,7 @@ import SaveArticle from '../../components/SaveArticle.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
+import { hasPublicAuthor } from '../../lib/postVisibility';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -17,6 +18,7 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const author = await getEntry(post.data.author);
 if (!author) throw new Error(`作品 ${post.id} 引用了不存在的作者`);
+const showAuthor = hasPublicAuthor(post);
 const { Content, headings } = await render(post);
 const tocHeadings = headings.filter((heading) => heading.depth <= 3);
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -27,7 +29,7 @@ const newerPost = postIndex > 0 ? allPosts[postIndex - 1] : undefined;
 const olderPost = postIndex >= 0 ? allPosts[postIndex + 1] : undefined;
 const relatedPosts = allPosts
   .filter((item) => item.id !== post.id)
-  .sort((a, b) => Number(b.data.author.id === post.data.author.id) - Number(a.data.author.id === post.data.author.id)
+  .sort((a, b) => Number(showAuthor && hasPublicAuthor(b) && b.data.author.id === post.data.author.id) - Number(showAuthor && hasPublicAuthor(a) && a.data.author.id === post.data.author.id)
     || Number(b.data.category === post.data.category) - Number(a.data.category === post.data.category)
     || b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 2);
@@ -42,11 +44,11 @@ const articleSchema = JSON.stringify({
   datePublished: post.data.date.toISOString(),
   inLanguage: 'zh-CN',
   url: new URL(base + '/posts/' + post.id + '/', siteUrl).toString(),
-  author: {
+  ...(showAuthor ? { author: {
     '@type': 'Person',
     name: author.data.name,
     url: new URL(base + '/authors/' + author.id + '/', siteUrl).toString(),
-  },
+  } } : {}),
   publisher: { '@type': 'Organization', name: 'GINLANG', url: new URL(base + '/', siteUrl).toString() },
 }).replace(/</g, '\\u003c');
 ---
@@ -64,9 +66,9 @@ const articleSchema = JSON.stringify({
       </div>
       <h1>{post.data.title}</h1>
       <p class="article-deck">{post.data.excerpt}</p>
-      <div class="article-byline">
+      {showAuthor && <div class="article-byline">
         <span>文 / <a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></span>
-      </div>
+      </div>}
     </header>
 
     <SaveArticle postId={post.id} />
@@ -100,11 +102,11 @@ const articleSchema = JSON.stringify({
     </div>
     <span class="sr-only" id="copy-status" aria-live="polite"></span>
 
-    <aside class="article-author" aria-label="关于作者">
+    {showAuthor && <aside class="article-author" aria-label="关于作者">
       {author.data.portrait ? <img class="article-author-portrait" src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" loading="lazy" decoding="async" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
       <div><p>{author.data.role === 'founder' ? '作者' : '客席作者'}</p><h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2><span>{author.data.tagline}</span></div>
       <a href={base + '/authors/' + author.id + '/'}>阅读这位作者的其他作品</a>
-    </aside>
+    </aside>}
 
     <div class="article-afterword" data-reveal="image">
       <figure class="article-tail-art">

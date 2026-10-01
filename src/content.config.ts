@@ -20,6 +20,7 @@ const posts = defineCollection({
     themes: z.array(z.enum(['philosophy', 'life', 'love', 'freedom', 'direction'])).default([]),
     excerpt: z.string(),
     author: reference('authors'),
+    anonymous: z.boolean().default(false),
     draft: z.boolean().default(false),
   }),
 });

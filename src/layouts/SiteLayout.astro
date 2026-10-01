@@ -415,7 +415,7 @@ const webSiteSchema = JSON.stringify({
       const searchResults = document.querySelector<HTMLOListElement>('#search-results');
       const searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
       const indexUrl = searchDialog?.dataset.indexUrl ?? '/search-index.json';
-      type SearchItem = { title: string; excerpt: string; body: string; category: string; author: string; date: string; url: string };
+      type SearchItem = { title: string; excerpt: string; body: string; category: string; author?: string; date: string; url: string };
       let searchItemsPromise: Promise<SearchItem[]> | undefined;
       let searchRevision = 0;
 
@@ -461,7 +461,7 @@ const webSiteSchema = JSON.stringify({
         row.className = 'search-result';
         link.href = item.url;
         meta.className = 'search-result-meta';
-        meta.textContent = item.date + '  ·  ' + item.category + '  ·  ' + item.author;
+        meta.textContent = [item.date, item.category, item.author].filter(Boolean).join('  ·  ');
         title.append(highlighted(item.title, query));
         const bodyIndex = item.body.toLocaleLowerCase().indexOf(query);
         const source = bodyIndex >= 0 && !item.excerpt.toLocaleLowerCase().includes(query)
@@ -486,7 +486,7 @@ const webSiteSchema = JSON.stringify({
         const items = await getSearchItems();
         if (revision !== searchRevision || !searchDialog?.open) return;
         const matches = items.filter((item) =>
-          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + item.author + ' ' + item.body).toLocaleLowerCase().includes(query),
+          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + (item.author ?? '') + ' ' + item.body).toLocaleLowerCase().includes(query),
         ).sort((a, b) => Number(b.title.toLocaleLowerCase().includes(query)) - Number(a.title.toLocaleLowerCase().includes(query))
           || Number(b.excerpt.toLocaleLowerCase().includes(query)) - Number(a.excerpt.toLocaleLowerCase().includes(query))).slice(0, 8);
         if (matches.length) {

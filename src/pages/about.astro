@@ -6,10 +6,11 @@ import ProfileMeta from '../components/ProfileMeta.astro';
 import ProfileQuote from '../components/ProfileQuote.astro';
 import { authorSections } from '../data/author';
 import SiteLayout from '../layouts/SiteLayout.astro';
+import { isPubliclyBy } from '../lib/postVisibility';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const publishedSections = authorSections.filter((section) => section.text.trim().length > 0);
 const founder = await getEntry('authors', 'ginlang');
-const founderPosts = (await getCollection('posts', ({ data }) => !data.draft && data.author.id === 'ginlang'))
+const founderPosts = (await getCollection('posts', ({ data }) => !data.draft)).filter((post) => isPubliclyBy(post, 'ginlang'))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).slice(0, 2);
 ---
 

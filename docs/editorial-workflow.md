@@ -27,6 +27,7 @@ date: 2026-10-01
 category: essay
 themes: []
 author: ginlang
+anonymous: false
 excerpt: 此处需要您亲自填写
 draft: true
 ---
@@ -41,12 +42,29 @@ draft: true
 | `category` | essay 随笔 / diary 日记 / book 书摘 / short 短句 |
 | `themes` | 可选数组：philosophy、life、love、freedom、direction |
 | `author` | 已存在的作者 ID |
+| `anonymous` | true 为匿名，false 或省略时正常显示署名 |
 | `excerpt` | 一句准确的内容介绍，用于列表和搜索 |
 | `draft` | true 为草稿，false 为公开 |
 
 使用 Markdown 的 `## 小标题`、段落和引用即可。草稿不会进首页、目录、搜索或 RSS；开发模式可通过文章的固定地址预览。确认内容后把 `draft` 改成 `false`，运行构建。撤下文章可以改回 `true` 后发布；其旧地址将停止生成。
 
 主题阅读路线只在公开文章足够时出现：全站至少八篇、同主题至少三篇，不把现有少量作品重复包装。专题中的文章仍按你登记的顺序阅读。
+
+### 匿名文章
+
+在文章头部配置 `anonymous: true`，`author` 仍填写真实作者 ID。匿名文章照常进入首页、分类、时间归档、专题、搜索、RSS 和网站地图，保持原来的阅读地址。
+
+首页卡片、列表和详情页不显示这篇文章的作者资料；搜索索引和文章结构化数据不输出作者字段。匿名文章也不会进入作者的作品列表、代表作入口或关于页的个人文章推荐。正文中手动写的署名、名字和链接会原样保留。
+
+新建匿名草稿也可以使用命令：
+
+```powershell
+npm run content -- post 2026-10-01-untitled-note --title "文章标题" --author ginlang --anonymous
+```
+
+匿名不等于草稿。公开时仍需设置 `draft: false`；恢复署名时把 `anonymous` 改为 `false` 或删掉这一行。日期、分类、正文和书签等功能不受匿名开关影响。
+
+真实作者保存在本机 Markdown 的 `author` 字段中。当前 GitHub 仓库是公开的，源文件中的这个字段仍可被查看；此开关控制博客页面及生成的公开数据，不改变仓库权限。
 
 ## 作者资料
 

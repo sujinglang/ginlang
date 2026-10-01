@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content';
 import { categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
+import { hasPublicAuthor } from '../lib/postVisibility';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -24,7 +25,7 @@ export async function GET() {
         .replace(/\s+/g, ' ')
         .trim(),
       category: categoryLabel(post.data.category),
-      author: author.data.name,
+      ...(hasPublicAuthor(post) ? { author: author.data.name } : {}),
       date: formatDate(post.data.date),
       url: base + '/posts/' + post.id + '/',
     };

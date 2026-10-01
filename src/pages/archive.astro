@@ -4,6 +4,7 @@ import MarginWhisper from '../components/MarginWhisper.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
+import { hasPublicAuthor } from '../lib/postVisibility';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -38,7 +39,7 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
             <li>
               <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date).slice(5)}</time>
               <a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
-              <span>{categoryLabel(post.data.category)} · <a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a></span>
+              <span>{categoryLabel(post.data.category)}{hasPublicAuthor(post) && <> · <a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a></>}</span>
             </li>
           ))}
         </ol>

@@ -37,6 +37,8 @@ npm run content -- post 2026-10-01-autumn-note --title "秋天经过的时候" -
 
 工具会创建 Markdown，默认 `draft: true`。写好正文、确认署名后，手动改成 `draft: false`。文件名就是长期 URL，发布后保留这个名字。
 
+匿名文章在头部设置 `anonymous: true`，或在新建命令中加 `--anonymous`；`author` 仍保留真实作者 ID。详见[匿名文章说明](docs/editorial-workflow.md#匿名文章)。
+
 ### 添加客席作者
 
 ```powershell

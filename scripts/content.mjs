@@ -9,7 +9,7 @@ const projectRoot = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const categories = ['essay', 'diary', 'book', 'short'];
 const stringOption = { type: 'string' };
 const commandOptions = {
-  post: { title: stringOption, author: stringOption, category: stringOption, date: stringOption, excerpt: stringOption },
+  post: { title: stringOption, author: stringOption, anonymous: { type: 'boolean' }, category: stringOption, date: stringOption, excerpt: stringOption },
   author: { name: stringOption, tagline: stringOption },
   photo: { alt: stringOption, caption: stringOption, name: stringOption, date: stringOption },
   'profile-photo': { kind: stringOption, alt: stringOption, name: stringOption },
@@ -19,7 +19,7 @@ const commandOptions = {
 const help = `GINLANG 内容工具（从项目目录运行）
 
   npm run content -- help
-  npm run content -- post <文章ID> --title "标题" [--author ginlang] [--category essay] [--date YYYY-MM-DD] [--excerpt "摘要"]
+  npm run content -- post <文章ID> --title "标题" [--author ginlang] [--anonymous] [--category essay] [--date YYYY-MM-DD] [--excerpt "摘要"]
   npm run content -- author <作者ID> --name "笔名" --tagline "一句话介绍"
   npm run content -- photo <作者ID> <源图片路径> --alt "图片内容" [--caption "说明"] [--name 照片ID] [--date YYYY-MM-DD]
   npm run content -- profile-photo <作者ID> <源图片路径> --kind portrait|cover --alt "图片内容" [--name 图片ID]
@@ -28,6 +28,7 @@ const help = `GINLANG 内容工具（从项目目录运行）
 ID 使用小写英文字母、数字和连字符，例如 september-wind、lin-mu。
 文章ID决定文件名和网址，发布后保持稳定。新文章始终 draft: true。
 post 默认作者 ginlang、分类 essay、日期为本机当天；分类也可为 diary、book、short。
+--anonymous 仅隐藏对外署名，--author 仍填写真实作者供内部管理；文章正常生成公开阅读地址。
 author 只使用提供的笔名和介绍，默认 guest、featured: false，并创建空相册。
 图片自动转为 WebP，长边最多 1800 像素，不裁剪、不放大，尺寸自动登记。
 原图保持不变，并备份到 source-art/albums/<作者ID>/ 或 source-art/authors/<作者ID>/。
@@ -236,7 +237,7 @@ async function createPost(root, slug, values) {
   const excerpt = textValue(values.excerpt, '摘要 --excerpt', false) ?? '待填写：用一句话介绍文章内容。';
   validateAuthor((await jsonFile(join(root, 'src', 'content', 'authors', `${author}.json`), `作者 ${author}`)).data);
   const path = join(root, 'src', 'content', 'posts', `${slug}.md`);
-  const bytes = `---\ntitle: ${JSON.stringify(title)}\ndate: ${date}\ncategory: ${category}\nthemes: []\nauthor: ${author}\nexcerpt: ${JSON.stringify(excerpt)}\ndraft: true\n---\n\n待填写：从这里写正文。发布前请确认摘要、正文和署名，再将 draft 改为 false。\n`;
+  const bytes = `---\ntitle: ${JSON.stringify(title)}\ndate: ${date}\ncategory: ${category}\nthemes: []\nauthor: ${author}\nanonymous: ${Boolean(values.anonymous)}\nexcerpt: ${JSON.stringify(excerpt)}\ndraft: true\n---\n\n待填写：从这里写正文。发布前请确认摘要、正文和署名，再将 draft 改为 false。\n`;
   await commit(root, [{ path, bytes }]);
   return `已创建草稿：src/content/posts/${slug}.md\n文章ID：${slug}；完成内容并确认后，再将 draft 改为 false。`;
 }
