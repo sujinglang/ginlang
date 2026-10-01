@@ -203,11 +203,11 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
 .reading-progress span { display: block; width: 100%; height: 100%; transform: scaleX(0); transform-origin: left; background: var(--clay); }
 
 .home-intro { padding: 54px 0 36px; border-bottom: 1px solid var(--line); }
-.hero-kicker { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; color: var(--muted); font: 10px/1.5 var(--sans); letter-spacing: 0.13em; text-transform: uppercase; }
+.hero-kicker { display: flex; align-items: center; gap: 11px; max-width: 1040px; margin: 0 auto 16px; color: var(--muted); font: 10px/1.5 var(--sans); letter-spacing: 0.13em; text-transform: uppercase; }
 .hero-kicker span:first-child { color: var(--accent); }
 .hero-kicker span:last-child { display: inline-flex; align-items: center; gap: 10px; }
 .hero-kicker span:last-child::before { width: 28px; height: 1px; background: var(--line); content: ''; }
-.home-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 460px); align-items: center; gap: clamp(34px, 5vw, 72px); }
+.home-hero { position: relative; display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr); align-items: center; gap: 48px; max-width: 1040px; margin-inline: auto; }
 .home-hero > .hero-gallery { grid-column: 2; grid-row: 1; }
 .quiet-butterfly { position: absolute; z-index: 2; top: -27px; right: -39px; display: block; width: 90px; opacity: 0.82; pointer-events: none; filter: drop-shadow(0 5px 7px rgb(75 92 105 / 9%)); animation: butterfly-float 8s ease-in-out infinite; }
 .quiet-butterfly img { display: block; width: 100%; height: auto; border: 0; background: transparent; box-shadow: none; transform-origin: 55% 58%; animation: wing-breathe 5.8s ease-in-out infinite; }
@@ -342,8 +342,8 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
 .section-heading-main { display: flex; flex-direction: column; gap: 6px; }
 .section-kicker { margin: 0; color: var(--muted); font: 9px/1.5 var(--sans); letter-spacing: 0.17em; }
 .section-heading h2 { margin: 0; font-size: 28px; font-weight: 500; line-height: 1.5; }
-.quiet-link { display: inline-flex; min-height: 46px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); color: var(--accent-deep); font: 14px/1.5 var(--sans); text-decoration: none; white-space: nowrap; transition: border-color 220ms ease, color 220ms ease, background-color 220ms ease; }
-.quiet-link:hover { border-bottom-color: var(--clay); background: var(--paper-raised); color: var(--ink); }
+.quiet-link { display: inline-flex; min-height: 46px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--accent-deep); font: 14px/1.5 var(--sans); text-decoration: none; white-space: nowrap; transition: border-color 220ms ease, color 220ms ease; }
+.quiet-link:hover { border-bottom-color: var(--clay); color: var(--ink); }
 .featured-post {
   position: relative;
   display: flex;
@@ -734,7 +734,14 @@ body { background: var(--paper); }
 .selection-brief p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.9; }
 .selection-brief-author { width: fit-content; margin-top: 10px; padding-top: 0; color: var(--accent-deep); font: 11px/1.5 var(--sans); text-decoration: none; }
 .home-people { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--line); }
-.home-guest-empty { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 8px 0 22px; border-bottom: 1px solid var(--line); }
+.home-guest-invitation { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 24px; padding-bottom: 24px; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); text-decoration: none; transition: border-color 220ms ease; }
+.home-guest-invitation h2 { margin: 0; font-size: 28px; font-weight: 500; line-height: 1.5; }
+.home-guest-invitation > span { display: inline-flex; min-height: 46px; align-items: center; color: var(--accent-deep); font: 14px/1.5 var(--sans); }
+.home-guest-invitation > p { grid-column: 1 / -1; max-width: 590px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.9; }
+.home-guest-invitation:hover { border-bottom-color: var(--accent); color: var(--ink); }
+.home-guest-invitation:focus-visible { border-bottom-color: var(--accent); outline: 2px solid var(--focus); outline-offset: 4px; }
+.home-guest-empty { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 8px 0 22px; border-bottom: 1px solid var(--line); transition: border-color 220ms ease; }
+.home-guest-empty:hover { border-bottom-color: var(--accent); }
 .home-guest-empty h3 { max-width: 550px; margin: 8px 0 10px; font-size: clamp(22px, 3vw, 29px); font-weight: 500; line-height: 1.5; }
 .home-guest-empty p { max-width: 590px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.9; }
 .home-guest-empty > a { padding-bottom: 4px; border-bottom: 1px solid var(--clay); color: var(--accent-deep); font: 12px/1.6 var(--sans); text-decoration: none; white-space: nowrap; }
@@ -990,6 +997,7 @@ body { background: var(--paper); }
 /* Actions behave like entries in a reading index, rather than isolated badges. */
 .section-heading > .quiet-link { flex: none; align-self: end; }
 .home-guest-empty > a.quiet-link, .people-empty > a.quiet-link { padding: 4px 0 5px; border-bottom: 1px solid var(--line); color: var(--accent-deep); font: 12px/1.5 var(--sans); }
+.home-guest-empty > a.quiet-link { border-bottom: 0; }
 .home-guest-empty > a::after, .people-empty > a::after { position: absolute; inset: 0; content: ''; }
 .home-guest-empty:focus-within, .people-empty:focus-within { outline: 2px solid var(--focus); outline-offset: 3px; }
 .back-link { min-height: 44px; gap: 9px; margin-bottom: 31px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 12px; transition: border-color 220ms ease, color 220ms ease; }
@@ -1283,6 +1291,8 @@ body { background: var(--paper); }
   .heading-actions { flex-wrap: wrap; gap: 14px; }
   .home-people, .home-whisper, .home-topics, .landscape-section { margin-top: 44px; }
   .home-guest-empty { gap: 14px; }
+  .home-guest-invitation { gap: 8px 16px; }
+  .home-guest-invitation h2 { font-size: 25px; }
   .selection-brief h3 { font-size: 22px; }
   .selection-brief p { font-size: 14px; }
   .hero-gallery-caption-actions { gap: 14px; }
