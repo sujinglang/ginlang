@@ -12,7 +12,7 @@ const slideSrcSets = Object.fromEntries(slides.map((slide) => {
   const stem = slide.file.replace(/\.webp$/, '');
   return [slide.id, `${base}/hero-watercolors/${stem}-480w.webp 480w, ${base}/hero-watercolors/${stem}-800w.webp 800w, ${base}/hero-watercolors/${slide.file} ${slide.width}w`];
 }));
-const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, 420px';
+const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, 460px';
 ---
 
 <!-- Run before the images exist so a refresh never paints a default slide first. -->

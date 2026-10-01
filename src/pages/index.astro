@@ -27,8 +27,6 @@ for (const author of authors) {
   if (!selected || selected.data.author.id !== author.id || selected.data.draft) throw new Error(`作者 ${author.id} 的代表作无效或尚未发布`);
 }
 const founder = authors.find((author) => author.data.role === 'founder');
-const founderGreetingParts = founder?.data.bio?.split(founder.data.name);
-const founderGreetingName = founder ? founder.data.name.toUpperCase() : '';
 const guests = authors.filter((author) => author.data.role === 'guest' && author.data.featured).sort((a, b) => a.data.order - b.data.order);
 const allTopics = Object.keys(topicRecords).length ? await getCollection('topics') : [];
 for (const topic of allTopics) {
@@ -68,11 +66,11 @@ const landscapes = [
     </div>
     <div class="home-hero">
       <div>
-        <h1 id="home-title"><span class="hero-line">把日子写得</span><span class="hero-line"><em>慢一点。</em></span></h1>
+        <h1 id="home-title" class="cover-poem"><span class="hero-line">吹箫凌极浦，</span><span class="hero-line">日暮送夫君</span><span class="hero-line">湖上一回首，</span><span class="hero-line">青山卷白云</span></h1>
         <p class="intro-note">我是 GINLANG。这里放我写的随笔、日记和读书笔记，偶尔也会邀请朋友来写。</p>
         <div class="hero-links">
           <a class="hero-link" href="#latest-title">开始阅读</a>
-          <a class="hero-link hero-link-secondary" href={base + '/authors/'}>认识作者</a>
+          <a class="hero-link hero-link-secondary" href="#home-profile-name">认识作者</a>
         </div>
       </div>
       <HeroGallery />
@@ -96,7 +94,7 @@ const landscapes = [
         </div>
         <div class="home-profile-about">
           <h3>About</h3>
-          <p>{founderGreetingParts?.length === 2 ? <>{founderGreetingParts[0]}<span class="home-greeting-name">{founderGreetingName}</span>{founderGreetingParts[1]}</> : founder.data.bio || '以后再来写吧'}</p>
+          <p class="profile-greeting" lang="en" translate="no">{founder.data.bio || 'Hi! I\'m GINLANG.'}</p>
           {founder.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
           <a href={base + '/about/'}>更多关于我</a>
         </div>
@@ -123,7 +121,7 @@ const landscapes = [
             <div class="featured-topline"><span>{categoryLabel(latest.data.category)}</span><time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time></div>
             <h3><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a></h3>
             <p>{featuredExcerpt}</p>
-            <div class="featured-meta"><a href={base + '/authors/' + latest.data.author.id + '/'}>文 / {authorById.get(latest.data.author.id)?.data.name}</a><a class="quiet-link" href={base + '/posts/' + latest.id + '/'}>阅读全文</a></div>
+            <div class="featured-meta"><span>文 / {authorById.get(latest.data.author.id)?.data.name}</span><span class="featured-reading-hint" aria-hidden="true">点开阅读</span></div>
           </article>
           {earlierPosts.length > 0 && <div class="selection-side" data-reveal="stagger">{earlierPosts.map((post) => <article class="selection-brief"><div class="selection-brief-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><span>{categoryLabel(post.data.category)}</span></div><h3><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a></h3><p>{post.data.excerpt}</p><a class="selection-brief-author" href={base + '/authors/' + post.data.author.id + '/'}>{authorById.get(post.data.author.id)?.data.name}</a></article>)}</div>}
         </div>
@@ -131,9 +129,8 @@ const landscapes = [
     </section>
 
     <section class="home-people" aria-labelledby="home-people-title" data-reveal="list">
-      <div class="section-heading"><div class="section-heading-main"><p class="section-kicker">作者</p><h2 id="home-people-title">写这些文章的人</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>
-      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <div class="home-guest-empty"><div><span class="folio-mark">客席写作</span><h3>以后也会有朋友的文章。</h3><p>目前发布的是我自己的文章。朋友的介绍和作品，会在征得同意后放到这里。</p></div><a class="quiet-link" href={base + '/contribute/'}>了解参与写作</a></div>}
-      {founder && <p class="home-founder-note">由 <a href={base + '/authors/' + founder.id + '/'}>{founder.data.name}</a> 整理与更新</p>}
+      <div class="section-heading"><div class="section-heading-main"><h2 id="home-people-title">客席作者</h2></div>{guests.length > 0 && <a class="quiet-link" href={base + '/authors/'}>认识全部作者</a>}</div>
+      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <div class="home-guest-empty"><p>朋友的介绍与作品，会在征得同意后陆续放在这里。</p><a class="quiet-link" href={base + '/contribute/'}>参与写作</a></div>}
     </section>
 
     {topics.length > 0 && <section class="home-topics" aria-labelledby="home-topics-title"><div class="section-heading"><h2 id="home-topics-title">主题选集</h2><a class="quiet-link" href={base + '/topics/'}>全部专题</a></div><div class="home-topic-list">{topics.slice(0, 2).map((topic) => <a href={base + '/topics/' + topic.id + '/'}><span>专题</span><h3>{topic.data.title}</h3><p>{topic.data.introduction}</p></a>)}</div></section>}
@@ -147,7 +144,6 @@ const landscapes = [
     <section class="landscape-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
       <div class="landscape-topline">
         <div>
-          <p class="section-kicker">A VIEW BETWEEN PAGES</p>
           <h2 id="landscape-title">换一扇窗</h2>
         </div>
       </div>
@@ -178,7 +174,6 @@ const landscapes = [
     <section class="category-shelf" aria-labelledby="category-title" data-reveal="list">
       <div class="section-heading">
         <div class="section-heading-main">
-          <p class="section-kicker">A FEW WAYS TO READ</p>
           <h2 id="category-title">挑一类慢慢读</h2>
         </div>
       </div>

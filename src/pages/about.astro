@@ -30,7 +30,7 @@ const founderPosts = (await getCollection('posts', ({ data }) => !data.draft && 
     </div>
     <MarginWhisper theme="about" />
     <div class="prose about-copy">
-      {founder?.data.bio && <p class="about-greeting">{founder.data.bio}</p>}
+      {founder?.data.bio && <p class="about-greeting" lang="en" translate="no">{founder.data.bio}</p>}
       {founder?.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
       <p>我是 GINLANG。平时写随笔、日记，也记下读书时留下的想法。有东西想说的时候，我会更新一篇。</p>
       <p>页面留得宽松一些，方便阅读，也方便过段时间回来找一篇旧文章。</p>
