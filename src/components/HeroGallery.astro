@@ -46,7 +46,7 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, 420px';
   .hero-gallery-frame { display: block; padding: 0; color: inherit; cursor: zoom-in; }
   .hero-gallery-frame:disabled { cursor: default; }
   .hero-gallery-frame:hover:not(:disabled) { border-color: var(--accent); }
-  .gallery-lightbox { width: min(94vw, 960px); max-width: none; max-height: 94vh; padding: 18px; border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); box-shadow: 0 20px 75px rgb(29 35 29 / 18%); overscroll-behavior: contain; }
+  .gallery-lightbox { width: min(94vw, 960px); max-width: none; max-height: 94vh; padding: 18px; border: 1px solid var(--line); border-top: 2px solid var(--clay); background: var(--paper-raised); color: var(--ink); box-shadow: 0 20px 75px rgb(29 35 29 / 18%); overscroll-behavior: contain; }
   .gallery-lightbox::backdrop { background: rgb(33 39 34 / 70%); }
   .gallery-lightbox > img { display: block; width: 100%; height: min(76vh, 760px); object-fit: contain; background: var(--paper); }
   .gallery-lightbox-close { position: absolute; top: 22px; right: 22px; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: var(--paper-raised); color: var(--ink); cursor: pointer; font: 25px/1 var(--sans); }
