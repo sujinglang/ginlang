@@ -38,7 +38,7 @@ const founderPosts = (await getCollection('posts', ({ data }) => !data.draft && 
       {publishedSections.map((section) => (
         <section aria-label={section.title}>
           <h2>{section.title}</h2>
-          <p class:list={[{ 'about-placeholder': section.text === '此处需要您亲自填写' }]}>{section.text}</p>
+          <p class:list={[{ 'about-placeholder': section.text === '以后再来写吧' }]}>{section.text}</p>
         </section>
       ))}
 

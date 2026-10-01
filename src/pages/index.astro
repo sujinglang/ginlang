@@ -96,7 +96,7 @@ const landscapes = [
         </div>
         <div class="home-profile-about">
           <h3>About</h3>
-          <p>{founderGreetingParts?.length === 2 ? <>{founderGreetingParts[0]}<span class="home-greeting-name">{founderGreetingName}</span>{founderGreetingParts[1]}</> : founder.data.bio || '此处需要您亲自填写'}</p>
+          <p>{founderGreetingParts?.length === 2 ? <>{founderGreetingParts[0]}<span class="home-greeting-name">{founderGreetingName}</span>{founderGreetingParts[1]}</> : founder.data.bio || '以后再来写吧'}</p>
           {founder.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
           <a href={base + '/about/'}>更多关于我</a>
         </div>
