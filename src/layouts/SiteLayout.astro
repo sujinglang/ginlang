@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import alexBrushFont from '../assets/fonts/alex-brush-latin.woff2?url';
+import marckScriptFont from '../assets/fonts/marck-script-latin.woff2?url';
 import { getCollection } from 'astro:content';
 import topicRecords from '../content/topics.json';
 import { formatDate } from '../lib/date';
@@ -66,7 +66,7 @@ const webSiteSchema = JSON.stringify({
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={base + '/favicon.svg'} />
-    {(currentPath === base || currentPath === base + '/about') && <link rel="preload" href={alexBrushFont} as="font" type="font/woff2" crossorigin />}
+    {(currentPath === base || currentPath === base + '/about') && <link rel="preload" href={marckScriptFont} as="font" type="font/woff2" crossorigin />}
     <link rel="alternate" type="application/rss+xml" title="GINLANG RSS" href={base + '/rss.xml'} />
     <meta property="og:site_name" content="GINLANG" />
     <meta property="og:title" content={pageTitle} />
