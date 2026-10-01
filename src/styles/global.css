@@ -226,30 +226,36 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
   min-height: 48px;
   align-items: center;
   justify-content: center;
-  padding: 10px 26px;
+  padding: 10px 28px;
   border: 1px solid var(--accent-deep);
   border-radius: 3px;
   background: var(--accent-deep);
   color: var(--paper);
   cursor: pointer;
   font: 14px/1.5 var(--sans);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-decoration: none;
   transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease, border-color 220ms ease;
 }
-/* The pair reads as one designed family: the ✳ wordmark flower leads the
-   label and turns gently on hover — same motif as the whisper button. */
+/* The pair reads as one designed family: an inset hairline frames each label
+   like the mat of a framed painting, brightening on hover. No arrows, no glyphs. */
 .hero-link::before {
-  content: '✳';
-  margin-right: 9px;
-  font-size: 11px;
-  transition: transform 220ms ease;
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid color-mix(in srgb, var(--paper) 45%, transparent);
+  border-radius: 2px;
+  transition: border-color 220ms ease;
+  pointer-events: none;
 }
+.hero-link { position: relative; }
 .hero-link:hover { transform: translateY(-2px); box-shadow: 0 9px 20px rgb(63 83 69 / 20%); }
-.hero-link:hover::before { transform: rotate(40deg); }
+.hero-link:hover::before { border-color: color-mix(in srgb, var(--paper) 85%, transparent); }
 .hero-link:active { transform: translateY(0); box-shadow: none; }
 .hero-link-secondary { background: transparent; color: var(--accent-deep); border-color: color-mix(in srgb, var(--accent) 52%, var(--line)); }
+.hero-link-secondary::before { border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
 .hero-link-secondary:hover { background: var(--accent-soft); border-color: var(--accent); box-shadow: none; }
+.hero-link-secondary:hover::before { border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
 .hero-link:focus-visible, .random-post:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .random-post {
   display: inline-flex;

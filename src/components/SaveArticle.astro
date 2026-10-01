@@ -50,7 +50,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </script>
 
 <style>
-  .save-article { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 22px 0 2px; font: 12px/1.6 var(--sans); }
+  .save-article { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; max-width: var(--reading-width); margin: 22px auto 2px; font: 12px/1.6 var(--sans); }
   .save-article button, .save-article a { min-height: 44px; display: inline-flex; align-items: center; padding: 7px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--accent-deep); cursor: pointer; text-decoration: none; }
   .save-article button[aria-pressed="true"] { color: var(--clay); border-bottom-color: var(--clay); }
   .save-article button:hover, .save-article a:hover { border-bottom-color: var(--accent); color: var(--ink); }
