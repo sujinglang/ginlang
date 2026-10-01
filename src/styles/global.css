@@ -222,21 +222,21 @@ html.whisper-initializing [data-whisper-text], html.whisper-initializing [data-w
 .hero-links { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
 .hero-link {
   display: inline-flex;
-  min-height: 48px;
+  min-height: 50px;
   align-items: center;
   justify-content: center;
-  padding: 10px 27px;
+  padding: 12px 30px;
   border: 1px solid var(--accent-deep);
   border-radius: 3px;
   background: var(--accent-deep);
   color: var(--paper);
   cursor: pointer;
-  font: 14px/1.5 var(--sans);
+  font: 500 15px/1.5 var(--sans);
   letter-spacing: 0.04em;
   text-decoration: none;
-  transition: transform 190ms ease, box-shadow 190ms ease, background-color 190ms ease, border-color 190ms ease;
+  transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease, border-color 220ms ease;
 }
-.hero-link:hover { transform: translateY(-2px); box-shadow: 0 9px 20px rgb(63 83 69 / 20%); }
+.hero-link:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgb(63 83 69 / 24%); }
 .hero-link:active { transform: translateY(0); box-shadow: none; }
 .hero-link-secondary { background: transparent; color: var(--accent-deep); border-color: color-mix(in srgb, var(--accent) 52%, var(--line)); }
 .hero-link-secondary:hover { background: var(--accent-soft); border-color: var(--accent); box-shadow: none; }
