@@ -1310,3 +1310,66 @@ body { background: var(--paper); }
   .cover-poem .hero-line:nth-child(3) { animation-delay: 330ms; }
   .cover-poem .hero-line:nth-child(4) { animation-delay: 410ms; }
 }
+
+/* A shared ink sweep. Backgrounds leave whole-entry hit areas untouched.
+   The scoped component borders are suppressed only for these line controls. */
+.site-shell :is(
+  .quiet-link, .random-post, .back-link, .copy-link, .rss-link, .text-button,
+  .desk-note a, .last-read-note a, .hero-gallery-caption a,
+  .hero-gallery-actions button, .home-profile-about > a, .author-links a,
+  .article-author > a, .about-reading-path > a, .home-guest-invitation,
+  .author-selected, .related-reading a, .primary-nav a, .footer-nav a span,
+  .landscape-controls button, .writing-filter button, .category-row,
+  .card-maker-trigger, .card-maker-actions button, .gallery-lightbox-bottom button,
+  .draw-button, .note-draft-tools button, .note-draft-tools small a,
+  .save-article button, .save-article a, .resume-actions .resume-button,
+  .desk-actions button, .desk-heading a, .desk-section button,
+  .margin-whisper-content button, .selection-brief-author, .writing-row-author,
+  .topic-author, .footer-bottom > a
+) {
+  background-image: linear-gradient(var(--clay), var(--clay)), linear-gradient(var(--sweep-track, var(--line)), var(--sweep-track, var(--line))) !important;
+  background-position: left bottom !important;
+  background-repeat: no-repeat !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  background-size: var(--sweep-progress, 0%) 1px, 100% 1px !important;
+  border-bottom-color: transparent !important;
+  text-decoration: none !important;
+  transition: background-size 320ms cubic-bezier(.22, .61, .36, 1), color 180ms ease, transform 220ms ease;
+}
+.site-shell :is(a, button):not(:disabled):is(:focus-visible, :active),
+.site-shell .category-row:is(:active, :focus-within),
+.site-shell :is(a, button):is([aria-current='page'], [aria-pressed='true']) {
+  --sweep-progress: 100%;
+}
+@media (hover: hover) and (pointer: fine) {
+  .site-shell :is(a, button):not(:disabled):hover,
+  .site-shell .category-row:hover { --sweep-progress: 100%; }
+}
+.site-shell :is(
+  .primary-nav a, .landscape-controls button, .writing-filter button,
+  .hero-gallery-actions button, .margin-whisper-content button,
+  .selection-brief-author, .writing-row-author, .topic-author, .footer-bottom > a
+) { --sweep-track: transparent; }
+.primary-nav a::after, .landscape-controls button::after,
+.writing-filter button[aria-pressed='true']::after, .related-reading a::after { content: none; }
+@media (hover: none), (pointer: coarse) {
+  .site-shell :is(a, button):not(:disabled):active,
+  .site-shell .category-row:active { --sweep-progress: 100%; transition-duration: 140ms; }
+  .site-shell :is(.quiet-link, .random-post, .rss-link, .back-link, .copy-link,
+    .hero-gallery-actions button, .landscape-controls button, .draw-button,
+    .card-maker-trigger, .card-maker-actions button, .note-draft-tools button):active {
+    color: var(--clay);
+    transition-duration: 140ms;
+  }
+}
+@media (max-width: 680px) {
+  .landscape-controls { gap: 20px; }
+  .landscape-controls button { min-height: 44px; padding: 10px 4px; font-size: 13px; }
+  .heading-actions { gap: 20px; }
+  .footer-actions { gap: 10px 24px; }
+  .margin-whisper-content button { min-height: 44px; padding-left: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-shell :is(a, button, .category-row, .footer-nav a span) { transition-duration: 120ms; }
+}
