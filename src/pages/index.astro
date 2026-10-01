@@ -113,6 +113,7 @@ const landscapes = [
         </div>
         <div class="heading-actions">
           <button class="random-post" type="button" data-random-post data-post-urls={JSON.stringify(postUrls)} aria-label="随机打开一篇文章" hidden>随机翻一页</button>
+          <a class="quiet-link" href={base + '/writing/'}>查看全部文章</a>
         </div>
       </div>
 
@@ -130,7 +131,7 @@ const landscapes = [
     </section>
 
     <section class="home-people" aria-labelledby="home-people-title" data-reveal="list">
-      <div class="section-heading"><div class="section-heading-main"><p class="section-kicker">作者</p><h2 id="home-people-title">写这些文章的人</h2></div></div>
+      <div class="section-heading"><div class="section-heading-main"><p class="section-kicker">作者</p><h2 id="home-people-title">写这些文章的人</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>
       {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <div class="home-guest-empty"><div><span class="folio-mark">客席写作</span><h3>以后也会有朋友的文章。</h3><p>目前发布的是我自己的文章。朋友的介绍和作品，会在征得同意后放到这里。</p></div><a class="quiet-link" href={base + '/contribute/'}>了解参与写作</a></div>}
       {founder && <p class="home-founder-note">由 <a href={base + '/authors/' + founder.id + '/'}>{founder.data.name}</a> 整理与更新</p>}
     </section>
