@@ -1246,11 +1246,8 @@ body { background: var(--paper); }
 /* Reading rows answer the pointer with the same clay sweep as the post list. */
 .writing-row::before { content: ''; position: absolute; right: 0; bottom: -1px; left: 0; height: 1px; background: var(--clay); transform: scaleX(0); transform-origin: left; transition: transform 220ms ease; }
 .writing-row:hover::before, .writing-row:focus-within::before { transform: scaleX(1); }
-.selection-brief h3 a { transition: text-decoration-color 220ms ease; }
-.selection-brief:hover h3 a, .selection-brief:focus-within h3 a { text-decoration: underline; text-decoration-color: var(--clay); text-underline-offset: 4px; }
 .selection-grid .featured-post::before { transition: width 220ms ease; }
 .selection-grid .featured-post:hover::before { width: 3px; }
-.cover-colophon a:hover { text-decoration: underline; text-decoration-color: var(--clay); text-underline-offset: 4px; }
 
 /* Author albums: one data source (src/content/albums/<id>.json), quiet previews. */
 .author-page { overflow-x: clip; }
@@ -1325,7 +1322,12 @@ body { background: var(--paper); }
   .save-article button, .save-article a, .resume-actions .resume-button,
   .desk-actions button, .desk-heading a, .desk-section button,
   .margin-whisper-content button, .selection-brief-author, .writing-row-author,
-  .topic-author, .footer-bottom > a
+  .topic-author, .footer-bottom > a,
+  .cover-colophon a, .featured-post h3 a, .selection-brief h3 a,
+  .post-row .post-title, .writing-row h2 a, .archive-list > li > a,
+  .author-page .editorial-index li > div > a:first-child,
+  .topic-works li > div > a:first-child, .about-reading-list a,
+  .reading-route li a
 ) {
   background-image: linear-gradient(var(--clay), var(--clay)), linear-gradient(var(--sweep-track, var(--line)), var(--sweep-track, var(--line))) !important;
   background-position: left bottom !important;
@@ -1335,8 +1337,24 @@ body { background: var(--paper); }
   background-size: var(--sweep-progress, 0%) 1px, 100% 1px !important;
   border-bottom-color: transparent !important;
   text-decoration: none !important;
-  transition: background-size 320ms cubic-bezier(.22, .61, .36, 1), color 180ms ease, transform 220ms ease;
+  transition: background-size 460ms cubic-bezier(.4, 0, .2, 1), color 180ms ease, transform 220ms ease;
 }
+/* Keep title lines under the text, without changing the stretched link target. */
+.site-shell :is(.cover-colophon a, .post-row .post-title, .archive-list > li > a, .reading-route li a,
+  .author-page .editorial-index li > div > a:first-child) { width: fit-content; max-width: 100%; }
+.site-shell :is(.featured-post h3 a, .selection-brief h3 a, .writing-row h2 a,
+  .topic-works li > div > a:first-child, .about-reading-list a, .reading-route li a) {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.cover-colophon:focus-within a,
+.featured-post:focus-within h3 a,
+.selection-brief:focus-within h3 a,
+.post-row:focus-within .post-title,
+.writing-row:focus-within h2 a,
+.archive-list > li:focus-within > a,
+.author-page .editorial-index li:focus-within > div > a:first-child,
+.topic-works li:focus-within > div > a:first-child { --sweep-progress: 100%; }
 .site-shell :is(a, button):not(:disabled):is(:focus-visible, :active),
 .site-shell .category-row:is(:active, :focus-within),
 .site-shell :is(a, button):is([aria-current='page'], [aria-pressed='true']) {
@@ -1345,11 +1363,23 @@ body { background: var(--paper); }
 @media (hover: hover) and (pointer: fine) {
   .site-shell :is(a, button):not(:disabled):hover,
   .site-shell .category-row:hover { --sweep-progress: 100%; }
+  .cover-colophon:hover a,
+  .featured-post:hover h3 a,
+  .selection-brief:hover h3 a,
+  .post-row:hover .post-title,
+  .writing-row:hover h2 a,
+  .archive-list > li:hover > a,
+  .author-page .editorial-index li:hover > div > a:first-child,
+  .topic-works li:hover > div > a:first-child { --sweep-progress: 100%; }
 }
 .site-shell :is(
   .primary-nav a, .landscape-controls button, .writing-filter button,
   .hero-gallery-actions button, .margin-whisper-content button,
-  .selection-brief-author, .writing-row-author, .topic-author, .footer-bottom > a
+  .selection-brief-author, .writing-row-author, .topic-author, .footer-bottom > a,
+  .cover-colophon a, .featured-post h3 a, .selection-brief h3 a,
+  .post-row .post-title, .writing-row h2 a, .archive-list > li > a,
+  .author-page .editorial-index li > div > a:first-child,
+  .topic-works li > div > a:first-child, .about-reading-list a, .reading-route li a
 ) { --sweep-track: transparent; }
 .primary-nav a::after, .landscape-controls button::after,
 .writing-filter button[aria-pressed='true']::after, .related-reading a::after { content: none; }
