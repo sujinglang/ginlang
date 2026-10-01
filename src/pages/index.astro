@@ -1,41 +1,17 @@
 ---
-import { getCollection } from 'astro:content';
 import HeroGallery from '../components/HeroGallery.astro';
 import DailyNote from '../components/DailyNote.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
 import ProfileMeta from '../components/ProfileMeta.astro';
 import ProfileQuote from '../components/ProfileQuote.astro';
-import topicRecords from '../content/topics.json';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
+import { loadEditorialContent } from '../lib/content';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const allPosts = await getCollection('posts');
-const posts = allPosts.filter((post) => !post.data.draft).sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
-);
-const authors = await getCollection('authors');
-const authorById = new Map(authors.map((author) => [author.id, author]));
-const postById = new Map(allPosts.map((post) => [post.id, post]));
-for (const post of allPosts) {
-  if (!authorById.has(post.data.author.id)) throw new Error(`作品 ${post.id} 引用了不存在的作者 ${post.data.author.id}`);
-}
-for (const author of authors) {
-  if (!author.data.featuredPost) continue;
-  const selected = postById.get(author.data.featuredPost.id);
-  if (!selected || selected.data.author.id !== author.id || selected.data.draft) throw new Error(`作者 ${author.id} 的代表作无效或尚未发布`);
-}
-const founder = authors.find((author) => author.data.role === 'founder');
+const { publishedPosts: posts, authors, authorById, founder, topics } = await loadEditorialContent();
 const guests = authors.filter((author) => author.data.role === 'guest' && author.data.featured).sort((a, b) => a.data.order - b.data.order);
-const allTopics = Object.keys(topicRecords).length ? await getCollection('topics') : [];
-for (const topic of allTopics) {
-  for (const reference of topic.data.posts) {
-    const post = postById.get(reference.id);
-    if (!post || (!topic.data.draft && post.data.draft)) throw new Error(`专题 ${topic.id} 引用了不存在或未发布的作品 ${reference.id}`);
-  }
-}
-const topics = allTopics.filter((topic) => !topic.data.draft).sort((a, b) => a.data.order - b.data.order);
 const latest = posts[0];
 // Show as much as the home can hold: the featured post plus up to five briefs.
 const earlierPosts = posts.slice(1, 6);

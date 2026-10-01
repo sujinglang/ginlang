@@ -1,10 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import MarginWhisper from '../../components/MarginWhisper.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import { directoryOrder, loadEditorialContent } from '../../lib/content';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const authors = (await getCollection('authors')).sort((a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name, 'zh-CN'));
+const authors = directoryOrder((await loadEditorialContent()).authors);
 const guests = authors.filter((author) => author.data.role === 'guest');
 const founders = authors.filter((author) => author.data.role === 'founder');
 ---

@@ -1,13 +1,14 @@
 import { defineCollection, reference } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { existsSync } from 'node:fs';
-import { resolve, sep } from 'node:path';
+import { existsSync, statSync } from 'node:fs';
+import { isAbsolute, resolve, sep } from 'node:path';
 
 const publicRoot = resolve('./public');
 const publicImage = z.string().refine((asset) => {
+  if (isAbsolute(asset) || asset.includes('\\') || asset.split('/').includes('..')) return false;
   const fullPath = resolve(publicRoot, asset);
-  return fullPath.startsWith(publicRoot + sep) && existsSync(fullPath);
+  return fullPath.startsWith(publicRoot + sep) && existsSync(fullPath) && statSync(fullPath).isFile();
 }, '图片必须是 public/ 中存在的相对路径');
 
 const posts = defineCollection({
@@ -54,7 +55,7 @@ const topics = defineCollection({
   schema: z.object({
     title: z.string().min(1),
     introduction: z.string().min(1),
-    cover: z.string().optional(),
+    cover: publicImage.optional(),
     coverWidth: z.number().int().positive().default(1600),
     coverHeight: z.number().int().positive().default(900),
     posts: z.array(reference('posts')).min(1),

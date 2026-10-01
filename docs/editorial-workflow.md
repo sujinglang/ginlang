@@ -1,96 +1,178 @@
 # GINLANG 编辑与发布手册
 
-目前由创办人邀请作者、确认稿件，再统一通过 GitHub 发布。线上没有登录、上传或投稿后台。
+内容由你整理后发布到 GitHub。客席作者不需要登录网站；名字、简介、文章、照片确认后，使用本机工具或模板添加。电话和微信已在现有「参与写作」页面填写，不另建联系页面。
 
-## 需要创办人补充
+## 先记住三个关系
 
-- 创办人介绍：`src/content/authors/ginlang.json` 已有简短的 About 开头、选用引文、地点与原样日期；更详细的个人经历仍留在 `src/data/author.ts`，等创办人亲自填写。
-- 可公开的联系渠道：确认后更新 `src/pages/contribute.astro`。目前网站只说明流程，不接收在线稿件。
-- 第一位客席作者的笔名、简介和作品：得到作者同意后再添加，不提前制作虚构档案。
+- 文章里的 `author` 对应作者文件名。例如 `ginlang` 对应 `src/content/authors/ginlang.json`。
+- 相册文件名也与作者 ID 相同。例如 `src/content/albums/ginlang.json`。
+- 内容文件名与 ID 决定网址。已发布后更新内容即可，避免改名造成旧链接失效。
 
-## 新增作者
+所有命令在项目根目录运行。工具拒绝覆盖已有内容和图片，出错会说明要修改哪一项。先运行 `npm run content -- help` 查看参数。
 
-在 `src/content/authors/` 新建一个 JSON 文件。文件名就是长期稳定的作者 ID，例如 `lin-mu.json`。不要使用会频繁改变的展示名作文件名。可复制下面的结构并替换为真实资料：
+## 写文章
 
-```json
-{
-  "name": "作者确认的笔名",
-  "role": "guest",
-  "tagline": "作者确认的一句话介绍",
-  "bio": "作者确认公开的简介",
-  "featured": true,
-  "order": 20,
-  "featuredPost": "已发布的文章文件名，不带.md",
-  "links": []
-}
+新建自己的草稿：
+
+```powershell
+npm run content -- post 2026-10-01-autumn-note --title "秋天经过的时候" --author ginlang --category essay --date 2026-10-01
 ```
 
-`bio`、`location`、`displayDate`、`quote`、`quoteSource`、`portrait`、`cover`、`featuredPost` 和 `links` 都可省略。`displayDate` 只按提供的字样展示，不会自动推断它的含义；引用他人作品时同时填写 `quoteSource`。头像与背景图放在 `public/`，`portrait`、`cover` 填该目录下的相对路径，例如 `authors/lin-mu.webp`；构建时会检查文件是否存在。为两张图分别填 `portraitWidth`、`portraitHeight`、`portraitAlt` 与 `coverWidth`、`coverHeight`、`coverAlt`。头像和背景只使用作者确认公开的素材；插画头像不写成真实肖像。`featured` 控制首页是否推荐，作者目录仍展示所有作者。作品列表由文章自动生成。
-
-## 添加作品
-
-在 `src/content/posts/` 新建 Markdown 文件。文件名就是文章 URL 的最后一段；已发布文章不要随意改名，以免旧链接失效。
+为客席作者写草稿时，只把 `--author` 改成已创建的作者 ID。生成文件位于 `src/content/posts/`，用任意文本编辑器打开：
 
 ```md
 ---
-title: 作者确认的标题
+title: 秋天经过的时候
 date: 2026-10-01
 category: essay
-author: lin-mu
-excerpt: 一句清楚的真实内容介绍。
+themes: []
+author: ginlang
+excerpt: 此处需要您亲自填写
 draft: true
 ---
 
 从这里写正文。
 ```
 
-`category` 可填 `essay`、`diary`、`book` 或 `short`。`author` 必须与作者 JSON 文件名一致。写作与核稿时保留 `draft: true`；本地运行 `npm run dev` 预览。作者确认文字和署名后改为 `draft: false`，构建并推送到 `main`，GitHub Pages 将自动发布。撤下作品时先改回 `draft: true`，再发布一次；旧地址会停止生成。
+| 字段 | 填法 |
+| --- | --- |
+| `title` | 作者确认的标题 |
+| `date` | 发布日期，格式 YYYY-MM-DD |
+| `category` | essay 随笔 / diary 日记 / book 书摘 / short 短句 |
+| `themes` | 可选数组：philosophy、life、love、freedom、direction |
+| `author` | 已存在的作者 ID |
+| `excerpt` | 一句准确的内容介绍，用于列表和搜索 |
+| `draft` | true 为草稿，false 为公开 |
 
-作者数据中的 `featuredPost` 应填这位作者自己的、已经发布的文章 ID。作者页会验证这一关系。文章页、全部文章、分类、归档和搜索中的署名都自动引用作者数据，不需要手工复制简介。
+使用 Markdown 的 `## 小标题`、段落和引用即可。草稿不会进首页、目录、搜索或 RSS；开发模式可通过文章的固定地址预览。确认内容后把 `draft` 改成 `false`，运行构建。撤下文章可以改回 `true` 后发布；其旧地址将停止生成。
+
+主题阅读路线只在公开文章足够时出现：全站至少八篇、同主题至少三篇，不把现有少量作品重复包装。专题中的文章仍按你登记的顺序阅读。
+
+## 作者资料
+
+### 添加客席作者
+
+```powershell
+npm run content -- author lin-mu --name "林木" --tagline "由本人确认的一句话介绍"
+```
+
+工具创建：
+
+- `src/content/authors/lin-mu.json`：角色为 guest，首页推荐默认关闭。
+- `src/content/albums/lin-mu.json`：空相册 `photos: []`。
+
+填写真实 `bio`、个人链接等信息后，作者目录与 `/authors/lin-mu/` 自动生成。设 `featured: true` 才会在首页推荐。`order` 控制目录顺序，GINLANG 仍处在主要位置。不要复制其他人的经历或作品当作客席作者资料。
+
+### 修改 GINLANG
+
+编辑 `src/content/authors/ginlang.json`：名字、简介、地点、日期、头像、背景在这里。地点与日期只按填写的字样展示，不推断含义。关于页更详细的个人待填段落在 `src/data/author.ts`。
+
+### 导入头像与背景
+
+```powershell
+npm run content -- profile-photo lin-mu "C:\照片\头像.png" --kind portrait --name portrait --alt "作者选用的插画头像"
+npm run content -- profile-photo lin-mu "C:\照片\树林.jpg" --kind cover --name cover --alt "树林与一条小路"
+```
+
+工具自动读取图像尺寸，制作网页副本，并更新作者 JSON 中的 `portrait` / `cover`、宽高和替代文本。图片放在 `public/authors/<作者ID>/`；原图备份在 `source-art/authors/<作者ID>/`。不拉伸、不裁剪；页面头像仍按原有圆形容器展示。
+
+手工登记时使用相对路径，例如 `authors/lin-mu/cover.webp`，不要写 `C:\...`、`/ginlang/...` 或网络图片地址。宽高填实际尺寸，`alt` 客观描述看得见的画面。
+
+个人链接使用 `links: [{ "label": "个人主页", "url": "https://..." }]`。代表作 `featuredPost` 填本人已发布的文章 ID，不带 `.md`；不需要时省略。引文同时填写 `quoteSource` 供核对。
+
+## 作者相册
+
+首页水彩轮播和公开相册是两个入口。相册目前保持空白；只有你主动登记的照片才会出现。
+
+```powershell
+npm run content -- photo ginlang "C:\照片\湖边.jpg" --name lakeside --alt "湖面、小舟与远处的青山" --caption "湖边" --date 2026-10-01
+```
+
+将 `ginlang` 换成客席作者 ID，就会添加到那位作者的专属相册。工具会：
+
+- 保留输入原图，另行备份到不发布的 `source-art/albums/<作者ID>/`。
+- 生成长边不超过 1800px 的 WebP，不放大、不裁剪。
+- 把副本放入 `public/album/<作者ID>/`。
+- 自动把路径、实际宽高、替代文本和可选图注/日期写入对应相册 JSON。
+
+同一份登记表供相簿首页、作者主页的照片推荐、专属相册读取，不需要在三个页面各加一次。`photos` 数组的顺序就是展示顺序，调整顺序可以移动数组项。移除公开照片时删除对应登记项即可；原始备份可继续保留。
+
+手工相册格式：
+
+```json
+{
+  "photos": [
+    {
+      "src": "album/ginlang/lakeside.webp",
+      "width": 1600,
+      "height": 1067,
+      "alt": "湖面、小舟与远处的青山",
+      "caption": "湖边",
+      "date": "2026-10-01"
+    }
+  ]
+}
+```
+
+`caption` 和 `date` 可省略；不要虚构地点、时间或人物身份。没有照片时保持 `{ "photos": [] }`。
+
+## 正文配图
+
+为已存在的文章准备配图：
+
+```powershell
+npm run content -- post-photo 2026-10-01-autumn-note "C:\照片\窗边.jpg" --name window --alt "窗边的书与一盆植物"
+```
+
+工具将优化副本放在 `src/content/posts/images/<文章ID>/`，原图备份在 `source-art/posts/<文章ID>/`，并输出可以粘贴到正文的 Markdown，例如：
+
+```md
+![窗边的书与一盆植物](./images/2026-10-01-autumn-note/window.webp)
+```
+
+图片相对文章引用，Astro 会生成正确的构建资源地址与尺寸；不用把 `/ginlang/` 写死在正文。工具只准备图片并输出插图语法，不改动已写好的正文。
+
+## 首页水彩
+
+继续维护 `src/data/heroWatercolors.ts` 与 `public/hero-watercolors/`。每张使用稳定 `id`，登记 `file`、实际宽高和准确 `alt`。这是首页画册，不是作者公开相册。
+
+新增或更换主 WebP 后运行：
+
+```powershell
+npm run images:hero
+```
+
+把生成的 480w / 800w 副本一并提交。现有水彩文件和 ID 保持不变，以保留刷新更换首图、固定顺序循环及卡片制作的关联。
 
 ## 编排专题
 
-专题保存在 `src/content/topics.json`，初始值是空对象 `{}`。有真实作品和编辑导语后，再以稳定专题 ID 添加一项：
+数据在 `src/content/topics.json`，空对象不会显示专题入口。有真实作品后再登记：
 
 ```json
 {
   "autumn-reading": {
     "title": "经确认的专题标题",
-    "introduction": "编辑导语，说明这些真实作品为什么放在一起。",
-    "posts": ["已发布的文章 ID", "另一篇已发布的文章 ID"],
+    "introduction": "说明这些作品为什么放在一起",
+    "posts": ["第一篇文章ID", "第二篇文章ID"],
     "order": 20,
     "draft": true
   }
 }
 ```
 
-`posts` 的顺序就是专题页的阅读顺序。确认所有作品已发布后将 `draft` 改为 `false`。专题页不会复制文章正文；它通过文章 ID 生成链接。没有正式专题时，首页与导航不会显示专题入口。
-
-## 相册与照片
-
-相簿按作者分开，每位作者最多一份相册，数据文件是 `src/content/albums/<作者 id>.json`（文件名必须与作者 ID 一致，构建时会校验）。没有公开照片时文件只写 `{ "photos": [] }`，页面会如实显示「暂未公开照片」。
-
-作者确认公开照片后，把照片文件放进 `public/album/<作者 id>/`（保留原始素材），再在相册 JSON 的 `photos` 数组里逐张登记：
-
-```json
-{
-  "photos": [
-    {
-      "src": "album/ginlang/01-lakeside.webp",
-      "width": 1600,
-      "height": 1067,
-      "alt": "照片内容的客观描述",
-      "caption": "可选的一句说明",
-      "date": "2026-09-30"
-    }
-  ]
-}
-```
-
-`src` 是相对 `public/` 的路径；`alt` 必填；`caption` 与 `date` 可省略。保存并构建后，相簿首页、作者主页的照片推荐（最多三张）和 `/album/<作者 id>/` 相册页会自动生成，三处读取同一份数据。只登记作者同意公开的照片，不使用首页水彩或其他作者的素材代替。
+数组顺序就是阅读顺序；正式公开前确认作品已发布，并将专题的 `draft` 改成 `false`。可选封面仍填 `public/` 下真实存在的相对图片路径。
 
 ## 发布前检查
 
-运行 `npm run build`。构建时会检查文章作者、作者代表作和正式专题所引用的作品是否存在且可以发布。再查看手机与桌面页面、署名、作者链接、图片替代文本和 `/ginlang/` 资源路径。推送到 `main` 后，在 GitHub Actions 确认 Pages 发布成功。
+```powershell
+npm run dev
+npm run build
+```
 
-客席作者作品的著作权仍归各自作者。请在发布、修改或转载前与作者确认使用范围。
+1. 核对作者名字、文章署名、照片描述和愿意公开的信息。
+2. 打开新文章、作者页、相册与手机预览；草稿可用固定地址预览。
+3. 构建会检查必填字段、作者关系、代表作、专题引用和图片是否存在。修正报错后再发布。
+4. 提交并推送到 `main`，在 GitHub Actions 确认 Pages 成功。
+5. 用线上 HTTPS 地址查看结果，再发给朋友。
+
+生成文件 `dist/` 与缓存 `.astro/` 不手工编辑。原图备份 `source-art/` 不提交到仓库，换电脑前自行复制备份；用于网页的副本要一并提交。手工复制模板时，先替换所有待填内容，作者和相册模板用同一个文件名。

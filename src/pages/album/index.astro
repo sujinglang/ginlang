@@ -1,16 +1,13 @@
 ---
-import { getCollection } from 'astro:content';
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import { directoryOrder, loadEditorialContent } from '../../lib/content';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const albums = await getCollection('albums');
-const albumById = new Map(albums.map((album) => [album.id, album]));
-const authors = (await getCollection('authors')).sort(
-  (a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name, 'zh-CN'),
-);
+const content = await loadEditorialContent();
+const { albumById } = content;
+const authors = directoryOrder(content.authors);
 const founder = authors.find((author) => author.data.role === 'founder');
 const founderAlbum = founder ? albumById.get(founder.id) : undefined;
-if (founder && !founderAlbum) throw new Error(`缺少 src/content/albums/${founder.id}.json，创办人相册必须存在`);
 const founderPhoto = founderAlbum?.data.photos[0];
 // Guest albums exist only once the author (and their photos) are real.
 const guestAlbums = authors.filter((author) => author.data.role === 'guest' && albumById.has(author.id));

@@ -1,22 +1,16 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { formatDate } from '../../lib/date';
+import { loadEditorialContent } from '../../lib/content';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export async function getStaticPaths() {
-  const albums = await getCollection('albums');
-  const authorIds = new Set((await getCollection('authors')).map((author) => author.id));
-  for (const album of albums) {
-    if (!authorIds.has(album.id)) throw new Error(`相册 ${album.id} 没有对应的作者`);
-  }
-  return albums.map((album) => ({ params: { author: album.id }, props: { album } }));
+  const { albums, authorById } = await loadEditorialContent();
+  return albums.map((album) => ({ params: { author: album.id }, props: { album, author: authorById.get(album.id) } }));
 }
 
-const { album } = Astro.props;
-const author = await getEntry('authors', album.id);
-if (!author) throw new Error(`相册 ${album.id} 没有对应的作者`);
+const { album, author } = Astro.props;
 const photos = album.data.photos;
 ---
 

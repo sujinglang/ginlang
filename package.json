@@ -5,9 +5,12 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "content": "node scripts/content.mjs",
+    "images:hero": "node scripts/build-hero-variants.mjs"
   },
   "dependencies": {
-    "astro": "^7.3.4"
+    "astro": "^7.3.4",
+    "sharp": "0.35.4"
   }
 }
