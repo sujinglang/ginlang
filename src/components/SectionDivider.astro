@@ -3,7 +3,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <div class="section-divider" aria-hidden="true">
-  <img src={base + '/section-qianli-jiangshan-v1.webp'} width="2612" height="105" alt="" loading="lazy" decoding="async" draggable="false" />
+  <img src={base + '/section-qianli-jiangshan-detail-v2.webp'} width="4096" height="419" alt="" loading="lazy" decoding="async" draggable="false" />
 </div>
 
 <style>
@@ -21,22 +21,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     left: 0;
     width: 100%;
     max-width: none;
-    height: 60%;
+    height: 100%;
     object-fit: cover;
     object-position: 45% center;
     transform: translateY(-50%);
-    opacity: .48;
-    filter: saturate(.48) contrast(.68) brightness(2.05);
-    mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 72%, transparent);
+    opacity: .72;
+    filter: saturate(.42) brightness(1.85) contrast(1.15);
+    mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 78%, transparent);
     mix-blend-mode: multiply;
   }
   :global(.home-content) > .section-divider:nth-of-type(even) img {
     object-position: 75% center;
   }
   :global(:root[data-theme='dark']) .section-divider img {
-    opacity: .35;
+    opacity: .55;
     mix-blend-mode: screen;
-    filter: grayscale(1) contrast(.7) brightness(1.9) invert(1);
+    filter: grayscale(1) brightness(1.85) contrast(1.15) invert(1);
   }
   @media (max-width: 680px) {
     .section-divider { margin: 16px 0 12px; }
