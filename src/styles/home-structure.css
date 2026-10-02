@@ -1,0 +1,59 @@
+/* Layered paper edges separate chapters without adding decorative motifs. */
+.home-intro { padding-bottom: 0; border-bottom: 0; }
+.home-content { padding: 0 0 50px; }
+.home-profile.home-section { margin-top: 0; padding-block: 0; border-block: 0; }
+.home-people.home-section,
+.home-whisper.home-section,
+.landscape-section.home-section,
+.category-shelf.home-section { margin-top: 0; padding-top: 0; border-top: 0; }
+.home-whisper .margin-whisper { margin: 0; border-block: 0; }
+.home-note.home-section .daily-note { margin: 0; padding: 0; border-block: 0; }
+.selection-section.home-section { padding-bottom: 0; }
+
+/* One metadata order and one left edge throughout the reading selection. */
+.selection-section .section-heading { align-items: center; margin-bottom: 28px; }
+.selection-section .selection-grid { align-items: start; gap: 28px 40px; }
+.selection-section .featured-post { min-height: 0; padding: 28px 30px 30px; gap: 14px; }
+.selection-section .featured-post p { color: var(--muted); font-size: 16px; line-height: 1.85; }
+.selection-section .selection-side { gap: 0; }
+.selection-section .selection-brief { padding: 19px 0 23px; }
+.selection-section .selection-brief h3 { margin: 8px 0; font-size: 23px; line-height: 1.5; }
+.selection-section .selection-brief p { font-size: 16px; line-height: 1.85; }
+.selection-section .selection-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  color: var(--muted);
+  font: 12px/1.6 var(--sans);
+  letter-spacing: 0;
+}
+.selection-post-meta > span { color: var(--clay); }
+.selection-section .selection-post-author {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  color: var(--muted);
+  font: inherit;
+}
+
+@media (max-width: 780px) {
+  .selection-section .selection-grid { grid-template-columns: 1fr; gap: 24px; }
+  .selection-section .selection-side { grid-template-columns: 1fr; }
+  .selection-section .selection-brief:first-child { padding-top: 20px; }
+  .selection-section .featured-post { padding: 24px; }
+}
+@media (max-width: 680px) {
+  .selection-section .section-heading { display: block; margin-bottom: 24px; }
+  .selection-section .heading-actions { justify-content: flex-start; gap: 22px; margin-top: 10px; }
+  .selection-section .selection-post-meta { gap: 2px 14px; font-size: 12px; }
+  .selection-section .selection-post-author { min-height: 36px; }
+  .selection-section .featured-post h3 { font-size: clamp(25px, 7vw, 30px); }
+  .selection-section .selection-brief h3 { font-size: 24px; }
+  .selection-section .selection-brief p { font-size: 16px; line-height: 1.85; }
+}

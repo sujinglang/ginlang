@@ -4,6 +4,7 @@ import DailyNote from '../components/DailyNote.astro';
 import MarginWhisper from '../components/MarginWhisper.astro';
 import ProfileMeta from '../components/ProfileMeta.astro';
 import ProfileQuote from '../components/ProfileQuote.astro';
+import SectionDivider from '../components/SectionDivider.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { categories, categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
@@ -11,23 +12,12 @@ import { loadEditorialContent } from '../lib/content';
 import { hasPublicAuthor } from '../lib/postVisibility';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const { publishedPosts: posts, authors, authorById, founder, topics } = await loadEditorialContent();
+const { publishedPosts: posts, authors, authorById, founder } = await loadEditorialContent();
 const guests = authors.filter((author) => author.data.role === 'guest' && author.data.featured).sort((a, b) => a.data.order - b.data.order);
 const latest = posts[0];
 // Show as much as the home can hold: the featured post plus up to five briefs.
 const earlierPosts = posts.slice(1, 6);
 const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
-const plainText = (markdown: string) => markdown
-  .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
-  .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-  .replace(/<[^>]+>/g, '')
-  .replace(/[#*_`>~]/g, '')
-  .replace(/\s+/g, ' ')
-  .trim();
-const bodyParagraphs = latest?.body?.trim().split(/\n\s*\n/).map(plainText).filter(Boolean) ?? [];
-const featuredSource = bodyParagraphs.slice(1).join(' ') || bodyParagraphs.join(' ') || latest?.data.excerpt || '';
-const featuredCharacters = Array.from(featuredSource);
-const featuredExcerpt = featuredCharacters.slice(0, 140).join('') + (featuredCharacters.length > 140 ? '…' : '');
 const landscapes = [
   { label: '海边', caption: '海边 · 清晨', file: 'sea-morning-animated.webp', width: 1400, height: 788, alt: '手绘的浅蓝海岸与清晨天空' },
   { label: '林间', caption: '林间 · 流水', file: 'forest-waterfall-animated.webp', width: 1400, height: 933, alt: '手绘的林间瀑布与浅色水潭' },
@@ -56,7 +46,9 @@ const landscapes = [
   </section>
 
   {founder && (
-    <section class="home-profile" aria-labelledby="home-profile-name" data-reveal="image">
+    <>
+    <SectionDivider />
+    <section class="home-profile home-section" aria-labelledby="home-profile-name" data-reveal="image">
       <div class="home-profile-visual">
         {founder.data.cover && <img class="home-profile-cover" src={base + '/' + founder.data.cover.replace(/^\/+/, '')} width={founder.data.coverWidth} height={founder.data.coverHeight} alt={founder.data.coverAlt || ''} loading="lazy" decoding="async" />}
         <span class="home-profile-portrait">
@@ -77,10 +69,12 @@ const landscapes = [
         </div>
       </div>
     </section>
+    </>
   )}
 
   <div class="home-content">
-    <section class="selection-section" aria-labelledby="latest-title" data-reveal="ink">
+    <SectionDivider />
+    <section class="selection-section home-section" aria-labelledby="latest-title" data-reveal="ink">
       <div class="section-heading">
         <div class="section-heading-main">
           <p class="section-kicker">最近写的</p>
@@ -95,30 +89,49 @@ const landscapes = [
       {latest ? (
         <div class="selection-grid">
           <article class="featured-post">
-            <div class="featured-topline"><span>{categoryLabel(latest.data.category)}</span><time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time></div>
+            <div class="selection-post-meta">
+              <time datetime={latest.data.date.toISOString()}>{formatDate(latest.data.date)}</time>
+              <span>{categoryLabel(latest.data.category)}</span>
+              {hasPublicAuthor(latest) && <a class="selection-brief-author selection-post-author" href={base + '/authors/' + latest.data.author.id + '/'}>{authorById.get(latest.data.author.id)?.data.name}</a>}
+            </div>
             <h3><a href={base + '/posts/' + latest.id + '/'}>{latest.data.title}</a></h3>
-            <p>{featuredExcerpt}</p>
-            <div class="featured-meta">{hasPublicAuthor(latest) && <span>文 / {authorById.get(latest.data.author.id)?.data.name}</span>}<span class="featured-reading-hint" aria-hidden="true">点开阅读</span></div>
+            <p>{latest.data.excerpt}</p>
           </article>
-          {earlierPosts.length > 0 && <div class="selection-side" data-reveal="stagger">{earlierPosts.map((post) => <article class="selection-brief"><div class="selection-brief-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><span>{categoryLabel(post.data.category)}</span></div><h3><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a></h3><p>{post.data.excerpt}</p>{hasPublicAuthor(post) && <a class="selection-brief-author" href={base + '/authors/' + post.data.author.id + '/'}>{authorById.get(post.data.author.id)?.data.name}</a>}</article>)}</div>}
+          {earlierPosts.length > 0 && (
+            <div class="selection-side" data-reveal="stagger">
+              {earlierPosts.map((post) => (
+                <article class="selection-brief">
+                  <div class="selection-post-meta">
+                    <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+                    <span>{categoryLabel(post.data.category)}</span>
+                    {hasPublicAuthor(post) && <a class="selection-brief-author selection-post-author" href={base + '/authors/' + post.data.author.id + '/'}>{authorById.get(post.data.author.id)?.data.name}</a>}
+                  </div>
+                  <h3><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a></h3>
+                  <p>{post.data.excerpt}</p>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       ) : <p class="empty-note">第一篇文章还没有发布。</p>}
     </section>
 
-    <section class="home-people" aria-labelledby="home-people-title" data-reveal="list">
+    <SectionDivider />
+    <section class="home-people home-section" aria-labelledby="home-people-title" data-reveal="list">
       {guests.length > 0 && <div class="section-heading"><div class="section-heading-main"><h2 id="home-people-title">客席作者</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>}
       {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <a class="home-guest-invitation" href={base + '/contribute/'}><h2 id="home-people-title">客席作者</h2><span>参与写作</span><p>朋友的介绍与作品，会在征得同意后陆续放在这里。</p></a>}
     </section>
 
-    {topics.length > 0 && <section class="home-topics" aria-labelledby="home-topics-title"><div class="section-heading"><h2 id="home-topics-title">主题选集</h2><a class="quiet-link" href={base + '/topics/'}>全部专题</a></div><div class="home-topic-list">{topics.slice(0, 2).map((topic) => <a href={base + '/topics/' + topic.id + '/'}><span>专题</span><h3>{topic.data.title}</h3><p>{topic.data.introduction}</p></a>)}</div></section>}
+    <SectionDivider />
+    <div class="home-whisper home-section" data-reveal="quote"><MarginWhisper theme="home" /></div>
 
-    <div class="home-whisper" data-reveal="quote"><MarginWhisper theme="home" /></div>
-
-    <div data-reveal="ink"><DailyNote /></div>
+    <SectionDivider />
+    <div class="home-note home-section" data-reveal="ink"><DailyNote /></div>
     <p class="last-read-note" data-last-read hidden></p>
     <p class="desk-note">读到想留下的文章，写下还没写完的句子。<a href={base + '/desk/'}>打开我的书桌</a></p>
 
-    <section class="landscape-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
+    <SectionDivider />
+    <section class="landscape-section home-section" aria-labelledby="landscape-title" data-landscape data-reveal="image">
       <div class="landscape-topline">
         <div>
           <h2 id="landscape-title">换一扇窗</h2>
@@ -148,7 +161,8 @@ const landscapes = [
       </div>
     </section>
 
-    <section class="category-shelf" aria-labelledby="category-title" data-reveal="list">
+    <SectionDivider />
+    <section class="category-shelf home-section" aria-labelledby="category-title" data-reveal="list">
       <div class="section-heading">
         <div class="section-heading-main">
           <h2 id="category-title">挑一类慢慢读</h2>

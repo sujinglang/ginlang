@@ -2,7 +2,6 @@
 import '../styles/global.css';
 import marckScriptFont from '../assets/fonts/marck-script-latin.woff2?url';
 import { getCollection } from 'astro:content';
-import topicRecords from '../content/topics.json';
 import { formatDate } from '../lib/date';
 
 interface Props {
@@ -25,12 +24,10 @@ const homeUrl = new URL(base + '/', siteUrl).toString();
 const socialImage = new URL(ogImage ? base + ogImage : base + '/social-card.svg', siteUrl).toString();
 const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
 const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
-const hasTopics = Object.keys(topicRecords).length > 0 && (await getCollection('topics', ({ data }) => !data.draft)).length > 0;
 const navItems = [
   { label: '首页', hint: '回到首页', href: base + '/' },
   { label: '文章', hint: '挑一篇来读', href: base + '/writing/' },
   { label: '客席作者', hint: '认识一起写的人', href: base + '/authors/' },
-  ...(hasTopics ? [{ label: '专题', hint: '顺着线索读', href: base + '/topics/' }] : []),
   { label: '相簿', hint: '留给以后公开的照片', href: base + '/album/' },
   { label: '归档', hint: '按时间翻阅', href: base + '/archive/' },
   { label: '关于', hint: '了解 GINLANG', href: base + '/about/' },
