@@ -41,4 +41,3 @@ Composition: wide canvas approximately 2172 by 724, 3:1. Most of the canvas rema
 Palette: dilute sage-grey wash, a tiny trace of muted warm straw in a few reed tips, mostly soft grey ink, near-white paper.
 Constraints: no lettering, no signature, no seal, no frame, no gold or aged silk, no dense foliage, no dense scenery, no ornamental flowers, no saturated colors, no black silhouettes, no dramatic sunset, no photorealism, no heavy paper grain, no floating unrelated objects. Keep upper and lower margins completely blank. Single image, not a grid.
 ```
-
