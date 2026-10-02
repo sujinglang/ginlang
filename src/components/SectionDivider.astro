@@ -1,27 +1,23 @@
-<div class="section-divider" aria-hidden="true"></div>
+---
+import waterWash from '../assets/section-water-wash.svg?url';
+---
+
+<div class="section-divider" style={{ '--section-wash': `url("${waterWash}")` }} aria-hidden="true"></div>
 
 <style>
   .section-divider {
-    position: relative;
-    height: 12px;
-    margin: clamp(42px, 4.5vw, 64px) 0 clamp(30px, 3vw, 42px);
-    border-top: 2px solid color-mix(in srgb, var(--accent) 68%, var(--paper));
-    background: linear-gradient(180deg, var(--paper-raised), var(--paper));
-    box-shadow: 0 -5px 12px -9px color-mix(in srgb, var(--ink) 30%, transparent);
+    height: 48px;
+    margin: clamp(24px, 3vw, 46px) 0 clamp(12px, 1.5vw, 24px);
+    background: var(--accent);
+    opacity: .5;
+    -webkit-mask: var(--section-wash) center / 100% 100% no-repeat;
+    mask: var(--section-wash) center / 100% 100% no-repeat;
     pointer-events: none;
   }
-  .section-divider::before {
-    position: absolute;
-    top: -8px;
-    right: 14px;
-    left: 28px;
-    height: 3px;
-    border-top: 1px solid var(--line);
-    background: var(--paper-raised);
-    content: '';
+  :global(.home-content) > .section-divider:nth-of-type(even) {
+    transform: scaleX(-1);
   }
   @media (max-width: 680px) {
-    .section-divider { margin: 36px 0 28px; }
-    .section-divider::before { left: 16px; right: 8px; }
+    .section-divider { height: 32px; margin: 24px 0 20px; }
   }
 </style>

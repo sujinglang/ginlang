@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 64" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="fade" x1="0" x2="1">
+      <stop offset="0" stop-color="white" stop-opacity="0" />
+      <stop offset=".09" stop-color="white" stop-opacity=".55" />
+      <stop offset=".3" stop-color="white" />
+      <stop offset=".7" stop-color="white" stop-opacity=".8" />
+      <stop offset=".92" stop-color="white" stop-opacity=".4" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </linearGradient>
+    <filter id="water-edge" x="-5%" y="-50%" width="110%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .16" numOctaves="3" seed="17" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
+      <feGaussianBlur stdDeviation=".55" />
+    </filter>
+    <filter id="paper-grain" x="-5%" y="-50%" width="110%" height="200%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".14 .3" numOctaves="2" seed="8" />
+      <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .3 .3 .3 0 .25" />
+      <feComposite in="SourceGraphic" operator="in" />
+    </filter>
+  </defs>
+  <g filter="url(#water-edge)">
+    <path fill="url(#fade)" opacity=".15" d="M129 34 C163 19 192 27 224 17 S280 14 305 21 S354 15 389 24 S430 21 460 32 C431 44 408 38 377 47 S326 42 294 49 S252 40 218 45 S168 38 129 34Z" />
+    <path fill="url(#fade)" opacity=".13" d="M680 32 C713 22 742 25 771 18 S816 24 849 20 S899 26 943 31 C907 41 882 38 850 46 S808 38 779 45 S729 40 680 32Z" />
+    <path fill="url(#fade)" opacity=".5" d="M12 34 C76 25 132 31 184 25 S267 29 322 23 S404 26 464 24 S547 34 610 28 S705 19 766 27 S856 31 913 26 S1008 29 1071 27 S1144 34 1188 32 C1143 40 1088 38 1031 43 S940 35 876 42 S788 46 727 39 S639 47 576 41 S484 36 427 42 S336 41 276 38 S183 45 126 38 S50 40 12 34Z" />
+    <path fill="url(#fade)" opacity=".22" d="M71 33 C162 17 221 27 306 19 S450 30 531 23 S661 17 744 23 S859 19 934 25 S1062 26 1145 32 C1046 45 981 40 904 47 S770 37 700 46 S578 43 490 48 S340 39 258 45 S146 41 71 33Z" />
+    <path fill="none" stroke="url(#fade)" stroke-width="1.25" opacity=".42" d="M61 36 C133 42 168 37 229 41 S337 43 391 39 S488 44 549 42 S650 46 712 39 S804 44 866 40 S985 42 1036 37 S1115 37 1153 34" />
+  </g>
+  <path filter="url(#paper-grain)" fill="url(#fade)" opacity=".28" d="M20 33 C99 31 164 35 245 29 S362 33 438 28 S559 39 637 30 S772 32 854 30 S1015 36 1180 32 C1069 38 941 33 858 38 S725 38 641 39 S523 36 439 39 S321 36 242 37 S106 35 20 33Z" />
+</svg>
