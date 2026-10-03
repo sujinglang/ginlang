@@ -55,8 +55,8 @@
 /* Headings. The article title is the only h1, so the body starts at h2 and
    keeps a visible step down to h4 so a long piece never flattens out. */
 .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { font-weight: 500; line-height: 1.55; text-wrap: pretty; }
-.prose h2, .prose h3 { margin: 2.2em 0 0.75em; }
-.prose h4, .prose h5, .prose h6 { margin: 1.9em 0 0.6em; color: var(--accent-deep); letter-spacing: .01em; }
+.prose h2, .prose h3 { margin: 2.2em 0 0.85em; }
+.prose h4, .prose h5, .prose h6 { margin: 1.9em 0 0.7em; color: var(--accent-deep); letter-spacing: .01em; }
 .prose h2 { font-size: 1.36em; }
 .prose h3 { font-size: 1.18em; }
 .prose h4 { font-size: 1.04em; }

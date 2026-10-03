@@ -50,20 +50,23 @@ const page = `<!doctype html>
   header { padding:34px 28px 20px; border-bottom:1px solid var(--line); }
   header h1 { margin:0 0 6px; font-size:28px; font-weight:500; }
   header p { margin:0; color:var(--muted); font-size:13px; }
-  main { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; padding:24px 28px 60px; align-items:start; }
-  section { background:var(--card); border:1px solid var(--line); padding:22px 24px 24px; }
+  main { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; padding:24px 28px 60px; align-items:stretch; }
+  section { display:flex; flex-direction:column; background:var(--card); border:1px solid var(--line); padding:22px 24px 24px; }
+  section > form { display:flex; flex-direction:column; flex:1; }
   h2 { margin:0 0 4px; font-size:19px; font-weight:500; }
   .hint { margin:0 0 18px; color:var(--muted); font-size:12.5px; }
   label { display:block; margin:14px 0 5px; color:var(--muted); font-size:12px; }
   input, select, textarea { width:100%; padding:9px 11px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font:14px/1.6 inherit; }
   textarea { min-height:74px; resize:vertical; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
-  .check { display:flex; align-items:center; gap:9px; margin:16px 0; color:var(--ink); font-size:13.5px; }
-  .check input { width:auto; }
+  .check { display:flex; align-items:center; gap:9px; margin:16px 0; color:var(--ink); font-size:13.5px; min-height:32px; }
+  .check input { width:18px; height:18px; flex:0 0 18px; accent-color:var(--accent); }
   button { margin-top:18px; min-height:44px; padding:10px 18px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; font:14px/1.5 inherit; }
   button.ghost { background:transparent; color:var(--accent-deep,var(--accent)); }
   button:hover { border-bottom-color:var(--clay); }
+  /* Keep the result area for feedback, but show nothing until there is a result. */
   output { display:block; margin-top:16px; padding:12px 14px; border-left:2px solid var(--line); background:var(--paper); color:var(--muted); font-size:12.5px; white-space:pre-wrap; word-break:break-all; }
+  output:empty { display:none; }
   output.ok { border-left-color:var(--accent); color:var(--ink); }
   output.bad { border-left-color:var(--clay); color:var(--clay); }
   .list { margin:0; padding:0; list-style:none; font-size:12.5px; }
@@ -194,8 +197,10 @@ window.workbench = {
   check: () => fetch('/api/check', { method: 'POST' }).then((response) => response.json()),
   ready: Promise.resolve(),
 };
+// Latest posts, kept so the update form can fill itself without another request.
+let catalog = [];
 const form = (id, out) => {
-const el = document.getElementById(id);
+  const el = document.getElementById(id);
     const target = document.getElementById(out);
     el.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -227,28 +232,35 @@ async function refresh() {
   const result = await window.workbench.run('list', {});
   if (!result.ok) return;
   const data = JSON.parse(result.message);
+  catalog = data.posts;
   const authorSelect = document.getElementById('post-author');
   const current = authorSelect.value;
   authorSelect.innerHTML = data.authors.map((a) => '<option value="' + a.id + '">' + a.name + '</option>').join('');
   if (current) authorSelect.value = current;
   const updateSelect = document.getElementById('update-id');
+  const chosen = updateSelect.value;
   updateSelect.innerHTML = data.posts.map((p) => '<option value="' + p.id + '">' + (p.draft ? '［草稿］' : '') + p.title + '</option>').join('');
+  // Keep the chosen post so refreshing does not silently switch the selection.
+  if (chosen && data.posts.some((p) => p.id === chosen)) updateSelect.value = chosen;
+  fillUpdateForm();
   const list = document.getElementById('catalog');
   list.innerHTML = data.posts.map((p) => '<li><b>' + p.title + '</b><span class="tag">' + p.date + ' · ' + p.category + (p.draft ? ' · 草稿' : '') + (p.tags.length ? ' · ' + p.tags.join('、') : '') + '</span></li>').join('');
 }
 document.getElementById('refresh').addEventListener('click', refresh);
 
-document.getElementById('update-id').addEventListener('change', async (event) => {
-  const result = await window.workbench.run('list', {});
-  if (!result.ok) return;
-  const post = JSON.parse(result.message).posts.find((p) => p.id === event.target.value);
+// Fill the update form from the already-loaded list, so choosing a post shows
+// its current values instead of an empty form.
+function fillUpdateForm() {
+  const id = document.getElementById('update-id').value;
+  const post = catalog.find((p) => p.id === id);
   if (!post) return;
   document.getElementById('update-title').value = post.title;
   document.getElementById('update-excerpt').value = post.excerpt;
   document.getElementById('update-tags').value = post.tags.join(', ');
   document.getElementById('update-draft').checked = post.draft;
   document.getElementById('update-anonymous').checked = post.anonymous;
-});
+}
+document.getElementById('update-id').addEventListener('change', fillUpdateForm);
 
 document.getElementById('check').addEventListener('click', async () => {
   const out = document.getElementById('check-out');
