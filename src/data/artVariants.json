@@ -1,0 +1,68 @@
+{
+  "authors/ginlang-forest.webp": [
+    {
+      "file": "authors/ginlang-forest-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "authors/ginlang-forest-800w.webp",
+      "width": 800
+    },
+    {
+      "file": "authors/ginlang-forest.webp",
+      "width": 1536
+    }
+  ],
+  "authors/ginlang-avatar.webp": [
+    {
+      "file": "authors/ginlang-avatar-240w.webp",
+      "width": 240
+    },
+    {
+      "file": "authors/ginlang-avatar-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "authors/ginlang-avatar.webp",
+      "width": 720
+    }
+  ],
+  "sea-morning-animated.webp": [
+    {
+      "file": "sea-morning-animated-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "sea-morning-animated-800w.webp",
+      "width": 800
+    },
+    {
+      "file": "sea-morning-animated.webp",
+      "width": 1400
+    }
+  ],
+  "forest-waterfall-animated.webp": [
+    {
+      "file": "forest-waterfall-animated-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "forest-waterfall-animated-800w.webp",
+      "width": 800
+    },
+    {
+      "file": "forest-waterfall-animated.webp",
+      "width": 1400
+    }
+  ],
+  "diary-moon-animated.webp": [
+    {
+      "file": "diary-moon-animated-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "diary-moon-animated.webp",
+      "width": 720
+    }
+  ]
+}

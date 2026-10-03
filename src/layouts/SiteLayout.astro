@@ -9,6 +9,7 @@ interface Props {
   description?: string;
   articlePage?: boolean;
   ogImage?: string;
+  noIndex?: boolean;
 }
 
 const {
@@ -16,10 +17,11 @@ const {
   description = '随笔、日记、书摘与短句，给经过的日子留一页。',
   articlePage = false,
   ogImage,
+  noIndex = false,
 } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
-const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const canonicalUrl = new URL(Astro.url.pathname.endsWith('/404/') ? base + '/404.html' : Astro.url.pathname, siteUrl).toString();
 const homeUrl = new URL(base + '/', siteUrl).toString();
 const socialImage = new URL(ogImage ? base + ogImage : base + '/social-card.svg', siteUrl).toString();
 const pageTitle = title.includes('GINLANG') ? title : title + ' · GINLANG';
@@ -60,7 +62,7 @@ const webSiteSchema = JSON.stringify({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" id="theme-color" content="#f5f2eb" />
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noIndex ? 'noindex, follow' : 'index, follow'} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={base + '/favicon.svg'} />
     {(currentPath === base || currentPath === base + '/about') && <link rel="preload" href={marckScriptFont} as="font" type="font/woff2" crossorigin />}
@@ -610,16 +612,22 @@ const webSiteSchema = JSON.stringify({
       });
 
       const progressFill = document.querySelector<HTMLElement>('#reading-progress-fill');
-      const article = document.querySelector<HTMLElement>('.article-page');
+      const article = document.querySelector<HTMLElement>('.article-body');
       if (progressFill && article) {
+        let progressFrame = 0;
         const updateProgress = () => {
+          progressFrame = 0;
           const articleTop = window.scrollY + article.getBoundingClientRect().top;
           const scrollable = Math.max(1, article.scrollHeight - window.innerHeight);
           const progress = Math.min(1, Math.max(0, (window.scrollY - articleTop) / scrollable));
           progressFill.style.transform = 'scaleX(' + progress + ')';
         };
-        window.addEventListener('scroll', updateProgress, { passive: true });
-        window.addEventListener('resize', updateProgress);
+        const scheduleProgress = () => {
+          if (!progressFrame) progressFrame = window.requestAnimationFrame(updateProgress);
+        };
+        window.addEventListener('scroll', scheduleProgress, { passive: true });
+        window.addEventListener('resize', scheduleProgress, { passive: true });
+        if ('ResizeObserver' in window) new ResizeObserver(scheduleProgress).observe(article);
         updateProgress();
       }
 
@@ -666,20 +674,6 @@ const webSiteSchema = JSON.stringify({
         updateToTop();
       }
 
-      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const revealItems = document.querySelectorAll<HTMLElement>('[data-reveal]');
-        const revealObserver = new IntersectionObserver((entries, observer) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('is-revealed');
-            observer.unobserve(entry.target);
-          });
-        }, { rootMargin: '0px 0px -22px 0px', threshold: 0.07 });
-        revealItems.forEach((item) => {
-          item.classList.add('will-reveal');
-          revealObserver.observe(item);
-        });
-      }
     </script>
   </body>
 </html>

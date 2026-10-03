@@ -37,6 +37,8 @@ GINLANG 原有头像与背景继续留在 `public/authors/` 原地址。新增�
 | `scripts/workbench.mjs` | 复用上面命令的本机表单工作台，只监听 127.0.0.1，不上线 |
 | `scripts/check-library.mjs` | 核对文库出处、重复、作者分布与今日笺语气 |
 | `scripts/build-hero-variants.mjs` | 首页水彩的响应式图片副本 |
+| `scripts/build-art-variants.mjs` | 原有头像、作者背景与风景插画的响应式副本，生成 `src/data/artVariants.json` |
+| `scripts/check-site.mjs` | 核对构建文件中的页面、内部地址、锚点、图片尺寸、搜索、RSS、sitemap 与正式域名 |
 | `docs/` | 编辑步骤、项目结构与维护约定 |
 
 ## 样式模块
@@ -53,6 +55,7 @@ GINLANG 原有头像与背景继续留在 `public/authors/` 原地址。新增�
 | `editorial.css` | 精选、作者、专题、阅读索引 |
 | `folio-motion.css` | 已有动效、作者画册、个人资料与响应规则 |
 | `refinements.css` | 统一控件、细线动效、长标题与姓名适配 |
+| `folio-polish.css` | 最后导入的区块留白、纸面、画框、跨页面布局与移动端调整；保留原有字体配置 |
 
 `dist/`、`.astro/`、`node_modules/`、`.codegraph/` 均由工具生成，不是写文章或放照片的位置。`dist/` 每次构建都会重新生成。
 

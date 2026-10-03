@@ -2,6 +2,7 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProfileMeta from '../../components/ProfileMeta.astro';
 import ProfileQuote from '../../components/ProfileQuote.astro';
+import ResponsiveArt from '../../components/ResponsiveArt.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
 import { loadEditorialContent } from '../../lib/content';
@@ -42,11 +43,11 @@ const authorSchema = JSON.stringify({
     <a class="back-link" href={base + '/authors/'}>← 全部作者</a>
     <header class="author-cover">
       <div class="author-cover-art">
-        {author.data.cover && <img src={base + '/' + author.data.cover.replace(/^\/+/, '')} width={author.data.coverWidth} height={author.data.coverHeight} alt={author.data.coverAlt || ''} decoding="async" fetchpriority="high" />}
+        {author.data.cover && <ResponsiveArt src={author.data.cover} sizes="(max-width: 1244px) 94vw, 1180px" width={author.data.coverWidth} height={author.data.coverHeight} alt={author.data.coverAlt || ''} loading="eager" fetchpriority="high" />}
       </div>
       <div class="author-identity">
         <div class="author-portrait">
-          {author.data.portrait ? <img src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.portraitAlt || author.data.name + '选用的头像'} decoding="async" /> : <span aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
+          {author.data.portrait ? <ResponsiveArt src={author.data.portrait} sizes="172px" width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.portraitAlt || author.data.name + '选用的头像'} loading="eager" /> : <span aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
         </div>
         <p class="person-role">{author.data.role === 'founder' ? '作者' : '客席作者'}</p>
         <h1>{author.data.name}</h1>

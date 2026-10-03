@@ -16,6 +16,7 @@ GINLANG 的中文个人博客。文章、作者资料和相册由内容文件自
 | 备份与恢复我的书桌 | 桌面「我的书桌」→ 备份为 JSON |
 | 本机添加内容 | `npm run workbench`（本机表单，不上线） |
 | 核对文库与今日笺 | `npm run check:library` |
+| 核对构建后的页面与资源 | `npm run build` → `npm run check:site` |
 | 了解代码和目录 | [项目地图](docs/project-map.md) |
 | 查看已保留的功能 | [功能说明](docs/features.md) |
 | 视觉与动效约定 | [ART_DIRECTION.md](ART_DIRECTION.md) |
@@ -65,9 +66,12 @@ npm run content -- help
 npm run content -- list
 npm run content -- update <文章ID> --tags "阅读, 独处" --excerpt "新的摘要" --no-draft
 npm run images:hero
+npm run images:art
 ```
 
 `list` 输出当前文章与作者的 JSON；`update` 只改 Markdown 头部字段（标题、摘要、分类、日期、标签、草稿与匿名开关），不动正文，文章 ID 与网址保持不变。发布新草稿用 `--no-draft`，恢复匿名用 `--no-anonymous`。
+
+更换首页水彩后运行 `images:hero`；更换 GINLANG 的头像、背景或「换一扇窗」插画后运行 `images:art`。两个命令保留原图，只生成按自然比例缩小的网页副本。
 
 也可以从 `templates/` 复制模板，按手册手工编辑。模板与测试素材不会进入线上内容。
 
@@ -91,7 +95,7 @@ npm run check:library
 
 ## 发布
 
-运行 `npm run build` 后检查本地页面，再提交并推送到 `main`。GitHub Actions 会自动构建、发布；成功后用线上地址检查。
+运行 `npm run build`、`npm run check:site` 与 `npm run check:library` 后检查本地页面，再提交并推送到 `main`。GitHub Actions 会自动构建、核对、发布；成功后用线上地址检查。
 
 `astro.config.mjs` 保留当前 `site` 与 `/` 根路径。现有文章、作者、相册的 ID 与 URL 不变。搜索、书签、阅读设置、信笺草稿与卡片下载仍使用原有功能和浏览器存储键。
 

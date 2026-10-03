@@ -1,0 +1,19 @@
+---
+import variants from '../data/artVariants.json';
+interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+}
+const { src, alt, width, height, class: className, sizes = '(max-width: 680px) 90vw, 520px', loading = 'lazy', fetchpriority } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const key = src.replace(/^\/+/, '');
+const choices = (variants as Record<string, { file: string; width: number }[]>)[key];
+const srcset = choices?.map((item) => `${base}/${item.file} ${item.width}w`).join(', ');
+---
+<img class={className} src={base + '/' + key} srcset={srcset} sizes={srcset ? sizes : undefined} width={width} height={height} alt={alt} loading={loading} decoding="async" fetchpriority={fetchpriority} />

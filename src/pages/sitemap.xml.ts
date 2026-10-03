@@ -17,6 +17,7 @@ export async function GET() {
     { path: '/', modified: undefined },
     { path: '/writing/', modified: undefined },
     { path: '/authors/', modified: undefined },
+    { path: '/album/', modified: undefined },
     { path: '/contribute/', modified: undefined },
     { path: '/archive/', modified: undefined },
     { path: '/about/', modified: undefined },
@@ -26,6 +27,7 @@ export async function GET() {
     ...tags.map((tag) => ({ path: '/tags/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
     ...tags.map((tag) => ({ path: '/archive/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
     ...authors.map((author) => ({ path: '/authors/' + encodeURIComponent(author.id) + '/', modified: undefined })),
+    ...authors.map((author) => ({ path: '/album/' + encodeURIComponent(author.id) + '/', modified: undefined })),
     ...topics.map((topic) => ({ path: '/topics/' + encodeURIComponent(topic.id) + '/', modified: undefined })),
     ...posts.map((post) => ({
       path: '/posts/' + encodeURIComponent(post.id) + '/',

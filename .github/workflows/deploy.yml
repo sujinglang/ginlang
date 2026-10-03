@@ -26,6 +26,10 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
       - name: Install, build, and upload the site
         uses: withastro/action@v6
+      - name: Verify routes, resources, and quote library
+        run: |
+          npm run check:site
+          npm run check:library
 
   deploy:
     environment:

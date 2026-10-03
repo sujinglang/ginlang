@@ -8,7 +8,9 @@
     "preview": "astro preview",
     "content": "node scripts/content.mjs",
     "images:hero": "node scripts/build-hero-variants.mjs",
+    "images:art": "node scripts/build-art-variants.mjs",
     "check:library": "node scripts/check-library.mjs",
+    "check:site": "node scripts/check-site.mjs",
     "workbench": "node scripts/workbench.mjs"
   },
   "dependencies": {

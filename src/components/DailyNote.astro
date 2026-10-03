@@ -31,8 +31,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
   </div>
     <label class="note-draft-label" for="note-draft">写在这里</label>
-    <textarea id="note-draft" data-note-draft rows="4" placeholder="从一件具体的事写起。"></textarea>
-    <div class="note-draft-tools"><small>草稿只保存在你当前的浏览器。<a href={base + '/desk/'}>到我的书桌查看</a></small><div><button type="button" data-note-copy>复制</button><button type="button" data-note-clear>清空</button></div></div>
+    <textarea id="note-draft" name="note-draft" autocomplete="off" data-note-draft rows="4" placeholder="从一件具体的事写起。"></textarea>
+    <div class="note-draft-tools"><small>草稿只保存在你当前的浏览器。<a href={base + '/desk/'}>到我的书桌查看</a></small><div><button type="button" data-note-copy>复制</button><button type="button" data-note-clear>清空</button><button type="button" data-note-undo hidden>撤销清空</button></div></div>
     <p class="note-draft-status" role="status" data-note-status></p>
   </div>
 </section>
@@ -77,6 +77,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         catch { draft.focus(); draft.select(); if (status) status.textContent = '已选中草稿，请手动复制。'; }
       });
       let current = 0;
+      let clearedDraft: ReaderNote | null = null;
+      const undoButton = root.querySelector<HTMLButtonElement>('[data-note-undo]');
       let changing = false;
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -118,10 +120,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         if (status) status.textContent = saved ? (draft.value ? '已保存在当前浏览器' : '') : '当前浏览器无法保存草稿';
       });
       root.querySelector<HTMLButtonElement>('[data-note-clear]')?.addEventListener('click', () => {
-        if (!draft) return;
+        if (!draft || !draft.value.trim()) return;
+        clearedDraft = { prompt: notes[current], text: draft.value, updatedAt: new Date().toISOString() };
         draft.value = '';
         const saved = writeDrafts(readDrafts().filter((item) => item.prompt !== notes[current]));
+        if (undoButton) undoButton.hidden = false;
         if (status) status.textContent = saved ? '已清空这一张草稿' : '当前浏览器无法保存更改';
+        draft.focus();
+      });
+      undoButton?.addEventListener('click', () => {
+        if (!draft || !clearedDraft || changing) return;
+        // Do not overwrite anything written since clearing, even after a redraw.
+        const entries = readDrafts();
+        const existing = entries.find((item) => item.prompt === clearedDraft!.prompt);
+        const restored = existing?.text ? existing.text + '\n\n' + clearedDraft.text : clearedDraft.text;
+        const saved = writeDrafts([...entries.filter((item) => item.prompt !== clearedDraft!.prompt), { ...clearedDraft, text: restored }]);
+        if (!saved) { if (status) status.textContent = '当前浏览器无法恢复草稿，请稍后再试'; return; }
+        current = notes.indexOf(clearedDraft.prompt);
+        prompt.textContent = notes[current];
+        try { sessionStorage.setItem('ginlang-daily-note', String(current)); } catch { /* Optional storage. */ }
+        loadDraft();
+        clearedDraft = null;
+        undoButton.hidden = true;
+        if (status) status.textContent = '已恢复草稿';
         draft.focus();
       });
 
@@ -243,6 +264,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .note-draft-tools > div { display: flex; gap: 13px; }
   .note-draft-tools button { min-height: 44px; padding: 7px 5px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--accent-deep); cursor: pointer; font: 13px/1.5 var(--sans); }
   .note-draft-tools button:hover { border-bottom-color: var(--accent); }
+  .note-draft-tools button[hidden] { display: none; }
   .note-draft-status { min-height: 1.5em; margin: 3px 0 0; color: var(--muted); font: 11px/1.5 var(--sans); }
 
   .note-paper.is-changing {
