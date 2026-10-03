@@ -10,6 +10,7 @@ GINLANG 是 Astro 静态个人博客。日常更新只需要维护内容和图�
 | `src/content/authors/<作者ID>.json` | 名字、简介、头像、背景、地点、个人链接 | 作者目录、作者主页、署名；GINLANG 资料也出现在首页 |
 | `src/content/albums/<作者ID>.json` | 作者公开的照片登记表，可选 `groups` 分组 | 作者相册、相簿目录、作者主页的照片推荐 |
 | `src/data/dailyNotePrompts.ts` | 今日笺的原创段落 | 首页今日笺 |
+| `src/lib/comments.ts` | 留言服务地址；留空则不渲染留言区 | 文章页留言 |
 | `src/data/whispers.ts` | 有出处的文库摘录 | 全站页边札记、卡片选句 |
 | `src/content/topics.json` | 有真实内容后再编排专题 | 专题目录、首页与导航 |
 | `src/content/posts/images/<文章ID>/` | Markdown 正文配图的网页副本 | 由 Astro 自动优化并生成兼容部署路径的图片地址 |
