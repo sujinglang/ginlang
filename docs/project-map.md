@@ -8,7 +8,9 @@ GINLANG 是 Astro 静态个人博客。日常更新只需要维护内容和图�
 | --- | --- | --- |
 | `src/content/posts/*.md` | 自己与客席作者的文章，`author` 填作者 ID | 首页、文章页、分类、归档、作者作品、搜索、RSS |
 | `src/content/authors/<作者ID>.json` | 名字、简介、头像、背景、地点、个人链接 | 作者目录、作者主页、署名；GINLANG 资料也出现在首页 |
-| `src/content/albums/<作者ID>.json` | 作者公开的照片登记表 | 作者相册、相簿目录、作者主页的照片推荐 |
+| `src/content/albums/<作者ID>.json` | 作者公开的照片登记表，可选 `groups` 分组 | 作者相册、相簿目录、作者主页的照片推荐 |
+| `src/data/dailyNotePrompts.ts` | 今日笺的原创段落 | 首页今日笺 |
+| `src/data/whispers.ts` | 有出处的文库摘录 | 全站页边札记、卡片选句 |
 | `src/content/topics.json` | 有真实内容后再编排专题 | 专题目录、首页与导航 |
 | `src/content/posts/images/<文章ID>/` | Markdown 正文配图的网页副本 | 由 Astro 自动优化并生成兼容部署路径的图片地址 |
 | `public/album/<作者ID>/` | 作者相册的网页图片 | 按相册 JSON 登记展示 |
@@ -29,9 +31,11 @@ GINLANG 原有头像与背景继续留在 `public/authors/` 原地址。新增�
 | `src/lib/content.ts` | 内容索引、日期和目录排序、跨文件引用检查 |
 | `src/content.config.ts` | 必填字段、图片相对路径与内容格式检查 |
 | `src/lib/` | 日期、分类、阅读路线等共享逻辑 |
-| `src/data/` | 文库、首页水彩登记与个人待填信息 |
+| `src/data/` | 文库、今日笺、首页水彩登记与个人待填信息 |
 | `src/styles/global.css` | 全局样式入口，按原有顺序导入模块 |
-| `scripts/content.mjs` | 新建草稿、作者、导入照片的本机工具 |
+| `scripts/content.mjs` | 新建草稿、改文章头部、新建作者、导入照片、列出内容的本机工具 |
+| `scripts/workbench.mjs` | 复用上面命令的本机表单工作台，只监听 127.0.0.1，不上线 |
+| `scripts/check-library.mjs` | 核对文库出处、重复、作者分布与今日笺语气 |
 | `scripts/build-hero-variants.mjs` | 首页水彩的响应式图片副本 |
 | `docs/` | 编辑步骤、项目结构与维护约定 |
 

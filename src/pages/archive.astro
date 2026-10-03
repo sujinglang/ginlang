@@ -5,11 +5,13 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import { categoryLabel } from '../lib/categories';
 import { formatDate } from '../lib/date';
 import { hasPublicAuthor } from '../lib/postVisibility';
+import { collectTags, tagSlug } from '../lib/tags';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
+const tags = collectTags(posts);
 const years = [...new Set(posts.map((post) => post.data.date.getUTCFullYear()))];
 const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
 ---
@@ -31,12 +33,21 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
 
     <MarginWhisper theme="archive" />
 
+    {tags.length > 0 && (
+      <nav class="tag-nav" aria-label="按标签筛选归档">
+        <a href={base + '/archive/'}>全部</a>
+        {tags.map((tag) => (
+          <a href={base + '/archive/' + tag.slug + '/'}>{tag.label}</a>
+        ))}
+      </nav>
+    )}
+
     {posts.length > 0 ? years.map((year) => (
-      <section class="archive-year" aria-labelledby={'year-' + year} data-reveal>
+      <section class="archive-year" aria-labelledby={'year-' + year} data-reveal data-year={year}>
         <h2 id={'year-' + year}>{year}</h2>
         <ol class="archive-list">
           {posts.filter((post) => post.data.date.getUTCFullYear() === year).map((post) => (
-            <li>
+            <li data-tags={post.data.tags.map(tagSlug).join(' ')}>
               <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date).slice(5)}</time>
               <a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
               <span>{categoryLabel(post.data.category)}{hasPublicAuthor(post) && <> · <a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a></>}</span>
@@ -47,3 +58,22 @@ const authors = new Map((await getCollection('authors')).map((author) => [author
     )) : <p class="empty-note">还没有归档的文章。</p>}
   </section>
 </SiteLayout>
+
+<script>
+  // Each tag has a real page at /archive/<slug>/, so filtering works without
+  // script. This only marks the entry for the page being viewed.
+  function initArchiveNav() {
+    const nav = document.querySelector<HTMLElement>('.tag-nav');
+    if (!nav || nav.dataset.navReady === 'true') return;
+    nav.dataset.navReady = 'true';
+    const here = location.pathname;
+    nav.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
+      if (new URL(link.href, location.origin).pathname === here) {
+        link.setAttribute('aria-current', 'page');
+      } else link.removeAttribute('aria-current');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initArchiveNav, { once: true });
+  else initArchiveNav();
+  document.addEventListener('astro:page-load', initArchiveNav);
+</script>

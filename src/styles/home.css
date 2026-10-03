@@ -178,9 +178,10 @@
 .post-row {
   position: relative;
   display: grid;
-  grid-template-columns: 105px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 8px 21px;
+  /* Date, category and author sit on one meta line above the title. A single
+     column keeps that line from wrapping in the middle of the row. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
   padding: 21px 0;
   border-bottom: 1px solid var(--line);
 }
@@ -190,7 +191,7 @@
 .post-meta a { text-decoration: none; }
 .meta-dot { color: var(--clay); }
 .post-title { font-size: 17px; font-weight: 500; line-height: 1.65; text-decoration: none; }
-.post-excerpt { grid-column: 2; margin: -3px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.post-excerpt { margin: -1px 0 0; color: var(--muted); font-size: 13px; line-height: 1.8; }
 .home-whisper { margin-top: 64px; }
 .home-whisper .margin-whisper { margin-bottom: 0; }
 .landscape-section { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--line); }

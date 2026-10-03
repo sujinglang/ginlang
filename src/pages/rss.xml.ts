@@ -2,7 +2,7 @@ import { getCollection, render } from 'astro:content';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const site = import.meta.env.SITE ?? 'https://sujinglang.github.io';
+const site = import.meta.env.SITE ?? 'https://ginlang.vip';
 const origin = site.replace(/\/$/, '');
 const escapeXml = (value: string) =>
   value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');

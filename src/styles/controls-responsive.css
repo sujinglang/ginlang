@@ -96,10 +96,10 @@
   .featured-post h3 { font-size: 24px; }
   .featured-post p { font-size: 13px; line-height: 1.9; }
   .recent-section { margin-top: 39px; }
-  .post-row { grid-template-columns: 1fr; gap: 5px 12px; padding: 16px 0; }
-  .post-meta { grid-column: 1 / -1; font-size: 10px; }
+  .post-row { gap: 5px; padding: 16px 0; }
+  .post-meta { font-size: 10px; }
   .post-title { font-size: 16px; }
-  .post-excerpt { grid-column: 1; grid-row: 3; font-size: 12px; }
+  .post-excerpt { font-size: 12px; }
   .home-whisper { margin-top: 33px; }
   .landscape-section { margin-top: 39px; padding-top: 19px; }
   .landscape-topline h2 { font-size: 20px; }

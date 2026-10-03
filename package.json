@@ -7,7 +7,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "content": "node scripts/content.mjs",
-    "images:hero": "node scripts/build-hero-variants.mjs"
+    "images:hero": "node scripts/build-hero-variants.mjs",
+    "check:library": "node scripts/check-library.mjs",
+    "workbench": "node scripts/workbench.mjs"
   },
   "dependencies": {
     "astro": "^7.3.4",

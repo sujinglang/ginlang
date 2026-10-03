@@ -9,11 +9,13 @@ const projectRoot = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const categories = ['essay', 'diary', 'book', 'short'];
 const stringOption = { type: 'string' };
 const commandOptions = {
-  post: { title: stringOption, author: stringOption, anonymous: { type: 'boolean' }, category: stringOption, date: stringOption, excerpt: stringOption },
+  post: { title: stringOption, author: stringOption, anonymous: { type: 'boolean' }, category: stringOption, date: stringOption, excerpt: stringOption, tags: stringOption },
   author: { name: stringOption, tagline: stringOption },
-  photo: { alt: stringOption, caption: stringOption, name: stringOption, date: stringOption },
+  photo: { alt: stringOption, caption: stringOption, name: stringOption, date: stringOption, group: stringOption },
   'profile-photo': { kind: stringOption, alt: stringOption, name: stringOption },
   'post-photo': { alt: stringOption, name: stringOption },
+  update: { title: stringOption, excerpt: stringOption, category: stringOption, date: stringOption, tags: stringOption, draft: { type: 'boolean' }, 'no-draft': { type: 'boolean' }, anonymous: { type: 'boolean' }, 'no-anonymous': { type: 'boolean' }, author: stringOption },
+  list: {},
 };
 
 const help = `GINLANG 内容工具（从项目目录运行）
@@ -24,10 +26,16 @@ const help = `GINLANG 内容工具（从项目目录运行）
   npm run content -- photo <作者ID> <源图片路径> --alt "图片内容" [--caption "说明"] [--name 照片ID] [--date YYYY-MM-DD]
   npm run content -- profile-photo <作者ID> <源图片路径> --kind portrait|cover --alt "图片内容" [--name 图片ID]
   npm run content -- post-photo <文章ID> <源图片路径> --alt "图片内容" [--name 图片ID]
+  npm run content -- update <文章ID> [--title "标题"] [--excerpt "摘要"] [--category essay] [--date YYYY-MM-DD] [--tags "词一,词二"] [--draft|--no-draft] [--anonymous|--no-anonymous]
+  npm run content -- list [posts|authors|albums]
 
 ID 使用小写英文字母、数字和连字符，例如 september-wind、lin-mu。
 文章ID决定文件名和网址，发布后保持稳定。新文章始终 draft: true。
 post 默认作者 ginlang、分类 essay、日期为本机当天；分类也可为 diary、book、short。
+--tags 用逗号分隔，写入文章的 tags 字段；旧文章没有该字段也能正常构建。
+update 只改 Markdown 头部，不动正文与文章ID；不改的字段保持原样。
+--no-draft 与 --no-anonymous 用来取消草稿或取消匿名；不加则按原值保留。
+list 输出 JSON，供本机工作台和其他工具读取。
 --anonymous 仅隐藏对外署名，--author 仍填写真实作者供内部管理；文章正常生成公开阅读地址。
 author 只使用提供的笔名和介绍，默认 guest、featured: false，并创建空相册。
 图片自动转为 WebP，长边最多 1800 像素，不裁剪、不放大，尺寸自动登记。
@@ -43,6 +51,13 @@ function textValue(value, label, required = true) {
   if (typeof value !== 'string' || !value.trim()) fail(`${label}不能为空。`);
   if (/[\u0000-\u001f\u007f]/u.test(value)) fail(`${label}必须是单行文字，不能含控制字符。`);
   return value.trim();
+}
+
+function tagList(value) {
+  if (value === undefined) return undefined;
+  const tags = value.split(/[,，]/u).map((tag) => tag.trim()).filter(Boolean);
+  for (const tag of tags) textValue(tag, '标签');
+  return tags;
 }
 
 function idValue(value, label = 'ID') {
@@ -176,6 +191,25 @@ async function stage(root, target, bytes) {
 
 function jsonBytes(data) { return `${JSON.stringify(data, null, 2)}\n`; }
 
+// Replacing an existing file is a different guarantee from publishing a new
+// asset: it needs the original bytes to detect a competing edit, and it must
+// not roll the file back if the content changed underneath us.
+async function replace(root, path, bytes, before) {
+  await safeDirectory(root, dirname(path));
+  const temporary = join(dirname(path), `.${basename(path)}.${randomUUID()}.tmp`);
+  try {
+    await writeFile(temporary, bytes, { flag: 'wx' });
+    if ((await readFile(path, 'utf8')) !== before) {
+      await cleanup(temporary);
+      fail('文件已被其他操作修改；请重新运行命令。');
+    }
+    await rename(temporary, path);
+  } catch (error) {
+    await cleanup(temporary);
+    throw error;
+  }
+}
+
 // Stage every file first. Hard links publish new files without overwriting a
 // competing output. JSON replacement is one rename after assets are complete.
 async function commit(root, files, update) {
@@ -235,9 +269,10 @@ async function createPost(root, slug, values) {
   if (!categories.includes(category)) fail(`分类 --category 可选 ${categories.join('、')}。`);
   const date = dateValue(values.date) ?? today();
   const excerpt = textValue(values.excerpt, '摘要 --excerpt', false) ?? '待填写：用一句话介绍文章内容。';
+  const tags = tagList(values.tags) ?? [];
   validateAuthor((await jsonFile(join(root, 'src', 'content', 'authors', `${author}.json`), `作者 ${author}`)).data);
   const path = join(root, 'src', 'content', 'posts', `${slug}.md`);
-  const bytes = `---\ntitle: ${JSON.stringify(title)}\ndate: ${date}\ncategory: ${category}\nthemes: []\nauthor: ${author}\nanonymous: ${Boolean(values.anonymous)}\nexcerpt: ${JSON.stringify(excerpt)}\ndraft: true\n---\n\n待填写：从这里写正文。发布前请确认摘要、正文和署名，再将 draft 改为 false。\n`;
+  const bytes = `---\ntitle: ${JSON.stringify(title)}\ndate: ${date}\ncategory: ${category}\nthemes: []\ntags: [${tags.join(', ')}]\nauthor: ${author}\nanonymous: ${Boolean(values.anonymous)}\nexcerpt: ${JSON.stringify(excerpt)}\ndraft: true\n---\n\n待填写：从这里写正文。发布前请确认摘要、正文和署名，再将 draft 改为 false。\n`;
   await commit(root, [{ path, bytes }]);
   return `已创建草稿：src/content/posts/${slug}.md\n文章ID：${slug}；完成内容并确认后，再将 draft 改为 false。`;
 }
@@ -283,7 +318,15 @@ async function addImage(root, command, id, source, values) {
       target.data[`${values.kind}Height`] = image.height;
     } else {
       if (target.data.photos.some((photo) => photo.src === asset)) fail(`相册已登记 ${asset}，未重复添加。`);
-      target.data.photos.push({ src: asset, width: image.width, height: image.height, alt, ...(caption ? { caption } : {}), ...(date ? { date } : {}) });
+      const group = textValue(values.group, '相册分组 --group', false);
+      // A photo may name a group directly; the page also lists groups declared here.
+      if (group) {
+        target.data.groups ??= [];
+        if (!target.data.groups.some((entry) => entry.id === group)) {
+          target.data.groups.push({ id: group, title: group, order: target.data.groups.length * 10 + 10 });
+        }
+      }
+      target.data.photos.push({ src: asset, width: image.width, height: image.height, alt, ...(caption ? { caption } : {}), ...(date ? { date } : {}), ...(group ? { group } : {}) });
     }
     await commit(root, [{ path: webPath, bytes: image.webp }, { path: originalPath, bytes: image.original }], { path: targetPath, data: target.data, raw: target.raw });
     return `已登记${profile ? (values.kind === 'portrait' ? '头像' : '作者背景') : '相册照片'}：public/${asset}\n网页尺寸：${image.width} × ${image.height}\n原图备份：${relative(root, originalPath).split(sep).join('/')}\n请把网页图片和相应 JSON 一起提交；source-art/ 备份不进入 Git。`;
@@ -311,6 +354,89 @@ async function addPostImage(root, id, source, values) {
   });
 }
 
+function parseTags(value) {
+  if (!value) return [];
+  return value.replace(/^\[|\]$/gu, '').split(/[,，]/u).map((tag) => tag.trim()).filter(Boolean);
+}
+
+function parseFrontmatter(raw, id) {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw);
+  if (!match) fail(`文章 ${id} 的 Markdown 头部格式有误，第一行应为 ---。`);
+  return { block: match[1], body: raw.slice(match[0].length) };
+}
+
+async function updatePost(root, id, values) {
+  const path = join(root, 'src', 'content', 'posts', `${id}.md`);
+  return locks(root, [path], async () => {
+    try {
+      const info = await lstat(path);
+      if (!info.isFile() || info.isSymbolicLink()) fail('文章必须是普通 Markdown 文件。');
+    } catch (error) {
+      if (error.code === 'ENOENT') fail(`文章 ${id} 不存在，请先使用 post 命令创建。`);
+      throw error;
+    }
+    const raw = await readFile(path, 'utf8');
+    const { block, body } = parseFrontmatter(raw, id);
+    const read = (key) => {
+      const value = new RegExp(`^${key}:[ \\t]*(.*)$`, 'mu').exec(block)?.[1];
+      return value === undefined ? undefined : value.trim().replace(/^"(.*)"$/u, '$1').replace(/^'(.*)'$/u, '$1');
+    };
+    const title = values.title !== undefined ? textValue(values.title, '文章标题 --title') : read('title');
+    const excerpt = values.excerpt !== undefined ? textValue(values.excerpt, '摘要 --excerpt') : read('excerpt');
+    const category = values.category ?? read('category') ?? 'essay';
+    if (!categories.includes(category)) fail(`分类 --category 可选 ${categories.join('、')}。`);
+    const date = dateValue(values.date) ?? read('date') ?? today();
+    const author = idValue(values.author ?? read('author') ?? 'ginlang', '作者ID');
+    validateAuthor((await jsonFile(join(root, 'src', 'content', 'authors', `${author}.json`), `作者 ${author}`)).data);
+    const tags = tagList(values.tags) ?? parseTags(read('tags'));
+    const draft = values['no-draft'] ? false : values.draft === undefined ? read('draft') === 'true' : values.draft;
+    const anonymous = values['no-anonymous'] ? false : values.anonymous === undefined ? read('anonymous') === 'true' : values.anonymous;
+    const header = [
+      '---',
+      `title: ${JSON.stringify(title)}`,
+      `date: ${date}`,
+      `category: ${category}`,
+      `themes: ${read('themes') || '[]'}`,
+      `tags: [${tags.join(', ')}]`,
+      `author: ${author}`,
+      `anonymous: ${anonymous}`,
+      `excerpt: ${JSON.stringify(excerpt)}`,
+      `draft: ${draft}`,
+      '---',
+    ].join('\n');
+    await replace(root, path, `${header}${body.startsWith('\n') ? body : '\n' + body}`, raw);
+    return `已更新：src/content/posts/${id}.md\n文章ID与网址不变；${draft ? '当前是草稿，不出现在正式网站。' : '当前会出现在正式网站。'}${anonymous ? '已开启匿名，对外不显示作者。' : ''}`;
+  });
+}
+
+async function listContent(root) {
+  const postsDir = join(root, 'src', 'content', 'posts');
+  const authorDir = join(root, 'src', 'content', 'authors');
+  const { readFileSync } = await import('node:fs');
+  const { readdir } = await import('node:fs/promises');
+  const files = (await readdir(postsDir)).filter((file) => file.endsWith('.md'));
+  const posts = files.map((file) => {
+    const id = file.replace(/\.md$/u, '');
+    const { block } = parseFrontmatter(readFileSync(join(postsDir, file), 'utf8'), id);
+    const read = (key) => new RegExp(`^${key}:[ \\t]*(.*)$`, 'mu').exec(block)?.[1]?.trim() ?? '';
+    return {
+      id,
+      title: read('title').replace(/^"(.*)"$/u, '$1'),
+      date: read('date'),
+      category: read('category'),
+      author: read('author'),
+      anonymous: read('anonymous') === 'true',
+      draft: read('draft') === 'true',
+      excerpt: read('excerpt').replace(/^"(.*)"$/u, '$1'),
+      tags: parseTags(read('tags')),
+    };
+  }).sort((a, b) => b.date.localeCompare(a.date));
+  const authorFiles = (await readdir(authorDir)).filter((file) => file.endsWith('.json'));
+  const authors = [];
+  for (const file of authorFiles) authors.push({ id: file.replace(/\.json$/u, ''), ...(await jsonFile(join(authorDir, file), file)).data });
+  return { posts, authors, categories };
+}
+
 export async function runContent(args, { root } = {}) {
   const command = args[0];
   if (!command || ['help', '--help', '-h'].includes(command)) {
@@ -327,11 +453,16 @@ export async function runContent(args, { root } = {}) {
     fail(`参数${argument ? ` ${argument}` : ''} 缺少值或格式有误。使用 npm run content -- help 查看用法。`);
   }
   if (parsed.values.help) return help;
+  const fullRoot = contentRoot(root);
+  if (command === 'list') {
+    if (parsed.positionals.length > 1) fail('list 最多接受一个范围名称。');
+    return JSON.stringify(await listContent(fullRoot), null, 2);
+  }
   const expected = ['photo', 'profile-photo', 'post-photo'].includes(command) ? 2 : 1;
   if (parsed.positionals.length !== expected) fail(`${command} 需要${expected === 2 ? `${command === 'post-photo' ? '文章' : '作者'}ID和源图片路径` : '一个ID'}。使用 npm run content -- help 查看用法。`);
-  const id = idValue(parsed.positionals[0], ['post', 'post-photo'].includes(command) ? '文章ID' : '作者ID');
-  const fullRoot = contentRoot(root);
+  const id = idValue(parsed.positionals[0], ['post', 'post-photo', 'update'].includes(command) ? '文章ID' : '作者ID');
   if (command === 'post') return createPost(fullRoot, id, parsed.values);
+  if (command === 'update') return updatePost(fullRoot, id, parsed.values);
   if (command === 'author') return createAuthor(fullRoot, id, parsed.values);
   if (command === 'post-photo') return addPostImage(fullRoot, id, parsed.positionals[1], parsed.values);
   return addImage(fullRoot, command, id, parsed.positionals[1], parsed.values);

@@ -1,9 +1,10 @@
 import { getCollection } from 'astro:content';
 import { categories } from '../lib/categories';
+import { collectTags } from '../lib/tags';
 import topicRecords from '../content/topics.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const site = import.meta.env.SITE ?? 'https://sujinglang.github.io';
+const site = import.meta.env.SITE ?? 'https://ginlang.vip';
 const escapeXml = (value: string) =>
   value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
@@ -11,6 +12,7 @@ export async function GET() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   const authors = await getCollection('authors');
   const topics = Object.keys(topicRecords).length ? await getCollection('topics', ({ data }) => !data.draft) : [];
+  const tags = collectTags(posts);
   const paths = [
     { path: '/', modified: undefined },
     { path: '/writing/', modified: undefined },
@@ -20,6 +22,9 @@ export async function GET() {
     { path: '/about/', modified: undefined },
     ...(topics.length ? [{ path: '/topics/', modified: undefined }] : []),
     ...categories.map((category) => ({ path: '/category/' + category.slug + '/', modified: undefined })),
+    ...(tags.length ? [{ path: '/tags/', modified: undefined }] : []),
+    ...tags.map((tag) => ({ path: '/tags/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
+    ...tags.map((tag) => ({ path: '/archive/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
     ...authors.map((author) => ({ path: '/authors/' + encodeURIComponent(author.id) + '/', modified: undefined })),
     ...topics.map((topic) => ({ path: '/topics/' + encodeURIComponent(topic.id) + '/', modified: undefined })),
     ...posts.map((post) => ({

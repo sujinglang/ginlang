@@ -25,6 +25,7 @@ export async function GET() {
         .replace(/\s+/g, ' ')
         .trim(),
       category: categoryLabel(post.data.category),
+      ...(post.data.tags.length ? { tags: post.data.tags.map((tag) => tag.trim()) } : {}),
       ...(hasPublicAuthor(post) ? { author: author.data.name } : {}),
       date: formatDate(post.data.date),
       url: base + '/posts/' + post.id + '/',

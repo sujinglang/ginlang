@@ -12,6 +12,32 @@ export async function getStaticPaths() {
 
 const { album, author } = Astro.props;
 const photos = album.data.photos;
+const captionOf = (photo: (typeof photos)[number]) =>
+  (photo.caption || '') + (photo.date ? (photo.caption ? ' · ' : '') + formatDate(photo.date) : '');
+// Every photo keeps a position in the album-wide order, so the viewer can walk
+// straight through the whole album even when the grid is split into groups.
+const numbered = photos.map((photo, index) => ({ photo, index }));
+const viewerPhotos = numbered.map(({ photo }) => ({
+  src: base + '/' + photo.src.replace(/^\/+/, ''),
+  width: photo.width,
+  height: photo.height,
+  alt: photo.alt,
+  caption: captionOf(photo),
+}));
+// Groups are optional. Declared groups keep their own order; photos without a
+// group collect into one trailing section so nothing is ever hidden.
+const groups = [...album.data.groups].sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+const grouped = new Set(groups.map((group) => group.id));
+const loosePhotos = numbered.filter(({ photo }) => !photo.group || !grouped.has(photo.group));
+const sections = [
+  ...groups.map((group) => ({
+    id: group.id,
+    title: group.title,
+    note: group.note,
+    photos: numbered.filter(({ photo }) => photo.group === group.id),
+  })),
+  ...(loosePhotos.length ? [{ id: '', title: '', note: undefined, photos: loosePhotos }] : []),
+].filter((section) => section.photos.length);
 ---
 
 <SiteLayout title={author.data.name + '的相册'} description={author.data.name + '的相簿，只放作者本人愿意公开的照片。'}>
@@ -24,23 +50,54 @@ const photos = album.data.photos;
     </header>
 
     {photos.length ? (
-      <div class="album-grid">
-        {photos.map((photo) => (
-          <figure class="album-photo">
-            <img
-              src={base + '/' + photo.src.replace(/^\/+/, '')}
-              width={photo.width}
-              height={photo.height}
-              alt={photo.alt}
-              loading="lazy"
-              decoding="async"
-            />
-            {(photo.caption || photo.date) && (
-              <figcaption>{photo.caption}{photo.date ? (photo.caption ? ' · ' : '') + formatDate(photo.date) : ''}</figcaption>
+      <>
+        {sections.length > 1 && (
+          <nav class="album-groups" aria-label="相册分组">
+            {sections.map((section) => (
+              <a href={'#album-group-' + (section.id || 'rest')}>{section.title || '其他'}</a>
+            ))}
+          </nav>
+        )}
+        {sections.map((section) => (
+          <section class="album-section" id={'album-group-' + (section.id || 'rest')} aria-label={section.title || '其他照片'}>
+            {section.title && (
+              <div class="album-section-head">
+                <h2>{section.title}</h2>
+                {section.note && <p>{section.note}</p>}
+              </div>
             )}
-          </figure>
+            <div class="album-grid">
+              {section.photos.map(({ photo, index }) => (
+                <figure class="album-photo">
+                  <button type="button" class="album-open" data-photo-open data-index={index} aria-label={'放大查看：' + photo.alt}>
+                    <img
+                      src={base + '/' + photo.src.replace(/^\/+/, '')}
+                      width={photo.width}
+                      height={photo.height}
+                      alt={photo.alt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </button>
+                  {captionOf(photo) && <figcaption>{captionOf(photo)}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </section>
         ))}
-      </div>
+        <div class="album-viewer" data-album-viewer hidden>
+          <div class="album-viewer-panel" role="dialog" aria-modal="true" aria-label="照片大图">
+            <img data-viewer-image alt="" />
+            <p class="album-viewer-caption" data-viewer-caption></p>
+            <div class="album-viewer-bar">
+              <button type="button" data-viewer-prev aria-label="上一张">← 上一张</button>
+              <span data-viewer-position aria-live="polite"></span>
+              <button type="button" data-viewer-next aria-label="下一张">下一张 →</button>
+              <button type="button" data-viewer-close aria-label="关闭大图">关闭</button>
+            </div>
+          </div>
+        </div>
+      </>
     ) : (
       <div class="album-empty" role="status">
         <p class="album-empty-heading">暂未公开照片。</p>
@@ -49,33 +106,171 @@ const photos = album.data.photos;
   </article>
 </SiteLayout>
 
+<script define:vars={{ viewerPhotos }}>
+  function initAlbumViewer() {
+    const viewer = document.querySelector<HTMLElement>('[data-album-viewer]:not([data-ready])');
+    if (!viewer || !viewerPhotos.length) return;
+    viewer.dataset.ready = 'true';
+    const image = viewer.querySelector<HTMLImageElement>('[data-viewer-image]');
+    const caption = viewer.querySelector<HTMLElement>('[data-viewer-caption]');
+    const position = viewer.querySelector<HTMLElement>('[data-viewer-position]');
+    const closeButton = viewer.querySelector<HTMLButtonElement>('[data-viewer-close]');
+    if (!image || !caption || !position || !closeButton) return;
+    let current = 0;
+    let opener: HTMLElement | null = null;
+
+    const show = (next: number) => {
+      current = (next + viewerPhotos.length) % viewerPhotos.length;
+      const photo = viewerPhotos[current];
+      image.src = photo.src;
+      image.alt = photo.alt;
+      caption.textContent = photo.caption;
+      position.textContent = (current + 1) + ' / ' + viewerPhotos.length;
+    };
+    const close = () => {
+      viewer.hidden = true;
+      opener?.focus();
+      opener = null;
+    };
+    viewer.querySelector('[data-viewer-prev]')?.addEventListener('click', () => show(current - 1));
+    viewer.querySelector('[data-viewer-next]')?.addEventListener('click', () => show(current + 1));
+    closeButton.addEventListener('click', close);
+    viewer.addEventListener('click', (event) => { if (event.target === viewer) close(); });
+    document.addEventListener('keydown', (event) => {
+      if (viewer.hidden) return;
+      if (event.key === 'Escape') close();
+      if (event.key === 'ArrowLeft') show(current - 1);
+      if (event.key === 'ArrowRight') show(current + 1);
+    });
+    document.querySelectorAll<HTMLButtonElement>('[data-photo-open]').forEach((button) => {
+      button.addEventListener('click', () => {
+        opener = button;
+        show(Number(button.dataset.index) || 0);
+        viewer.hidden = false;
+        closeButton.focus();
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAlbumViewer, { once: true });
+  else initAlbumViewer();
+  document.addEventListener('astro:page-load', initAlbumViewer);
+</script>
+
 <style>
+  .album-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    margin-top: 30px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .album-groups a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted);
+    font: 13px/1.6 var(--sans);
+    text-decoration: none;
+  }
+  .album-groups a:hover { color: var(--ink); }
+  .album-section { margin-top: 34px; scroll-margin-top: 90px; }
+  .album-section-head { display: grid; gap: 6px; margin-bottom: 16px; }
+  .album-section-head h2 { margin: 0; font: 500 22px/1.5 var(--serif); }
+  .album-section-head p { margin: 0; color: var(--muted); font: 13px/1.8 var(--serif); }
   .album-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 18px;
     margin-top: 36px;
   }
+  .album-section .album-grid { margin-top: 0; }
   .album-photo { margin: 0; }
+  .album-open {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+  }
+  .album-open:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
   .album-photo img {
     display: block;
     width: 100%;
     height: auto;
     border: 1px solid var(--line);
     background: var(--accent-soft);
+    transition: border-color 180ms ease;
   }
+  .album-open:hover img { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
   .album-photo figcaption {
     margin-top: 7px;
     color: var(--muted);
     font: 11px/1.7 var(--sans);
   }
+  .album-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: clamp(16px, 4vw, 48px);
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(6px);
+  }
+  .album-viewer[hidden] { display: none; }
+  .album-viewer-panel {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .album-viewer-panel img {
+    display: block;
+    max-width: 100%;
+    max-height: 74vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    box-shadow: 0 18px 48px rgb(22 27 22 / 16%);
+  }
+  :global(:root[data-theme='dark']) .album-viewer-panel img { box-shadow: 0 18px 48px rgb(0 0 0 / 46%); }
+  .album-viewer-caption { margin: 0; color: var(--muted); font: 13px/1.8 var(--serif); text-align: center; }
+  .album-viewer-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 22px;
+  }
+  /* The viewer buttons are wired up by script, so this rule cannot be scoped. */
+  :global(.album-viewer-bar button) {
+    min-height: 44px;
+    padding: 7px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--accent-deep);
+    cursor: pointer;
+    font: 12px/1.6 var(--sans);
+  }
+  :global(.album-viewer-bar button:hover) { border-bottom-color: var(--clay); color: var(--ink); }
+  :global(.album-viewer-bar button:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .album-viewer-bar span { color: var(--muted); font: 11px/1.5 var(--sans); }
   .album-empty {
     margin-top: clamp(80px, 14vh, 150px);
     text-align: center;
   }
   .album-empty-heading { margin: 0; color: var(--muted); font: 500 22px/1.6 var(--serif); }
   @media (max-width: 680px) {
+    .album-groups { gap: 8px 20px; margin-top: 22px; }
+    .album-section { margin-top: 28px; }
     .album-grid { grid-template-columns: 1fr; gap: 18px; margin-top: 26px; }
+    .album-viewer-bar { gap: 8px 18px; }
     .album-empty { margin-top: 90px; }
     .album-empty-heading { font-size: 19px; }
   }

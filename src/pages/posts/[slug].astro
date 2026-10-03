@@ -7,6 +7,7 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
 import { hasPublicAuthor } from '../../lib/postVisibility';
+import { tagSlug } from '../../lib/tags';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -27,13 +28,18 @@ const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 const postIndex = allPosts.findIndex((item) => item.id === post.id);
 const newerPost = postIndex > 0 ? allPosts[postIndex - 1] : undefined;
 const olderPost = postIndex >= 0 ? allPosts[postIndex + 1] : undefined;
+const postTags = new Set(post.data.tags.map(tagSlug));
+const sharedThemes = (item: (typeof allPosts)[number]) =>
+  item.data.themes.filter((theme) => post.data.themes.includes(theme)).length;
 const relatedPosts = allPosts
   .filter((item) => item.id !== post.id)
   .sort((a, b) => Number(showAuthor && hasPublicAuthor(b) && b.data.author.id === post.data.author.id) - Number(showAuthor && hasPublicAuthor(a) && a.data.author.id === post.data.author.id)
+    || Number(b.data.tags.some((raw) => postTags.has(tagSlug(raw)))) - Number(a.data.tags.some((raw) => postTags.has(tagSlug(raw))))
+    || sharedThemes(b) - sharedThemes(a)
     || Number(b.data.category === post.data.category) - Number(a.data.category === post.data.category)
     || b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 2);
-const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
 const shareImage = '/og/' + post.id + '.png';
 const articleSchema = JSON.stringify({
   '@context': 'https://schema.org',
@@ -66,6 +72,14 @@ const articleSchema = JSON.stringify({
       </div>
       <h1>{post.data.title}</h1>
       <p class="article-deck">{post.data.excerpt}</p>
+      {post.data.tags.length > 0 && (
+        <p class="post-meta article-tags">
+          <span class="article-tags-label">标签</span>
+          {post.data.tags.map((raw) => (
+            <a href={base + '/tags/' + tagSlug(raw) + '/'}>{raw.trim()}</a>
+          ))}
+        </p>
+      )}
       {showAuthor && <div class="article-byline">
         <span>文 / <a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></span>
       </div>}

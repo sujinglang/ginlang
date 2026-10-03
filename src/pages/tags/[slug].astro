@@ -1,0 +1,74 @@
+---
+import { getCollection } from 'astro:content';
+import MarginWhisper from '../../components/MarginWhisper.astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { categoryLabel } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+import { hasPublicAuthor } from '../../lib/postVisibility';
+import { collectTags, tagSlug } from '../../lib/tags';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return collectTags(posts).map((tag) => ({ params: { slug: tag.slug }, props: { tag } }));
+}
+
+const { tag } = Astro.props;
+const posts = (await getCollection('posts', ({ data }) => !data.draft))
+  .filter((post) => post.data.tags.some((raw) => tagSlug(raw) === tag.slug))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
+const allTags = collectTags(await getCollection('posts', ({ data }) => !data.draft));
+---
+
+<SiteLayout title={'标签 · ' + tag.label} description={'GINLANG 的文章里，标为「' + tag.label + '」的部分。'}>
+  <section class="listing-page category-page tag-page">
+    <a class="back-link" href={base + '/tags/'}>← 全部标签</a>
+    <div class="intro-spread">
+      <header class="page-intro">
+        <p class="eyebrow">文章标签</p>
+        <h1>{tag.label}</h1>
+        <p>共 {posts.length} 篇。和别的标签有重叠也没关系。</p>
+      </header>
+      <figure class="intro-art" data-reveal="image">
+        <img src={base + '/archive-ginkgo-animated.webp'} width="720" height="720" alt="手绘的银杏叶、旧卡片与书签" loading="lazy" decoding="async" />
+        <figcaption>把相关的句子放在一起。</figcaption>
+      </figure>
+    </div>
+
+    <MarginWhisper theme="category" />
+
+    {allTags.length > 1 && (
+      <nav class="tag-nav" aria-label="其他标签">
+        <a href={base + '/tags/'}>全部标签</a>
+        {allTags.map((entry) => (
+          <a href={base + '/tags/' + entry.slug + '/'} aria-current={entry.slug === tag.slug ? 'page' : undefined}>{entry.label}</a>
+        ))}
+      </nav>
+    )}
+
+    {posts.length > 0 ? (
+      <ol class="post-list">
+        {posts.map((post) => (
+          <li class="post-row">
+            <div class="post-meta">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <span>{categoryLabel(post.data.category)}</span>
+              {hasPublicAuthor(post) && <><span class="meta-dot" aria-hidden="true">·</span><a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a></>}
+            </div>
+            <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
+            <p class="post-excerpt">{post.data.excerpt}</p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty-note">这一页暂时留白。等有新的文章，再回来看看。</p>
+    )}
+  </section>
+</SiteLayout>
+
+<style>
+  .tag-page .post-list { margin-top: 24px; }
+</style>

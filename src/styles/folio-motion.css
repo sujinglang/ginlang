@@ -227,10 +227,12 @@
 .author-about h2 { font-family: var(--serif); font-size: 25px; font-weight: 500; }
 .home-profile-about > p, .about-greeting, .author-bio { color: var(--ink); font: 400 18px/1.7 var(--serif); }
 .about-copy .about-greeting { font-size: clamp(26px, 2.4vw, 32px); line-height: 1.3; }
-.home-profile-about h3 { margin-bottom: 13px; color: var(--accent-deep); font: 400 clamp(37px, 3.5vw, 46px)/1.2 var(--hand-en); }
+/* About is the small handwritten label; the greeting is the line it introduces,
+   so it keeps the larger size but no longer shouts over it. */
+.home-profile-about h3 { margin-bottom: 11px; color: var(--accent-deep); font: 400 clamp(28px, 2.5vw, 33px)/1.2 var(--hand-en); }
 .home-profile-about > p, .about-copy .about-greeting {
   color: var(--ink);
-  font: 400 clamp(42px, 4.1vw, 56px)/1.3 var(--hand-en);
+  font: 400 clamp(33px, 3vw, 41px)/1.32 var(--hand-en);
   letter-spacing: normal;
   word-spacing: normal;
   font-kerning: normal;
@@ -265,10 +267,10 @@
   .home-profile-label { margin-bottom: 6px; font-size: 11px; }
   .home-profile-identity h2 { font-size: 36px; }
   .home-profile-about { margin-top: 28px; }
-  .home-profile-about h3 { font-size: 37px; }
-  .home-profile-about > p, .about-copy .about-greeting { font-size: clamp(33px, 9vw, 42px); }
-  .profile-quote .profile-quote-english { font-size: 27px; line-height: 1.45; }
-  .profile-quote .profile-quote-chinese { font-size: 26px; line-height: 1.6; }
+  .home-profile-about h3 { font-size: 24px; }
+  .home-profile-about > p, .about-copy .about-greeting { font-size: clamp(28px, 7.6vw, 34px); }
+  .profile-quote .profile-quote-english { font-size: 23px; line-height: 1.5; }
+  .profile-quote .profile-quote-chinese { font-size: 23px; line-height: 1.68; }
   .about-reading-path { grid-template-columns: 1fr; gap: 6px; }
   .about-reading-path a { grid-column: 1; grid-row: auto; width: fit-content; margin-top: 6px; }
   .footer-visit { justify-content: flex-start; }
@@ -307,7 +309,11 @@
 :root[data-theme='dark'] .landscape-frame,
 :root[data-theme='dark'] .home-profile-cover,
 :root[data-theme='dark'] .intro-art > img,
-:root[data-theme='dark'] .article-tail-art img {
+:root[data-theme='dark'] .article-tail-art img,
+:root[data-theme='dark'] .prose img {
   box-shadow: 0 21px 46px rgb(4 7 5 / 42%), 0 5px 13px rgb(4 7 5 / 28%);
 }
+/* A white photograph on a dark page reads as a hole; soften it so the picture
+   sits on the night surface instead of glaring through it. */
+:root[data-theme='dark'] .prose img { opacity: .92; }
 

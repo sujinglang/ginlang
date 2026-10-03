@@ -18,7 +18,7 @@ const {
   ogImage,
 } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
 const homeUrl = new URL(base + '/', siteUrl).toString();
 const socialImage = new URL(ogImage ? base + ogImage : base + '/social-card.svg', siteUrl).toString();

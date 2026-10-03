@@ -21,7 +21,7 @@ const bio = author.data.bio || '以后再来写吧';
 // the recommendations here and the author's own album page.
 const album = albumById.get(author.id);
 const albumPhotos = album?.data.photos ?? [];
-const siteUrl = Astro.site?.toString() ?? 'https://sujinglang.github.io';
+const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
 const authorSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'ProfilePage',

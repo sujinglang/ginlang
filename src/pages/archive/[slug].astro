@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content';
+import MarginWhisper from '../../components/MarginWhisper.astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { categoryLabel } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+import { hasPublicAuthor } from '../../lib/postVisibility';
+import { collectTags, tagSlug } from '../../lib/tags';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return collectTags(posts).map((tag) => ({ params: { slug: tag.slug }, props: { tag } }));
+}
+
+const { tag } = Astro.props;
+const all = await getCollection('posts', ({ data }) => !data.draft);
+const posts = all
+  .filter((post) => post.data.tags.some((raw) => tagSlug(raw) === tag.slug))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const tags = collectTags(all);
+const authors = new Map((await getCollection('authors')).map((author) => [author.id, author]));
+---
+
+<SiteLayout title={'归档 · ' + tag.label} description={'GINLANG 的归档里，标为「' + tag.label + '」的 ' + posts.length + ' 篇文章。'}>
+  <section class="listing-page archive-page tag-archive-page">
+    <a class="back-link" href={base + '/archive/'}>← 归档</a>
+
+    <header class="page-intro">
+      <p class="eyebrow">归档标签</p>
+      <h1>{tag.label}</h1>
+      <p>共 {posts.length} 篇。和别的标签有重叠也没关系。</p>
+    </header>
+
+    {tags.length > 1 && (
+      <nav class="tag-nav" aria-label="其他标签">
+        <a href={base + '/archive/'}>全部</a>
+        {tags.map((entry) => (
+          <a href={base + '/archive/' + entry.slug + '/'} aria-current={entry.slug === tag.slug ? 'page' : undefined}>{entry.label}</a>
+        ))}
+      </nav>
+    )}
+
+    <MarginWhisper theme="archive" />
+
+    {posts.length > 0 ? (
+      <section class="archive-year" aria-label={'标为' + tag.label + '的文章'} data-reveal>
+        <ol class="archive-list">
+          {posts.map((post) => (
+            <li>
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date).slice(5)}</time>
+              <a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
+              <span>{categoryLabel(post.data.category)}{hasPublicAuthor(post) && <> · <a href={base + '/authors/' + post.data.author.id + '/'}>{authors.get(post.data.author.id)?.data.name}</a></>}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ) : (
+      <p class="empty-note">这个标签下还没有文章。</p>
+    )}
+  </section>
+</SiteLayout>
+
+<style>
+  .tag-archive-page .page-intro { padding: 24px 0 6px; }
+  /* This page has no year heading, so the list takes the full width. */
+  .tag-archive-page .archive-year { display: block; padding-top: 6px; }
+</style>

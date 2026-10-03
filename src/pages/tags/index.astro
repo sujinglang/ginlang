@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { collectTags } from '../../lib/tags';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const tags = collectTags(posts);
+---
+
+<SiteLayout title="标签" description="GINLANG 的文章标签，按出现次数排列。">
+  <section class="listing-page tags-page">
+    <a class="back-link" href={base + '/archive/'}>← 归档</a>
+    <header class="editorial-page-header">
+      <span class="folio-mark">TAGS</span>
+      <h1>标签</h1>
+      <p>文章除了分类，也可以用更细的词标注。标签由作者自己写，重复的会自动并到一起。</p>
+    </header>
+
+    {tags.length ? (
+      <ul class="tag-cloud">
+        {tags.map((tag) => (
+          <li>
+            <a href={base + '/tags/' + tag.slug + '/'}>
+              <span>{tag.label}</span>
+              <small>{tag.count} 篇</small>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty-note">还没有标签。文章加上 <code>tags</code> 之后，这里会出现对应的入口。</p>
+    )}
+  </section>
+</SiteLayout>
+
+<style>
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 30px;
+    margin: 30px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .tag-cloud li { border-bottom: 1px solid var(--line); }
+  /* Tag words vary in length, so each entry sizes to its own text instead of
+     stretching to an equal-width column. */
+  .tag-cloud a {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-height: 52px;
+    padding: 14px 0;
+    color: inherit;
+    text-decoration: none;
+  }
+  .tag-cloud a:hover span { color: var(--accent-deep); }
+  .tag-cloud a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .tag-cloud span { font: 17px/1.5 var(--serif); }
+  .tag-cloud small { color: var(--muted); font: 11px/1.5 var(--sans); white-space: nowrap; }
+  .tags-page code { font: 13px/1.6 var(--mono, monospace); }
+  @media (max-width: 680px) {
+    .tag-cloud { gap: 0 24px; margin-top: 24px; }
+    .tag-cloud a { min-height: 48px; }
+  }
+</style>

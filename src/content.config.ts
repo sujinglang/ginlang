@@ -18,6 +18,8 @@ const posts = defineCollection({
     date: z.coerce.date(),
     category: z.enum(['essay', 'diary', 'book', 'short']),
     themes: z.array(z.enum(['philosophy', 'life', 'love', 'freedom', 'direction'])).default([]),
+    // Free-form and optional: existing posts build unchanged with no tags.
+    tags: z.array(z.string().min(1)).default([]),
     excerpt: z.string(),
     author: reference('authors'),
     anonymous: z.boolean().default(false),
@@ -67,9 +69,16 @@ const topics = defineCollection({
 
 // One album file per author, named after the author id (e.g. ginlang.json).
 // The file may stay empty until real photos exist; pages handle the empty state.
+// `groups` is optional: albums without it keep showing every photo in one grid.
 const albums = defineCollection({
   loader: glob({ pattern: '**/*.json', base: './src/content/albums' }),
   schema: z.object({
+    groups: z.array(z.object({
+      id: z.string().min(1),
+      title: z.string().min(1),
+      note: z.string().optional(),
+      order: z.number().int().default(100),
+    })).default([]),
     photos: z.array(z.object({
       src: publicImage,
       width: z.number().int().positive(),
@@ -77,6 +86,7 @@ const albums = defineCollection({
       alt: z.string().min(1),
       caption: z.string().optional(),
       date: z.coerce.date().optional(),
+      group: z.string().optional(),
     })).default([]),
   }),
 });
