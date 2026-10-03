@@ -72,7 +72,7 @@
   .home-hero { grid-template-columns: minmax(0, 1fr) minmax(0, .95fr); gap: 32px; }
   .home-intro h1.cover-poem { font-size: clamp(32px, 4.8vw, 42px); }
   .home-profile { gap: 32px; }
-  .home-profile-about > p { font-size: 34px; }
+  .home-profile-about > p { font-size: 25px; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
