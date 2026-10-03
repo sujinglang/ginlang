@@ -106,7 +106,7 @@
   background-repeat: no-repeat !important;
   background-origin: border-box !important;
   background-clip: border-box !important;
-  background-size: var(--sweep-progress, 0%) 1px, 100% 1px !important;
+  background-size: var(--sweep-progress, 0%) var(--sweep-width, 1px), 100% var(--sweep-width, 1px) !important;
   border-bottom-color: transparent !important;
   text-decoration: none !important;
   transition: background-size 460ms cubic-bezier(.4, 0, .2, 1), color 180ms ease, transform 220ms ease;

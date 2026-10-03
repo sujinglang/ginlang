@@ -2,6 +2,7 @@
    This final module unifies the older page modules without changing their order. */
 :root {
   --chapter-gap: clamp(48px, 6vw, 76px);
+  --chapter-rule: 2px;
   --section-title: clamp(26px, 2.5vw, 34px);
   --image-shadow: 0 2px 5px rgb(46 44 35 / 3%), 0 16px 36px rgb(46 44 35 / 7%);
 }
@@ -100,6 +101,12 @@ select { background: var(--paper-raised); color: var(--ink); }
 .home-note .note-draft-tools small a { display: inline-flex; min-height: 32px; align-items: center; }
 .home-note .note-draft-status { font-size: 12px; }
 .last-read-note, .desk-note { margin-top: 22px; font: 13px/1.8 var(--sans); }
+
+/* Chapter boundaries have more weight than the rules inside reading lists. */
+.cover-colophon, .site-footer, .desk-section, .author-about { border-top-width: var(--chapter-rule); }
+.home-guest-invitation, .editorial-page-header, .listing-page > .page-intro, .intro-spread { border-bottom-width: var(--chapter-rule); }
+.home-guest-invitation { --sweep-width: var(--chapter-rule); }
+.home-whisper .margin-whisper, .home-note .note-paper { border-block-width: var(--chapter-rule); }
 
 .landscape-topline { margin-bottom: 26px; }
 .landscape-frame { box-shadow: var(--image-shadow); }
