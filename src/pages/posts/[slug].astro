@@ -1,12 +1,10 @@
 ---
 import { getCollection, getEntry, render } from 'astro:content';
 import BookmarkWidget from '../../components/BookmarkWidget.astro';
-import Comments from '../../components/Comments.astro';
 import MarginWhisper from '../../components/MarginWhisper.astro';
 import SaveArticle from '../../components/SaveArticle.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { categoryLabel } from '../../lib/categories';
-import { commentsConfig } from '../../lib/comments';
 import { formatDate } from '../../lib/date';
 import { hasPublicAuthor } from '../../lib/postVisibility';
 import { tagSlug } from '../../lib/tags';
@@ -42,7 +40,6 @@ const relatedPosts = allPosts
     || b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 2);
 const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
-const commentsServer = commentsConfig.serverURL;
 const shareImage = '/og/' + post.id + '.png';
 const articleSchema = JSON.stringify({
   '@context': 'https://schema.org',
@@ -136,8 +133,6 @@ const articleSchema = JSON.stringify({
       <span>写于 {formatDate(post.data.date)} · {categoryLabel(post.data.category)}</span>
       <a href={base + '/archive/'}>继续翻阅归档 →</a>
     </footer>
-
-    {commentsServer && <Comments id={post.id} serverURL={commentsServer} />}
 
     <nav class="article-neighbors" aria-label="相邻文章">
       {olderPost ? (

@@ -179,39 +179,6 @@ npm run content -- post-photo 2026-10-01-autumn-note "C:\照片\窗边.jpg" --na
 
 `templates/post.md` 里有完整的可复制示例，新建文章时可以直接参考。
 
-## 留言
-
-文章底部预留了留言区，位置在页脚之后、「相邻文章」之前。目前**默认关闭**：`src/lib/comments.ts` 里的 `serverURL` 是空字符串，此时文章页不渲染留言区。
-
-开启需要两步。
-
-先部署一个 Waline 服务端。Waline 用 LeanCloud 存数据，最省事的方式是 Vercel：
-
-```bash
-npm i -g @waline/vercel
-waline deploy
-```
-
-按提示在 LeanCloud 创建一个应用，把 App ID、App Key、Master Key 填进去，并给该应用绑定一个域名（例如 `comments.ginlang.vip`）。部署完成后会得到一个访问地址。
-
-然后把地址填进配置：
-
-```ts
-// src/lib/comments.ts
-export const commentsConfig = {
-  serverURL: 'https://comments.ginlang.vip',
-} as const;
-```
-
-重新构建即可。留言者不需要注册，填一个名字就能留言；提交后立即公开显示，不经过审核。
-
-几点说明：
-
-- 留言数据存在 LeanCloud，不在本仓库里；删掉留言要进 LeanCloud 后台
-- 前端脚本按需加载，不会打进首屏包；服务器不可用时显示一句中文提示，不会留下空白框
-- 换 LeanCloud 密码或迁移服务时，只需更新服务端的密钥，前端不用改
-- 不想开放留言时把 `serverURL` 清空即可，其余代码不受影响
-
 ## 首页水彩
 
 继续维护 `src/data/heroWatercolors.ts` 与 `public/hero-watercolors/`。每张使用稳定 `id`，登记 `file`、实际宽高和准确 `alt`。这是首页画册，不是作者公开相册。
