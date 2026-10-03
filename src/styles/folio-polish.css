@@ -58,10 +58,10 @@ select { background: var(--paper-raised); color: var(--ink); }
 .section-kicker { color: var(--clay); }
 .selection-section .section-heading { align-items: end; margin-bottom: 32px; }
 .selection-section .selection-grid { grid-template-columns: minmax(0, 1.06fr) minmax(0, .94fr); gap: 44px; }
-.selection-section .featured-post { padding: 32px; gap: 20px; }
+.selection-section .featured-post { padding: 22px 0 30px; gap: 20px; border: 0; border-block: 1px solid var(--line); background: transparent; }
+.selection-section .featured-post:hover { border-color: var(--line); background: transparent; box-shadow: none; }
 .selection-section .featured-post h3 { font-size: clamp(27px, 2.6vw, 34px); line-height: 1.65; font-weight: 500; }
-.selection-section .featured-post::before { width: 2px; }
-.selection-grid .featured-post:hover::before { width: 2px; }
+.selection-section .featured-post::before { display: none; }
 .selection-section .featured-post p { font-size: 16px; line-height: 1.95; }
 .selection-section .selection-brief { padding-block: 22px 26px; }
 .selection-section .selection-brief h3 { margin-block: 10px; font-weight: 500; font-size: 23px; line-height: 1.6; }
@@ -70,26 +70,30 @@ select { background: var(--paper-raised); color: var(--ink); }
 .home-guest-invitation { padding-bottom: 26px; gap: 12px 24px; }
 .home-guest-invitation > p { font-size: 15px; max-width: 42em; }
 
-/* The marginal quote is a pause; the daily note is a distinct place to write. */
+/* One paper ground: a narrow quotation and an open writing spread.
+   Rules and alignment separate functions without tinted panels. */
 .home-whisper { max-width: 850px; margin-inline: auto; }
-.home-whisper .margin-whisper { padding: 26px 28px; background: color-mix(in srgb, var(--accent-soft) 36%, var(--paper)); }
-.home-whisper .margin-whisper::before { top: 26px; bottom: 26px; width: 1px; }
+.home-whisper .margin-whisper { padding: 24px 0; border-block: 1px solid var(--line); background: transparent; }
+.home-whisper .margin-whisper::before { display: none; }
 .margin-whisper-heading { font: 12px/1.6 var(--sans); letter-spacing: .02em; }
 .margin-whisper-content { margin-top: 14px; gap: 12px; }
 .margin-whisper-body p { font-size: 16px; line-height: 1.95; }
 .margin-whisper-body cite { margin-top: 14px; font: normal 12px/1.7 var(--sans); }
 .margin-whisper-content button { font-size: 12px; min-height: 44px; }
-.home-note { padding: clamp(24px, 3.4vw, 46px); background: color-mix(in srgb, var(--paper-soft) 64%, var(--paper)); }
+.home-note { padding: 0; background: transparent; }
 .home-note .daily-note { align-items: start; gap: clamp(30px, 5vw, 64px); }
 .home-note .note-intro { padding-top: 6px; }
 .home-note .note-kicker { font-size: 12px; letter-spacing: .02em; margin-bottom: 14px; }
 .home-note .note-intro h2 { font-size: var(--section-title); line-height: 1.6; }
 .home-note .note-description { font-size: 15px; line-height: 1.95; margin-top: 20px; }
-.home-note .note-paper { min-height: 0; padding: 24px 30px; box-shadow: 0 3px 7px rgb(46 44 35 / 3%), 0 12px 30px rgb(46 44 35 / 4%); }
+.home-note .note-paper { min-height: 0; padding: 24px 0; border: 0; border-block: 1px solid var(--line); background: transparent; box-shadow: none; }
+.home-note .note-paper::before { display: none; }
+.home-note .note-paper.is-changing { box-shadow: none; }
 .home-note .paper-topline, .home-note .paper-footline { font-size: 11px; letter-spacing: .03em; }
+.home-note .paper-footline { border-top: 0; padding-top: 0; }
 .home-note .opening-mark { margin-top: 20px; }
 .home-note .prompt { min-height: 0; font-size: 18px; line-height: 2; margin-bottom: 28px; }
-.home-note [data-note-draft] { min-height: 146px; font-size: 16px; line-height: 1.9; }
+.home-note [data-note-draft] { min-height: 146px; background: transparent; font-size: 16px; line-height: 1.9; }
 .home-note .note-draft-label { margin-top: 28px; }
 .home-note .note-draft-tools { align-items: start; margin-top: 12px; }
 .home-note .note-draft-tools small { font-size: 12px; line-height: 1.8; }
@@ -160,7 +164,7 @@ select { background: var(--paper-raised); color: var(--ink); }
 .article-body { padding-top: 34px; padding-bottom: 48px; }
 .prose { letter-spacing: .012em; }
 .prose p { text-wrap: pretty; }
-.prose blockquote { padding: 14px 22px; border-left: 2px solid var(--accent); background: color-mix(in srgb, var(--accent-soft) 32%, var(--paper)); }
+.prose blockquote { padding: 14px 22px; border-left: 2px solid var(--accent); background: transparent; }
 .prose pre { border-radius: 2px; padding: 22px; overscroll-behavior-x: contain; }
 .prose table { margin-block: 2em; }
 .prose th, .prose td { padding: 12px 16px; }
@@ -172,7 +176,7 @@ select { background: var(--paper-raised); color: var(--ink); }
 .article-author > a { font-size: 13px; }
 .article-author span:not(.person-initial) { font-size: 14px; }
 .article-afterword { margin-block: 44px 26px; }
-.neighbor-card { padding: 20px; min-height: 132px; background: var(--paper-raised); }
+.neighbor-card { padding: 20px; min-height: 132px; background: transparent; }
 .neighbor-card span { font-size: 12px; letter-spacing: 0; }
 .neighbor-card strong { font-size: 17px; line-height: 1.75; }
 .neighbor-placeholder { background: transparent; }
@@ -212,6 +216,7 @@ select { background: var(--paper-raised); color: var(--ink); }
 }
 @media (max-width: 780px) {
   .selection-section .selection-grid { grid-template-columns: 1fr; gap: 28px; }
+  .selection-section .featured-post { border-bottom: 0; }
   .home-profile-visual { padding-top: 130px; }
   .home-note .daily-note { grid-template-columns: 1fr; }
   .home-note .note-description { max-width: 35em; }
@@ -245,23 +250,21 @@ select { background: var(--paper-raised); color: var(--ink); }
   .home-content > .section-divider:not(.section-divider--space) { margin-block: 24px 20px; }
   .selection-section .section-heading { margin-bottom: 26px; }
   .selection-section .heading-actions { margin-top: 12px; gap: 22px; }
-  .selection-section .featured-post { padding: 24px; gap: 16px; }
+  .selection-section .featured-post { padding: 22px 0 26px; gap: 16px; }
   .selection-section .featured-post h3 { font-size: 28px; }
   .selection-section .selection-brief h3 { font-size: 23px; }
   .selection-section .selection-post-meta { gap: 2px 16px; }
   .home-guest-invitation > p { font-size: 15px; }
-  .home-whisper .margin-whisper { padding: 22px 18px; }
-  .home-whisper .margin-whisper::before { top: 22px; bottom: 22px; }
+  .home-whisper .margin-whisper { padding: 22px 0; }
   .margin-whisper-content { grid-template-columns: 16px minmax(0, 1fr); gap: 8px; }
   .margin-whisper-content button { grid-column: 2; justify-self: end; padding-left: 0; }
   .margin-whisper-body p { font-size: 16px; }
-  .home-note { padding: 24px 16px; }
+  .home-note { padding: 0; }
   .home-note .daily-note { gap: 26px; }
   .home-note .note-intro { padding-top: 0; }
   .home-note .note-intro h2 br { display: none; }
   .home-note .note-description { font-size: 15px; margin-top: 14px; }
-  .home-note .note-paper { padding: 20px; }
-  .home-note .note-paper::before { left: 20px; }
+  .home-note .note-paper { padding: 20px 0; }
   .home-note .prompt { font-size: 17px; line-height: 2; }
   .home-note .paper-footline { flex-wrap: wrap; gap: 8px; }
   .home-note .paper-footline span:last-child { display: none; }
@@ -312,8 +315,6 @@ select { background: var(--paper-raised); color: var(--ink); }
   .site-header { width: calc(100% + 32px); margin-left: -16px; padding-inline: 16px; }
   .tool-button { width: 38px; }
   .hero-link { padding-inline: 20px; }
-  .home-note { padding-inline: 12px; }
-  .home-note .note-paper { padding-inline: 16px; }
   .category-row a { gap: 12px; }
 }
 
