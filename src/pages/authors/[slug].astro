@@ -59,7 +59,7 @@ const authorSchema = JSON.stringify({
       <h2 id="author-about-title">关于</h2>
       <div>
         <p class:list={['author-bio', { 'is-placeholder': bio === '以后再来写吧' }]}>{bio}</p>
-        {author.data.quote && <ProfileQuote quote={author.data.quote} source={author.data.quoteSource} founder={author.data.role === 'founder'} />}
+        {author.data.quote && <ProfileQuote quote={author.data.quote} quoteEnglish={author.data.quoteEnglish} source={author.data.quoteSource} />}
         {author.data.links.length > 0 && <div class="author-links">{author.data.links.map((link) => <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>)}</div>}
       </div>
     </section>

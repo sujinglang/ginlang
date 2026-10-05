@@ -162,6 +162,13 @@ const articleSchema = JSON.stringify({
     if (!article) return;
     article.dataset.neighborsReady = 'true';
 
+    // An opening paragraph that starts with a digit would show an oversized
+    // numeral that reads as a list marker, so it opts out of the drop cap.
+    const opening = document.querySelector<HTMLElement>('.article-body > p');
+    if (opening && /^\s*\d/.test(opening.textContent || '')) {
+      opening.dataset.leadingDigit = 'true';
+    }
+
     // Leave a quiet local trace so the home page can show where reading stopped.
     if (article.dataset.postId && article.dataset.postTitle) {
       try {

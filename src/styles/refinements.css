@@ -5,7 +5,9 @@
 /* A quietly enlarged first letter opens every article — one line tall, so
    short literary openings still sit naturally beside it.
    `:first-of-type` rather than `:first-child`, so an article that opens with a
-   heading or a picture still gets the drop cap on its first real paragraph. */
+   heading or a picture still gets the drop cap on its first real paragraph.
+   A paragraph opening with a digit is marked in script and keeps an even size,
+   since an oversized numeral reads as a list marker, not an opening letter. */
 .article-body.prose > p:first-of-type::first-letter {
   float: left;
   margin: 0.1em 0.12em 0 0;
@@ -13,6 +15,14 @@
   font-weight: 500;
   font-size: 1.8em;
   line-height: 0.95;
+}
+.article-body.prose > p[data-leading-digit]::first-letter {
+  font-size: inherit;
+  float: none;
+  margin: 0;
+  color: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 /* Reading rows answer the pointer with the same clay sweep as the post list. */

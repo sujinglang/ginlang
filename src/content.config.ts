@@ -38,6 +38,7 @@ const authors = defineCollection({
     displayDate: z.string().optional(),
     quote: z.string().optional(),
     quoteSource: z.string().optional(),
+    quoteEnglish: z.string().optional(),
     portrait: publicImage.optional(),
     portraitAlt: z.string().optional(),
     portraitWidth: z.number().int().positive().default(720),

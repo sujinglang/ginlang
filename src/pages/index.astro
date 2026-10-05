@@ -65,7 +65,7 @@ const landscapes = [
         <div class="home-profile-about">
           <h3>About</h3>
           <p class="profile-greeting" lang="en" translate="no">{founder.data.bio || 'Hi! I\'m GINLANG.'}</p>
-          {founder.data.quote && <ProfileQuote quote={founder.data.quote} founder />}
+          {founder.data.quote && <ProfileQuote quote={founder.data.quote} quoteEnglish={founder.data.quoteEnglish} />}
           <a href={base + '/about/'}>更多关于我</a>
         </div>
       </div>

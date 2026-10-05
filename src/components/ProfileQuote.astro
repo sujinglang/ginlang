@@ -1,10 +1,14 @@
 ---
-interface Props { quote: string; source?: string; founder?: boolean }
-const { quote, source, founder = false } = Astro.props;
-const english = 'But all the waters of the world find one another again, and the Arctic seas and the Nile gather together in the moist flight of clouds. The old beautiful image makes my hour holy. Every road leads us wanderers too back home.';
+interface Props {
+  quote: string;
+  source?: string;
+  quoteEnglish?: string;
+}
+const { quote, source, quoteEnglish } = Astro.props;
 ---
+
 <blockquote class="profile-quote">
-  {founder && <p class="profile-quote-english" lang="en">“{english}”</p>}
+  {quoteEnglish && <p class="profile-quote-english" lang="en" translate="no">“{quoteEnglish}”</p>}
   <p class="profile-quote-chinese">“{quote}”</p>
-  {!founder && source && <cite>{source}</cite>}
+  {source && <cite>{source}</cite>}
 </blockquote>

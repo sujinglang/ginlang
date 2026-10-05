@@ -1,0 +1,19 @@
+{
+  "name": "CHAYu",
+  "role": "guest",
+  "tagline": "写秋日、远方与重新开始。",
+  "quote": "不管怎样，一切都为时不晚。成为你想成为什么样的人，这从不受时间桎梏，你可以选择蜕变，亦可安于现状，本就没有既定的准则。\n愿你活成令自己满心骄傲的模样。倘若未能如愿，愿你拥有重头再来的勇气。",
+  "quoteSource": "作者自述",
+  "quoteEnglish": "For what it's worth, it's never too late. Be whoever you want to be. There's no time limit. Start whenever you want. You can change or stay the same. There's no rule to this thing. I hope you live a life you're proud of. If you find that you're not, I hope you have the strength to start all over again.",
+  "featured": true,
+  "order": 100,
+  "links": [],
+  "cover": "authors/chayu/cover-forest-canopy.webp",
+  "coverAlt": "水彩林地：阳光穿过树冠，白鸟在林间飞过",
+  "coverWidth": 1672,
+  "coverHeight": 941,
+  "portrait": "authors/chayu/portrait-summit.webp",
+  "portraitAlt": "水彩插画：雪山下举起双手的人影",
+  "portraitWidth": 1254,
+  "portraitHeight": 1254
+}
