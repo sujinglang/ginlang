@@ -1,10 +1,13 @@
 ---
-interface Props { location?: string; displayDate?: string; className?: string }
-const { location, displayDate, className = '' } = Astro.props;
+interface Props { location?: string; displayDate?: string; birthday?: string; className?: string }
+const { location, displayDate, birthday, className = '' } = Astro.props;
 ---
-{(location || displayDate) && <p class:list={['profile-meta', className]}>
+{(location || displayDate || birthday) && <p class:list={['profile-meta', className]}>
   {location && <span aria-label={'地点：' + location}>
     <svg class="profile-meta-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg>{location}
+  </span>}
+  {birthday && <span aria-label={'生日：' + birthday}>
+    <svg class="profile-meta-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20.5h16M5 20.5v-5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5M12 13.5V11M12 8.2V7M9.6 8.6l-.8-.8M14.4 8.6l.8-.8M8 11.4H6.6M17.4 11.4H16"/><path d="M12 6.2a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8Z"/></svg>{birthday}
   </span>}
   {displayDate && <span aria-label={'日期：' + displayDate}>
     <svg class="profile-meta-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="1.5"/><path d="M7.5 3v5M16.5 3v5M3.5 10h17"/></svg>{displayDate}

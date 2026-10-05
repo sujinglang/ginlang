@@ -51,7 +51,7 @@ const authorSchema = JSON.stringify({
         </div>
         <p class="person-role">{author.data.role === 'founder' ? '作者' : '客席作者'}</p>
         <h1>{author.data.name}</h1>
-        <ProfileMeta location={author.data.location} displayDate={author.data.displayDate} className="author-profile-meta" />
+        <ProfileMeta location={author.data.location} displayDate={author.data.displayDate} birthday={author.data.birthday} className="author-profile-meta" />
         <p class="author-tagline">{author.data.tagline}</p>
       </div>
     </header>

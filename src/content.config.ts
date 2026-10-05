@@ -36,6 +36,7 @@ const authors = defineCollection({
     bio: z.string().optional(),
     location: z.string().optional(),
     displayDate: z.string().optional(),
+    birthday: z.string().optional(),
     quote: z.string().optional(),
     quoteSource: z.string().optional(),
     quoteEnglish: z.string().optional(),
