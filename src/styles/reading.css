@@ -52,6 +52,24 @@
 .prose { color: var(--ink); font-size: var(--article-size); line-height: var(--article-line); overflow-wrap: break-word; word-break: normal; line-break: strict; }
 .prose p { margin: 0 0 1.45em; }
 
+/* The closing vow borrows the profile's Chinese handwriting for this post. */
+.article-page[data-post-id='2026-10-05-confession-after-hopelessness'] .confession-vow {
+  margin-block: 1.8em 0;
+  font-family: var(--hand-cn);
+  font-size: 1.28em;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+
+@media (max-width: 680px) {
+  .article-page[data-post-id='2026-10-05-confession-after-hopelessness'] .confession-vow {
+    font-size: 1.15em;
+    letter-spacing: 0;
+  }
+}
+
 /* Headings. The article title is the only h1, so the body starts at h2 and
    keeps a visible step down to h4 so a long piece never flattens out. */
 .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { font-weight: 500; line-height: 1.55; text-wrap: pretty; }
@@ -189,4 +207,3 @@
 .not-found h1 { margin: 0 0 18px; font-size: clamp(30px, 5vw, 43px); font-weight: 500; }
 .not-found .back-link { margin: 0; }
 .not-found .margin-whisper { width: min(100%, 620px); margin: 12px 0 30px; }
-
