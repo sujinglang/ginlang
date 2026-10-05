@@ -2,6 +2,7 @@
   "name": "匿名作者",
   "role": "guest",
   "tagline": "匿名发表的作品。",
+  "bio": "这里收录以“匿名作者”署名发表的作品。",
   "featured": false,
   "order": 100,
   "links": []
