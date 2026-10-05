@@ -120,7 +120,7 @@ const landscapes = [
     <SectionDivider />
     <section class="home-people home-section" aria-labelledby="home-people-title" data-reveal="list">
       {guests.length > 0 && <div class="section-heading"><div class="section-heading-main"><h2 id="home-people-title">客席作者</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>}
-      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <a class="home-guest-invitation" href={base + '/contribute/'}><h2 id="home-people-title">客席作者</h2><span>参与写作</span><p>朋友的介绍与作品，会在征得同意后陆续放在这里。</p></a>}
+      {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="home-guest-portrait">{author.data.portrait ? <ResponsiveArt src={author.data.portrait} sizes="72px" width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" loading="lazy" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <a class="home-guest-invitation" href={base + '/contribute/'}><h2 id="home-people-title">客席作者</h2><span>参与写作</span><p>朋友的介绍与作品，会在征得同意后陆续放在这里。</p></a>}
     </section>
 
     <SectionDivider />

@@ -169,6 +169,19 @@ const articleSchema = JSON.stringify({
       opening.dataset.leadingDigit = 'true';
     }
 
+    // Markdown renders a lone image as a bare <img> inside a <p>, so the
+    // description never reaches the reader. Wrap it so the caption shows.
+    document.querySelectorAll<HTMLElement>('.article-body > p:has(> img)').forEach((paragraph) => {
+      const image = paragraph.querySelector('img');
+      if (!image || !image.alt.trim()) return;
+      const figure = document.createElement('figure');
+      paragraph.replaceWith(figure);
+      figure.append(image);
+      const caption = document.createElement('figcaption');
+      caption.textContent = image.alt;
+      figure.append(caption);
+    });
+
     // Leave a quiet local trace so the home page can show where reading stopped.
     if (article.dataset.postId && article.dataset.postTitle) {
       try {

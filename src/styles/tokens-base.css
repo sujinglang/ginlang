@@ -1,5 +1,7 @@
 @font-face { font-family: 'GINLANG Marck Script'; src: url('../assets/fonts/marck-script-latin.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
-@font-face { font-family: 'GINLANG Zhi Mang Xing'; src: url('../assets/fonts/zhi-mang-xing-quote.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
+/* The site subset carries every Chinese character used by the content files, so
+   a guest author's quote renders in the same hand as the founder's. */
+@font-face { font-family: 'GINLANG Zhi Mang Xing'; src: url('../assets/fonts/zhi-mang-xing-site.woff2') format('woff2'); font-style: normal; font-weight: 400; font-display: swap; }
 
 :root {
   color-scheme: light;

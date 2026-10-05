@@ -88,10 +88,12 @@
 
 .prose hr { width: 46px; margin: 2.5em auto; border: 0; border-top: 1px solid var(--line); }
 
-/* Body images sit in the same paper frame as the rest of the site. */
-.prose img { display: block; max-width: 100%; height: auto; margin: 2em auto; border: 1px solid var(--line); background: var(--paper-soft); }
+/* Body images sit in the same paper frame as the rest of the site. A portrait
+   picture would otherwise fill the whole column, so cap it and let it breathe. */
+.prose img { display: block; max-width: min(100%, 460px); height: auto; margin: 2em auto; border: 1px solid var(--line); background: var(--paper-soft); }
 .prose figure { margin: 2em 0; }
-.prose figcaption { margin-top: 10px; color: var(--muted); font: 11px/1.6 var(--sans); text-align: center; }
+.prose figure img { margin: 0 auto; }
+.prose figcaption { margin-top: 12px; color: var(--muted); font: 12px/1.7 var(--sans); text-align: center; }
 
 .prose code { padding: 0.12em 0.35em; background: var(--paper-soft); font: 0.83em/1.5 ui-monospace, Consolas, monospace; }
 .prose pre { overflow-x: auto; padding: 18px; border: 1px solid var(--line); background: var(--paper-soft); font: 0.8em/1.8 ui-monospace, Consolas, monospace; }

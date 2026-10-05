@@ -48,6 +48,10 @@ body { background: var(--paper); }
 .home-founder-note a { color: var(--accent-deep); }
 .home-guest-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .home-guest { position: relative; display: flex; gap: 14px; padding: 22px 16px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); transition: background-color 180ms ease; }
+/* A guest keeps the same square portrait treatment as the author index. */
+.home-guest-portrait { display: block; flex: none; width: 66px; height: 66px; }
+.home-guest-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--line); }
+.home-guest-portrait .person-initial { width: 100%; height: 100%; }
 .home-guest:hover, .home-guest:focus-within { background: var(--paper-raised); }
 .home-guest > div > span { color: var(--clay); font: 10px/1.5 var(--sans); }
 .home-guest h3 { margin: 3px 0 7px; font-size: 18px; font-weight: 500; }
