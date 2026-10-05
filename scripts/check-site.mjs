@@ -6,6 +6,11 @@ import { fileURLToPath } from 'node:url';
 const project = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(project, 'dist');
 const origin = 'https://ginlang.vip';
+// A path with Chinese characters is percent-encoded in canonical links and href
+// attributes, so both sides are decoded before they are compared.
+const decodePath = (value) => {
+  try { return decodeURI(value); } catch { return value; }
+};
 const files = [];
 async function walk(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -53,8 +58,10 @@ for (const [url, { html }] of pages) {
   if ((html.match(/<h1\b/g) || []).length !== 1) failures.push(`${url}: 主标题数量应为 1`);
   if (!html.includes('lang="zh-CN"')) failures.push(`${url}: 缺少页面语言`);
   if (!html.includes('href="#main-content"')) failures.push(`${url}: 缺少跳到正文入口`);
-  const canonical = html.match(/<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"/);
-  if (canonical?.[1] !== origin + url) failures.push(`${url}: canonical 不匹配正式地址`);
+  const canonical = html.match(/<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"/)?.[1];
+  if (canonical === undefined || decodePath(canonical) !== decodePath(origin + url)) {
+    failures.push(`${url}: canonical 不匹配正式地址`);
+  }
   for (const match of html.matchAll(/\b(?:href|src|data-src)="([^"]+)"/g)) await checkReference(match[1], url);
   for (const match of html.matchAll(/\b(?:srcset|data-srcset)="([^"]+)"/g)) {
     for (const candidate of match[1].split(',')) await checkReference(candidate.trim().split(/\s+/)[0], url);
