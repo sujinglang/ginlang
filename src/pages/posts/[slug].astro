@@ -8,6 +8,7 @@ import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
 import { hasPublicAuthor } from '../../lib/postVisibility';
 import { tagSlug } from '../../lib/tags';
+import { getPostShareCard } from '../../lib/shareCard';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -40,7 +41,8 @@ const relatedPosts = allPosts
     || b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 2);
 const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
-const shareImage = '/og/' + post.id + '.png';
+const shareCard = await getPostShareCard(post);
+const shareImage = shareCard.url;
 const articleSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -59,7 +61,7 @@ const articleSchema = JSON.stringify({
 }).replace(/</g, '\\u003c');
 ---
 
-<SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true} ogImage={shareImage}>
+<SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true} ogImage={shareImage} ogImageAlt={shareCard.alt} publishedTime={post.data.draft ? undefined : post.data.date.toISOString()}>
   <script type="application/ld+json" set:html={articleSchema} />
   <article class="article-page" data-article-neighbors data-post-id={post.id} data-post-title={post.data.title} data-neighbor-prev={olderPost ? base + '/posts/' + olderPost.id + '/' : undefined} data-neighbor-next={newerPost ? base + '/posts/' + newerPost.id + '/' : undefined}>
     <a class="back-link" href={base + '/'}>← 回到首页</a>
