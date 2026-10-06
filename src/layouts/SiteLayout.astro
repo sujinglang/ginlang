@@ -242,6 +242,7 @@ const webSiteSchema = JSON.stringify({
         <button class="solid-button" id="share-copy" type="button">复制链接</button>
       </div>
       <button class="text-button share-native" id="share-native" type="button" hidden>使用系统分享</button>
+      <p class="share-intro share-moments-note">发朋友圈时，请先在微信里打开网页，再点微信窗口右上角「…」→「分享到朋友圈」。单把网址粘进配文栏，会作为普通文字发布。</p>
       <p class="share-status" id="share-status" aria-live="polite">复制后就可以发送给朋友。</p>
     </dialog>
 
@@ -603,7 +604,7 @@ const webSiteSchema = JSON.stringify({
         nativeShareButton.addEventListener('click', async () => {
           if (!shareUrl) return;
           try {
-            await navigator.share({ title: 'GINLANG', text: 'GINLANG 的个人博客', url: shareUrl });
+            await navigator.share({ title: 'GINLANG', url: shareUrl });
             shareDialog?.close();
           } catch (error) {
             if (error instanceof DOMException && error.name === 'AbortError') return;

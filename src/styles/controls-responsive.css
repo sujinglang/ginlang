@@ -21,6 +21,7 @@
 .share-url-row input { min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 0; background: var(--paper-raised); color: var(--ink); font: 11px/1.5 var(--sans); }
 .share-url-row .solid-button { white-space: nowrap; }
 .share-native { margin-top: 9px; }
+.share-moments-note { margin-top: 14px; margin-bottom: 0; }
 .share-status { min-height: 20px; margin: 10px 0 0; color: var(--muted); font: 10px/1.7 var(--sans); }
 .search-input { width: 100%; padding: 13px 14px; border: 1px solid var(--line); border-radius: 0; background: var(--paper-raised); color: var(--ink); font-size: 15px; }
 .search-input::placeholder { color: var(--muted); }
