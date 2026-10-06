@@ -4,8 +4,8 @@ date: 2026-10-05
 category: book
 themes: [love, life]
 tags: [傲慢与偏见, 爱情, 自尊]
-author: anonymous
-anonymous: false
+author: ginlang
+anonymous: true
 excerpt: "从达西的信与丽萃迟来的醒悟，写到自尊、偏见，以及愿意重新看见一个人。"
 draft: false
 ---
