@@ -119,7 +119,7 @@ const articleSchema = JSON.stringify({
     {showAuthor && <aside class="article-author" aria-label="关于作者">
       {author.data.portrait ? <img class="article-author-portrait" src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" loading="lazy" decoding="async" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
       <div><p>{author.data.role === 'founder' ? '作者' : '客席作者'}</p><h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2><span>{author.data.tagline}</span></div>
-      <a href={base + '/authors/' + author.id + '/'}>阅读这位作者的其他作品</a>
+      <a href={base + '/authors/' + author.id + '/'}>查看作者介绍与作品</a>
     </aside>}
 
     <div class="article-afterword" data-reveal="image">
@@ -130,28 +130,24 @@ const articleSchema = JSON.stringify({
     </div>
 
     <footer class="article-footer">
-      <span>写于 {formatDate(post.data.date)} · {categoryLabel(post.data.category)}</span>
+      <span>{post.data.draft ? '暂定日期' : '发布于'} {formatDate(post.data.date)} · {categoryLabel(post.data.category)}</span>
       <a href={base + '/archive/'}>继续翻阅归档 →</a>
     </footer>
 
-    <nav class="article-neighbors" aria-label="相邻文章">
-      {olderPost ? (
+    {(olderPost || newerPost) && <nav class="article-neighbors" aria-label="相邻文章">
+      {olderPost && (
         <a class="neighbor-card" href={base + '/posts/' + olderPost.id + '/'}>
           <span>← 更早一篇</span>
           <strong>{olderPost.data.title}</strong>
         </a>
-      ) : (
-        <div class="neighbor-card neighbor-placeholder"><span>← 更早一篇</span><strong>从第一封信开始</strong></div>
       )}
-      {newerPost ? (
+      {newerPost && (
         <a class="neighbor-card next" href={base + '/posts/' + newerPost.id + '/'}>
           <span>更新一篇 →</span>
           <strong>{newerPost.data.title}</strong>
         </a>
-      ) : (
-        <div class="neighbor-card neighbor-placeholder next"><span>更新一篇 →</span><strong>你已读到最新</strong></div>
       )}
-    </nav>
+    </nav>}
     {relatedPosts.length > 0 && <section class="related-reading" aria-labelledby="related-title"><h2 id="related-title">继续阅读</h2><div>{relatedPosts.map((item) => <a href={base + '/posts/' + item.id + '/'}><span>{categoryLabel(item.data.category)}</span><strong>{item.data.title}</strong></a>)}</div></section>}
   </article>
 </SiteLayout>

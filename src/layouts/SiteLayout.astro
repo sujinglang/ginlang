@@ -44,7 +44,7 @@ const year = new Date().getFullYear();
 const latestPost = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )[0];
-const updatedLabel = latestPost ? formatDate(latestPost.data.date) : undefined;
+const latestDateLabel = latestPost ? formatDate(latestPost.data.date) : undefined;
 const webSiteSchema = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -171,13 +171,12 @@ const webSiteSchema = JSON.stringify({
           <div class="footer-actions">
             <a class="rss-link" href={base + '/contribute/'}>参与写作</a>
             <button class="rss-link share-link" type="button" data-share-site>分享网站</button>
-            <a class="rss-link" href={base + '/rss.xml'} aria-label="订阅 GINLANG RSS">订阅 RSS</a>
           </div>
         </div>
         <nav class="footer-nav" aria-label="页脚导航">{navItems.map((item) => <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}><span>{item.label}</span><small>{item.hint}</small></a>)}</nav>
         <div class="footer-bottom">
           <span>© {year} GINLANG</span>
-          {updatedLabel && <span>最近更新 · {updatedLabel}</span>}
+          {latestDateLabel && <span>最近发表 · {latestDateLabel}</span>}
           <span>作品署名与权利归各自作者；转载前请征得作者同意。</span>
           <a href="#main-content">回到顶部 ↑</a>
         </div>
@@ -243,11 +242,11 @@ const webSiteSchema = JSON.stringify({
         </div>
         <button class="dialog-close" type="button" data-dialog-close aria-label="关闭搜索">×</button>
       </div>
-      <label class="sr-only" for="search-input">搜索文章正文、标题、摘要、作者和分类</label>
-      <input class="search-input" id="search-input" type="search" name="query" placeholder="试试「九月」或「读书」…" autocomplete="off" />
+      <label class="sr-only" for="search-input">搜索文章正文、标题、摘要、作者、分类和标签</label>
+      <input class="search-input" id="search-input" type="search" name="query" placeholder="输入文章标题或关键词…" autocomplete="off" />
       <p class="search-status" id="search-status" aria-live="polite">输入关键词，慢慢找。</p>
       <ol class="search-results" id="search-results"></ol>
-      <div class="dialog-foot"><span>正文 · 标题 · 作者 · 分类 · <kbd>↑</kbd><kbd>↓</kbd> 选择</span><kbd>ESC</kbd></div>
+      <div class="dialog-foot"><span>正文 · 标题 · 作者 · 分类 · 标签 · <kbd>↑</kbd><kbd>↓</kbd> 选择</span><kbd>ESC</kbd></div>
     </dialog>
 
     <dialog class="utility-dialog settings-dialog" id="reading-settings" aria-labelledby="settings-title">
@@ -414,7 +413,7 @@ const webSiteSchema = JSON.stringify({
       const searchResults = document.querySelector<HTMLOListElement>('#search-results');
       const searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
       const indexUrl = searchDialog?.dataset.indexUrl ?? '/search-index.json';
-      type SearchItem = { title: string; excerpt: string; body: string; category: string; author?: string; date: string; url: string };
+      type SearchItem = { title: string; excerpt: string; body: string; category: string; tags?: string[]; author?: string; date: string; url: string };
       let searchItemsPromise: Promise<SearchItem[]> | undefined;
       let searchRevision = 0;
 
@@ -424,7 +423,10 @@ const webSiteSchema = JSON.stringify({
             if (!response.ok) throw new Error('Search index unavailable');
             return response.json() as Promise<SearchItem[]>;
           })
-          .catch(() => []);
+          .catch((error) => {
+            searchItemsPromise = undefined;
+            throw error;
+          });
         return searchItemsPromise;
       }
 
@@ -482,17 +484,22 @@ const webSiteSchema = JSON.stringify({
           return;
         }
         searchStatus.textContent = '正在翻找…';
-        const items = await getSearchItems();
+        let items: SearchItem[];
+        try { items = await getSearchItems(); }
+        catch {
+          if (revision === searchRevision && searchDialog?.open) searchStatus.textContent = '文章索引加载失败，请重新搜索以重试。';
+          return;
+        }
         if (revision !== searchRevision || !searchDialog?.open) return;
         const matches = items.filter((item) =>
-          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + (item.author ?? '') + ' ' + item.body).toLocaleLowerCase().includes(query),
+          (item.title + ' ' + item.excerpt + ' ' + item.category + ' ' + (item.tags ?? []).join(' ') + ' ' + (item.author ?? '') + ' ' + item.body).toLocaleLowerCase().includes(query),
         ).sort((a, b) => Number(b.title.toLocaleLowerCase().includes(query)) - Number(a.title.toLocaleLowerCase().includes(query))
           || Number(b.excerpt.toLocaleLowerCase().includes(query)) - Number(a.excerpt.toLocaleLowerCase().includes(query))).slice(0, 8);
         if (matches.length) {
           searchStatus.textContent = '找到这些相关的文章';
           matches.forEach((item) => showSearchResult(item, query));
         } else {
-          searchStatus.textContent = items.length ? '没有找到相关文章。换个词试试。' : '暂时无法读取文章索引。';
+          searchStatus.textContent = items.length ? '没有找到相关文章。换个词试试。' : '暂无已发布文章。';
         }
       }
 
@@ -500,7 +507,7 @@ const webSiteSchema = JSON.stringify({
         if (!searchDialog?.open) searchDialog?.showModal();
         searchInput?.focus();
         // Warm the index while the reader is still thinking of a word.
-        void getSearchItems();
+        void getSearchItems().catch(() => { /* A query displays the error and can retry. */ });
       }
       document.querySelector('#search-open')?.addEventListener('click', openSearch);
       searchDialog?.addEventListener('click', (event) => {

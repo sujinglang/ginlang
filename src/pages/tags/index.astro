@@ -29,7 +29,7 @@ const tags = collectTags(posts);
         ))}
       </ul>
     ) : (
-      <p class="empty-note">还没有标签。文章加上 <code>tags</code> 之后，这里会出现对应的入口。</p>
+      <p class="empty-note">暂无文章标签。<a href={base + '/writing/'}>查看全部文章</a></p>
     )}
   </section>
 </SiteLayout>

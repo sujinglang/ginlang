@@ -1,6 +1,7 @@
 import { readdir, readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkPostCatalog } from './lib/check-post-catalog.mjs';
 
 // Verify the actual publish artifact, including URLs inside compiled stylesheets.
 const project = fileURLToPath(new URL('../', import.meta.url));
@@ -80,8 +81,11 @@ for (const required of ['/rss.xml', '/sitemap.xml', '/search-index.json', '/CNAM
 const cname = (await readFile(path.join(output, 'CNAME'), 'utf8')).trim();
 if (cname !== 'ginlang.vip') failures.push('CNAME 应保留 ginlang.vip');
 const search = JSON.parse(await readFile(path.join(output, 'search-index.json'), 'utf8'));
-if (!Array.isArray(search) || !search.length) failures.push('搜索索引没有公开文章');
+failures.push(...checkPostCatalog(search, pages));
+if (Array.isArray(search)) for (const item of search) await checkReference(item.url, '/search-index.json');
+const rss = await readFile(path.join(output, 'rss.xml'), 'utf8');
+for (const match of rss.matchAll(/<link>([^<]+)<\/link>/g)) await checkReference(match[1], '/rss.xml');
 const sitemap = await readFile(path.join(output, 'sitemap.xml'), 'utf8');
 for (const match of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) await checkReference(match[1], '/sitemap.xml');
 if (failures.length) { console.error(failures.join('\n')); process.exitCode = 1; }
-else console.log(`发布检查通过：${pages.size} 个页面，${references} 个内部地址与资源；主标题、锚点、图片、canonical、搜索、RSS 与域名配置正常。`);
+else console.log(`发布检查通过：${pages.size} 个页面，${references} 个内部地址与资源；文章目录、相邻标题与导航、匿名署名、阅读记录目录、主标题、锚点、图片、canonical、搜索、RSS 与域名配置正常。`);

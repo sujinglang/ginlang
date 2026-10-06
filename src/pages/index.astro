@@ -19,6 +19,7 @@ const latest = posts[0];
 // Show as much as the home can hold: the featured post plus up to five briefs.
 const earlierPosts = posts.slice(1, 6);
 const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
+const readerCatalog = posts.map((post) => ({ id: post.id, title: post.data.title, url: base + '/posts/' + post.id + '/' }));
 const landscapes = [
   { label: '海边', caption: '海边 · 清晨', file: 'sea-morning-animated.webp', width: 1400, height: 788, alt: '手绘的浅蓝海岸与清晨天空' },
   { label: '林间', caption: '林间 · 流水', file: 'forest-waterfall-animated.webp', width: 1400, height: 933, alt: '手绘的林间瀑布与浅色水潭' },
@@ -64,7 +65,7 @@ const landscapes = [
         </div>
         <div class="home-profile-about">
           <h3>About</h3>
-          <p class="profile-greeting" lang="en" translate="no">{founder.data.bio || 'Hi! I\'m GINLANG.'}</p>
+          {founder.data.bio && <p class="profile-greeting" lang="en" translate="no">{founder.data.bio}</p>}
           {founder.data.quote && <ProfileQuote quote={founder.data.quote} quoteEnglish={founder.data.quoteEnglish} />}
           <a href={base + '/about/'}>更多关于我</a>
         </div>
@@ -114,7 +115,7 @@ const landscapes = [
             </div>
           )}
         </div>
-      ) : <p class="empty-note">第一篇文章还没有发布。</p>}
+      ) : <p class="empty-note">暂无已发布文章。</p>}
     </section>
 
     <SectionDivider />
@@ -128,7 +129,7 @@ const landscapes = [
 
     <SectionDivider art="study" />
     <div class="home-note home-section" data-reveal="ink"><DailyNote /></div>
-    <p class="last-read-note" data-last-read hidden></p>
+    <p class="last-read-note" data-last-read data-posts={JSON.stringify(readerCatalog)} hidden></p>
     <p class="desk-note">读到想留下的文章，写下还没写完的句子。<a href={base + '/desk/'}>打开我的书桌</a></p>
 
     <SectionDivider />
@@ -187,8 +188,6 @@ const landscapes = [
 </SiteLayout>
 
 <script>
-  const homeBase = import.meta.env.BASE_URL.replace(/\/$/, '');
-
   function initLastRead() {
     const note = document.querySelector<HTMLElement>('[data-last-read]:not([data-last-ready])');
     if (!note) return;
@@ -202,10 +201,15 @@ const landscapes = [
     if (!raw) return;
     try {
       const saved = JSON.parse(raw);
-      if (!saved || typeof saved.id !== 'string' || typeof saved.title !== 'string' || !saved.title) return;
+      if (!saved || typeof saved.id !== 'string') return;
+      const catalog: { id: string; title: string; url: string }[] = JSON.parse(note.dataset.posts || '[]');
+      const current = catalog.find((post) => post.id === saved.id);
+      // A removed or unpublished post must not become a phantom recommendation.
+      // A renamed post uses today's title; the private record stays untouched.
+      if (!current) return;
       const link = document.createElement('a');
-      link.href = homeBase + '/posts/' + encodeURIComponent(saved.id) + '/';
-      link.textContent = '《' + saved.title + '》';
+      link.href = current.url;
+      link.textContent = '《' + current.title + '》';
       note.textContent = '上次读到';
       note.append(link);
       note.hidden = false;

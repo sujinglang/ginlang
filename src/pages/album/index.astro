@@ -9,7 +9,7 @@ const authors = directoryOrder(content.authors);
 const founder = authors.find((author) => author.data.role === 'founder');
 const founderAlbum = founder ? albumById.get(founder.id) : undefined;
 const founderPhoto = founderAlbum?.data.photos[0];
-// Guest albums exist only once the author (and their photos) are real.
+// Only registered albums are listed; an empty album is labeled explicitly.
 const guestAlbums = authors.filter((author) => author.data.role === 'guest' && albumById.has(author.id));
 ---
 
@@ -66,7 +66,7 @@ const guestAlbums = authors.filter((author) => author.data.role === 'guest' && a
           })}
         </ul>
       ) : (
-        <p class="empty-note">客席作者有了自己的照片后，相册会出现在这里。</p>
+        <p class="empty-note">暂无客席作者相册。</p>
       )}
     </section>
   </section>

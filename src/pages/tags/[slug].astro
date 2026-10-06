@@ -64,7 +64,7 @@ const allTags = collectTags(await getCollection('posts', ({ data }) => !data.dra
         ))}
       </ol>
     ) : (
-      <p class="empty-note">这一页暂时留白。等有新的文章，再回来看看。</p>
+      <p class="empty-note">这个标签下暂无已发布文章。<a href={base + '/writing/'}>查看全部文章</a></p>
     )}
   </section>
 </SiteLayout>

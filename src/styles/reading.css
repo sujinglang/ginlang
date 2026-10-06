@@ -197,9 +197,8 @@
 .neighbor-card span { color: var(--muted); font: 9px/1.5 var(--sans); letter-spacing: 0.1em; }
 .neighbor-card strong { font-size: 13px; font-weight: 500; line-height: 1.6; }
 .neighbor-card.next { text-align: right; }
-.neighbor-placeholder { border: 1px dashed var(--line); }
+.neighbor-card:only-child { grid-column: 1 / -1; }
 .about-copy { max-width: var(--reading-width); margin-inline: auto; padding-top: 27px; }
-.about-placeholder { display: inline-block; min-width: min(100%, 275px); padding: 3px 0 7px; border-bottom: 1px dashed var(--line); color: var(--muted); font-size: 0.78em; }
 .about-card { display: grid; grid-template-columns: 115px 1fr; gap: 24px; margin-top: 38px; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .about-card-label { color: var(--clay); font: 9px/1.7 var(--sans); letter-spacing: 0.12em; }
 .about-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.9; }

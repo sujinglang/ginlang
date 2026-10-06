@@ -11,6 +11,7 @@ const escapeXml = (value: string) =>
 export async function GET() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
   const authors = await getCollection('authors');
+  const albums = await getCollection('albums');
   const topics = Object.keys(topicRecords).length ? await getCollection('topics', ({ data }) => !data.draft) : [];
   const tags = collectTags(posts);
   const paths = [
@@ -27,7 +28,7 @@ export async function GET() {
     ...tags.map((tag) => ({ path: '/tags/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
     ...tags.map((tag) => ({ path: '/archive/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
     ...authors.map((author) => ({ path: '/authors/' + encodeURIComponent(author.id) + '/', modified: undefined })),
-    ...authors.map((author) => ({ path: '/album/' + encodeURIComponent(author.id) + '/', modified: undefined })),
+    ...albums.map((album) => ({ path: '/album/' + encodeURIComponent(album.id) + '/', modified: undefined })),
     ...topics.map((topic) => ({ path: '/topics/' + encodeURIComponent(topic.id) + '/', modified: undefined })),
     ...posts.map((post) => ({
       path: '/posts/' + encodeURIComponent(post.id) + '/',
