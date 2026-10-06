@@ -15,12 +15,20 @@
   ],
   "authors/ginlang-avatar.webp": [
     {
+      "file": "authors/ginlang-avatar-96w.webp",
+      "width": 96
+    },
+    {
       "file": "authors/ginlang-avatar-240w.webp",
       "width": 240
     },
     {
       "file": "authors/ginlang-avatar-480w.webp",
       "width": 480
+    },
+    {
+      "file": "authors/ginlang-avatar-640w.webp",
+      "width": 640
     },
     {
       "file": "authors/ginlang-avatar.webp",
@@ -63,6 +71,42 @@
     {
       "file": "diary-moon-animated.webp",
       "width": 720
+    }
+  ],
+  "authors/chayu/portrait-summit.webp": [
+    {
+      "file": "authors/chayu/portrait-summit-96w.webp",
+      "width": 96
+    },
+    {
+      "file": "authors/chayu/portrait-summit-240w.webp",
+      "width": 240
+    },
+    {
+      "file": "authors/chayu/portrait-summit-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "authors/chayu/portrait-summit-640w.webp",
+      "width": 640
+    },
+    {
+      "file": "authors/chayu/portrait-summit.webp",
+      "width": 1254
+    }
+  ],
+  "authors/chayu/cover-forest-canopy.webp": [
+    {
+      "file": "authors/chayu/cover-forest-canopy-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "authors/chayu/cover-forest-canopy-800w.webp",
+      "width": 800
+    },
+    {
+      "file": "authors/chayu/cover-forest-canopy.webp",
+      "width": 1672
     }
   ]
 }

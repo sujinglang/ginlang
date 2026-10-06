@@ -42,6 +42,7 @@ const sections = [
 
 <SiteLayout title={author.data.name + '的相册'} description={author.data.name + '的相簿，只放作者本人愿意公开的照片。'}>
   <article class="listing-page album-page">
+    <script type="application/json" id="album-viewer-photos" set:html={JSON.stringify(viewerPhotos).replace(/</g, '\\u003c')} />
     <a class="back-link" href={base + '/album/'}>← 相簿</a>
     <header class="editorial-page-header">
       <span class="folio-mark">{author.data.role === 'founder' ? '创办人' : '客席作者'} · <a href={base + '/authors/' + author.id + '/'}>作者主页</a></span>
@@ -87,7 +88,7 @@ const sections = [
         ))}
         <div class="album-viewer" data-album-viewer hidden>
           <div class="album-viewer-panel" role="dialog" aria-modal="true" aria-label="照片大图">
-            <img data-viewer-image alt="" />
+            <img data-viewer-image alt="" width={photos[0].width} height={photos[0].height} />
             <p class="album-viewer-caption" data-viewer-caption></p>
             <div class="album-viewer-bar">
               <button type="button" data-viewer-prev aria-label="上一张">← 上一张</button>
@@ -106,8 +107,10 @@ const sections = [
   </article>
 </SiteLayout>
 
-<script define:vars={{ viewerPhotos }}>
+<script>
+  type ViewerPhoto = { src: string; width: number; height: number; alt: string; caption: string };
   function initAlbumViewer() {
+    const viewerPhotos: ViewerPhoto[] = JSON.parse(document.querySelector('#album-viewer-photos')?.textContent || '[]');
     const viewer = document.querySelector<HTMLElement>('[data-album-viewer]:not([data-ready])');
     if (!viewer || !viewerPhotos.length) return;
     viewer.dataset.ready = 'true';

@@ -1,6 +1,7 @@
 import { readdir, readFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Script } from 'node:vm';
 import { checkPostCatalog } from './lib/check-post-catalog.mjs';
 import { checkShareMetadata } from './lib/check-share-metadata.mjs';
 
@@ -57,6 +58,13 @@ async function checkReference(raw, from) {
 }
 
 for (const [url, { html }] of pages) {
+  // Compile, without executing, inline browser scripts. define:vars scripts
+  // bypass Astro's TS compiler, so leaked type annotations break real browsers.
+  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
+    if (/\bsrc=/.test(match[1]) || /\btype="(?:module|application\/[^\"]+)"/.test(match[1])) continue;
+    try { new Script(match[2]); }
+    catch (error) { failures.push(`${url}: 内联浏览器脚本语法错误：${error.message}`); }
+  }
   if ((html.match(/<h1\b/g) || []).length !== 1) failures.push(`${url}: 主标题数量应为 1`);
   if (!html.includes('lang="zh-CN"')) failures.push(`${url}: 缺少页面语言`);
   if (!html.includes('href="#main-content"')) failures.push(`${url}: 缺少跳到正文入口`);

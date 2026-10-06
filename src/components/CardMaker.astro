@@ -41,6 +41,7 @@ const paintings = heroImages.map(({ id, file, title, alt }) => ({ id, title, alt
 </div>
 
 <script>
+  import { loadImage } from '../lib/imageLoading';
   type Painting = { id: string; title: string; alt: string; src: string };
   type Quote = { text: string; source: string };
   function initCardMakers() {
@@ -97,10 +98,7 @@ const paintings = heroImages.map(({ id, file, title, alt }) => ({ id, title, alt
         const quote = quotes[Number(quoteSelect.value)] || quotes[0];
         const image = new Image();
         image.decoding = 'async';
-        image.src = painting.src;
-        try {
-          await Promise.all([image.decode(), document.fonts.ready]);
-        } catch {
+        if (!await loadImage(image, painting.src)) {
           if (thisRevision === revision) status.textContent = '这幅画暂时无法加载，请换一幅。';
           return;
         }

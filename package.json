@@ -12,6 +12,7 @@
     "check:library": "node scripts/check-library.mjs",
     "check:site": "node scripts/check-site.mjs",
     "check:content-state": "node --test scripts/content-state.test.mjs",
+    "check:image-loading": "node --test scripts/image-loading.test.mjs",
     "workbench": "node scripts/workbench.mjs"
   },
   "dependencies": {

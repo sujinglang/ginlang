@@ -7,13 +7,16 @@ interface Props {
   height?: number;
   class?: string;
   sizes?: string;
+  maxWidth?: number;
   loading?: 'lazy' | 'eager';
   fetchpriority?: 'high' | 'low' | 'auto';
 }
-const { src, alt, width, height, class: className, sizes = '(max-width: 680px) 90vw, 520px', loading = 'lazy', fetchpriority } = Astro.props;
+const { src, alt, width, height, class: className, sizes = '(max-width: 680px) 90vw, 520px', maxWidth, loading = 'lazy', fetchpriority, ...attributes } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const key = src.replace(/^\/+/, '');
-const choices = (variants as Record<string, { file: string; width: number }[]>)[key];
+const available = (variants as Record<string, { file: string; width: number }[]>)[key];
+const choices = maxWidth ? available?.filter((item) => item.width <= maxWidth) : available;
+const fallback = choices?.at(-1)?.file || key;
 const srcset = choices?.map((item) => `${base}/${item.file} ${item.width}w`).join(', ');
 ---
-<img class={className} src={base + '/' + key} srcset={srcset} sizes={srcset ? sizes : undefined} width={width} height={height} alt={alt} loading={loading} decoding="async" fetchpriority={fetchpriority} />
+<img {...attributes} class={className} src={base + '/' + fallback} srcset={srcset} sizes={srcset ? sizes : undefined} width={width} height={height} alt={alt} loading={loading} decoding="async" fetchpriority={fetchpriority} />

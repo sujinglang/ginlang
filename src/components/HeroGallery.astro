@@ -10,13 +10,13 @@ const slideIds = slides.map(({ id }) => id);
 const slideSrcs = Object.fromEntries(slides.map((slide) => [slide.id, base + '/hero-watercolors/' + slide.file]));
 const slideSrcSets = Object.fromEntries(slides.map((slide) => {
   const stem = slide.file.replace(/\.webp$/, '');
-  return [slide.id, `${base}/hero-watercolors/${stem}-480w.webp 480w, ${base}/hero-watercolors/${stem}-800w.webp 800w, ${base}/hero-watercolors/${slide.file} ${slide.width}w`];
+  return [slide.id, `${base}/hero-watercolors/${stem}-480w.webp 480w, ${base}/hero-watercolors/${stem}-800w.webp 800w`];
 }));
 const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-width: 960px) 45vw, 536px';
 ---
 
-<!-- Run before the images exist so a refresh never paints a default slide first. -->
-<script is:inline define:vars={{ slideIds, slideSrcs, slideSrcSets, gallerySizes }}>
+<!-- Choose the enhanced gallery's start; the HTML already contains a visible image. -->
+<script is:inline define:vars={{ slideIds }}>
   (() => {
     const key = 'ginlang-hero-current';
     let previous = '';
@@ -25,20 +25,6 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
     const start = choices[Math.floor(Math.random() * choices.length)] || slideIds[0];
     window.__ginlangHeroStartId = start;
     try { sessionStorage.setItem(key, start); } catch { /* Storage is optional. */ }
-    // Begin fetching the first painting while the rest of the page is still parsing.
-    const src = slideSrcs[start];
-    if (src) {
-      const preload = document.createElement('link');
-      preload.rel = 'preload';
-      preload.as = 'image';
-      preload.href = src;
-      if (slideSrcSets[start]) {
-        preload.imageSrcset = slideSrcSets[start];
-        preload.imageSizes = gallerySizes;
-      }
-      preload.fetchPriority = 'high';
-      document.head.append(preload);
-    }
   })();
 </script>
 
@@ -59,33 +45,27 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
 
 <figure class="hero-gallery" id="home-gallery" data-hero-gallery aria-label="首页水彩画册">
   <button class="hero-gallery-frame" type="button" data-gallery-frame aria-label="细看当前画作" disabled>
-    {slides.map((slide) => (
+    {slides.map((slide, index) => (
       <img
-        class="hero-gallery-image"
+        class:list={['hero-gallery-image', { 'is-active': index === 0 }]}
+        src={index === 0 ? base + '/hero-watercolors/' + slide.file.replace('.webp', '-800w.webp') : undefined}
+        srcset={index === 0 ? slideSrcSets[slide.id] : undefined}
         data-gallery-slide
         data-slide-id={slide.id}
-        data-src={base + '/hero-watercolors/' + slide.file}
+        data-src={base + '/hero-watercolors/' + slide.file.replace('.webp', '-800w.webp')}
+        data-original-src={slideSrcs[slide.id]}
         data-srcset={slideSrcSets[slide.id]}
         sizes={gallerySizes}
         width={slide.width}
         height={slide.height}
         alt={slide.alt}
-        aria-hidden="true"
+        aria-hidden={index !== 0}
+        loading={index === 0 ? 'eager' : undefined}
+        fetchpriority={index === 0 ? 'high' : undefined}
         decoding="async"
       />
     ))}
     <span class="hero-gallery-fallback" data-gallery-fallback hidden>画面暂时无法加载，请稍后再试。</span>
-    <noscript>
-      <img
-        class="hero-gallery-nojs"
-        src={base + '/hero-watercolors/' + slides[0].file}
-        srcset={slideSrcSets[slides[0].id]}
-        sizes={gallerySizes}
-        width={slides[0].width}
-        height={slides[0].height}
-        alt={slides[0].alt}
-      />
-    </noscript>
   </button>
   <div class="hero-gallery-progress" data-gallery-progress hidden aria-hidden="true"><span data-gallery-progress-fill></span></div>
   <div class="hero-gallery-controls" data-gallery-controls hidden>
@@ -106,6 +86,7 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
 </figure>
 
 <script>
+  import { loadImage } from '../lib/imageLoading';
   function initHeroGallery() {
     const gallery = document.querySelector<HTMLElement>('[data-hero-gallery]:not([data-gallery-ready])');
     if (!gallery) return;
@@ -165,38 +146,22 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
       const existing = loaded.get(index);
       if (existing) return existing;
       const image = images[index];
-      const pending = new Promise<boolean>((resolve) => {
-        image.onload = async () => {
-          try { await image.decode(); } catch { /* The loaded image can still be shown. */ }
-          resolve(true);
-        };
-        image.onerror = () => {
-          failed.add(index);
-          resolve(false);
-        };
-        image.loading = 'eager';
-        if (current < 0) image.fetchPriority = 'high';
-        image.srcset = image.dataset.srcset || '';
-        image.src = image.dataset.src || '';
-        if (image.complete && image.naturalWidth > 0) image.onload?.(new Event('load'));
+      image.loading = 'eager';
+      if (current < 0) image.fetchPriority = 'high';
+      const pending = loadImage(image, image.dataset.src || '', image.dataset.srcset || '').then((ok) => {
+        if (!ok) failed.add(index);
+        return ok;
       });
       loaded.set(index, pending);
       return pending;
-    };
-    const warmNext = (from: number) => {
-      for (let offset = 1; offset < images.length; offset += 1) {
-        const index = (from + offset) % images.length;
-        if (failed.has(index)) continue;
-        void ensureLoaded(index).then((ok) => { if (!ok) warmNext(from); });
-        return;
-      }
     };
     const activate = async (target: number, direction: number) => {
       clearTimer();
       const thisRequest = ++request;
       let index = target;
       for (let attempt = 0; attempt < images.length; attempt += 1) {
-        if (!failed.has(index) && await ensureLoaded(index)) {
+        const wasFailed = failed.has(index);
+        if (!wasFailed && await ensureLoaded(index)) {
           if (thisRequest !== request) return;
           if (leaveTimer) window.clearTimeout(leaveTimer);
           images.forEach((image, imageIndex) => {
@@ -213,21 +178,30 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
           frame.disabled = false;
           frame.setAttribute('aria-label', '细看画作：' + images[index].alt);
           if (modalOpen && lightboxImage) {
-            lightboxImage.src = images[index].src;
+            lightboxImage.src = images[index].dataset.originalSrc || images[index].src;
             lightboxImage.alt = images[index].alt;
             if (lightboxCaption) lightboxCaption.textContent = images[index].alt;
           }
           controls.hidden = false;
+          fallback.hidden = true;
           if (progress && progressFill) {
             progress.hidden = false;
             progressFill.style.transform = 'scaleX(' + ((index + 1) / images.length).toFixed(4) + ')';
           }
           remember(index);
-          warmNext(index);
           schedule();
           return;
         }
         if (thisRequest !== request) return;
+        // Keep the current picture on a slow connection. Do not issue eleven
+        // stalled downloads in sequence before showing an error or responding.
+        if (!wasFailed) {
+          if (current < 0) {
+            fallback.hidden = false;
+            controls.hidden = false;
+          } else schedule();
+          return;
+        }
         index = (index + direction + images.length) % images.length;
       }
       fallback.hidden = false;
@@ -247,7 +221,7 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
       if (!lightbox || !lightboxImage || current < 0) return;
       modalOpen = true;
       clearTimer();
-      lightboxImage.src = images[current].src;
+      lightboxImage.src = images[current].dataset.originalSrc || images[current].src;
       lightboxImage.alt = images[current].alt;
       if (lightboxCaption) lightboxCaption.textContent = images[current].alt;
       lightbox.showModal();
@@ -293,11 +267,13 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
       schedule();
     });
     document.addEventListener('visibilitychange', schedule);
-    motion.addEventListener('change', () => {
+    const motionChanged = () => {
       if (motion.matches) userRequestedPlay = false;
       updatePlayButton();
       schedule();
-    });
+    };
+    if (typeof motion.addEventListener === 'function') motion.addEventListener('change', motionChanged);
+    else motion.addListener(motionChanged);
     frame.addEventListener('touchstart', (event) => {
       const touch = event.changedTouches[0];
       if (touch) touchStart = { x: touch.clientX, y: touch.clientY };
@@ -331,10 +307,22 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
     }, { passive: true });
 
     updatePlayButton();
+    images[0].addEventListener('load', () => {
+      // The original HTML request may finish after our timeout. Recover without
+      // requiring a page refresh, and preserve the same visible painting.
+      if (current < 0 && failed.has(0) && images[0].naturalWidth > 0) {
+        failed.delete(0);
+        loaded.delete(0);
+        void activate(0, 1);
+      }
+    });
     const chosenId = (window as Window & { __ginlangHeroStartId?: string }).__ginlangHeroStartId;
     const matchedStart = images.findIndex((image) => image.dataset.slideId === chosenId);
     const start = matchedStart >= 0 ? matchedStart : Math.floor(Math.random() * images.length);
-    void activate(start, 1);
+    // Show the HTML image first, then swap to the chosen painting only when ready.
+    void activate(0, 1).then(() => {
+      if (current === 0 && start !== 0) void activate(start, 1);
+    });
   }
 
   if (document.readyState === 'loading') {

@@ -4,6 +4,7 @@ import BookmarkWidget from '../../components/BookmarkWidget.astro';
 import MarginWhisper from '../../components/MarginWhisper.astro';
 import SaveArticle from '../../components/SaveArticle.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import ResponsiveArt from '../../components/ResponsiveArt.astro';
 import { categoryLabel } from '../../lib/categories';
 import { formatDate } from '../../lib/date';
 import { hasPublicAuthor } from '../../lib/postVisibility';
@@ -119,7 +120,7 @@ const articleSchema = JSON.stringify({
     <span class="sr-only" id="copy-status" aria-live="polite"></span>
 
     {showAuthor && <aside class="article-author" aria-label="关于作者">
-      {author.data.portrait ? <img class="article-author-portrait" src={base + '/' + author.data.portrait.replace(/^\/+/, '')} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" loading="lazy" decoding="async" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
+      {author.data.portrait ? <ResponsiveArt class="article-author-portrait" src={author.data.portrait} sizes="64px" maxWidth={240} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}
       <div><p>{author.data.role === 'founder' ? '作者' : '客席作者'}</p><h2><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h2><span>{author.data.tagline}</span></div>
       <a href={base + '/authors/' + author.id + '/'}>查看作者介绍与作品</a>
     </aside>}

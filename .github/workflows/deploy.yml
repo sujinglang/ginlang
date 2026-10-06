@@ -29,6 +29,7 @@ jobs:
       - name: Verify content states, routes, resources, and quote library
         run: |
           npm run check:content-state
+          npm run check:image-loading
           npm run check:site
           npm run check:library
 
