@@ -191,7 +191,7 @@ const webSiteSchema = JSON.stringify({
           <a href="#main-content">回到顶部 ↑</a>
         </div>
         <div class="footer-visit" hidden aria-label="本站累计访问人次">
-          <span>访问人次</span><strong id="busuanzi_site_pv">—</strong><small>由不蒜子统计</small>
+          <span>访问人次</span><strong id="busuanzi_value_site_pv">—</strong><small>由不蒜子统计</small>
         </div>
       </footer>
     </div>
@@ -200,7 +200,8 @@ const webSiteSchema = JSON.stringify({
 
     <script is:inline>
       (() => {
-        const pv = document.getElementById('busuanzi_site_pv');
+        // 不蒜子 3.6.9 的脚本按 id 回填数字，id 必须是 busuanzi_value_site_pv，写错就永远等不到值。
+        const pv = document.getElementById('busuanzi_value_site_pv');
         if (!pv) return;
         // 统计是第三方的，失败时不能让「—」留在页脚里冒充数据：
         // 整块默认隐藏，只有真拿到数字才显示，脚本报错或超时就继续藏着。
@@ -236,13 +237,10 @@ const webSiteSchema = JSON.stringify({
           }
         });
         watch.observe(pv, { childList: true, characterData: true, subtree: true });
-        // 八秒还没数字就当它不会来了，别让占位符一直挂在页脚。
+        // 八秒还没数字就先收起整块（但不停止观察：接口慢一点回来仍能补上）。
         window.setTimeout(() => {
           const value = pv.textContent.trim();
-          if (!value || value === '—') {
-            watch.disconnect();
-            if (panel) panel.hidden = true;
-          }
+          if ((!value || value === '—') && panel) panel.hidden = true;
         }, 8000);
       })();
     </script>
