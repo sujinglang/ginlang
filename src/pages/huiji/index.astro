@@ -1,0 +1,46 @@
+---
+import MarginWhisper from '../../components/MarginWhisper.astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { categoryLabel } from '../../lib/categories';
+import { formatDate } from '../../lib/date';
+import { loadEditorialContent } from '../../lib/content';
+import { hasPublicAuthor } from '../../lib/postVisibility';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const { publishedPosts, authorById } = await loadEditorialContent();
+const entries = publishedPosts.filter((post) => post.data.category === 'huiji');
+const description = '收集他人言语，记在本处。';
+---
+
+<SiteLayout title="汇记" description={description}>
+  <section class="listing-page category-page huiji-page">
+    <a class="back-link" href={base + '/'}>← GINLANG</a>
+
+    <header class="page-intro">
+      <p class="eyebrow">他人的话</p>
+      <h1>汇记</h1>
+      <p>{description}不写我的看法，只把值得再读一遍的段落抄下来，说清是谁说的、从哪儿来。</p>
+    </header>
+
+    <MarginWhisper theme="category" />
+
+    {entries.length > 0 ? (
+      <ol class="post-list">
+        {entries.map((post) => (
+          <li class="post-row">
+            <div class="post-meta">
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <span>{categoryLabel(post.data.category)}</span>
+              {hasPublicAuthor(post) && <><span class="meta-dot" aria-hidden="true">·</span><a href={base + '/authors/' + post.data.author.id + '/'}>{authorById.get(post.data.author.id)?.data.name}</a></>}
+            </div>
+            <a class="post-title" href={base + '/posts/' + post.id + '/'}>{post.data.title}</a>
+            <p class="post-excerpt">{post.data.excerpt}</p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty-note">还没有汇记。<a href={base + '/writing/'}>查看全部文章</a></p>
+    )}
+  </section>
+</SiteLayout>

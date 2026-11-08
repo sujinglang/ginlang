@@ -1,0 +1,20 @@
+{
+  "name": "愿为江水",
+  "role": "guest",
+  "tagline": "写海峡、旧事，与身内的两道水流。",
+  "bio": "Hi! I am CYQ",
+  "quote": "我们就像两股溪水，相识于小小的支流，一起流过了艰险的漫长路，途中经历很多激流险滩，但我们始终在一起。越是接近大海，河流越是要汇聚在一起。也可以说正是因为河流的汇聚，才有了大海。哪说法都不错。希望这片土地上的人们也能如此——如同江水，再次共同前行。江水在前行的途中可能左右碰壁，但最终还是会……源远流长的历史洪流，才是世间的真理。",
+  "quoteSource": "作者自述",
+  "quoteEnglish": "I would be as river waters, to meet thee once more.",
+  "featured": true,
+  "order": 100,
+  "links": [],
+  "cover": "authors/cyq/cover-birds.webp",
+  "coverAlt": "黑鸟站在石阶上，一只白鸟从暗处起飞",
+  "coverWidth": 1080,
+  "coverHeight": 1340,
+  "portrait": "authors/cyq/portrait-reading.webp",
+  "portraitAlt": "旧照片：两位穿白裙的女孩并肩低头读同一本书",
+  "portraitWidth": 500,
+  "portraitHeight": 716
+}

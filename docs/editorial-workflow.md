@@ -39,14 +39,23 @@ draft: true
 | --- | --- |
 | `title` | 作者确认的标题 |
 | `date` | 发布日期，格式 YYYY-MM-DD |
-| `category` | essay 随笔 / diary 日记 / book 书摘 / short 短句 |
+| `category` | essay 随笔 / diary 日记 / book 书摘 / short 短句 / huiji 汇记 |
 | `themes` | 可选数组：philosophy、life、love、freedom、direction |
 | `author` | 已存在的作者 ID |
 | `anonymous` | true 为匿名，false 或省略时正常显示署名 |
 | `excerpt` | 一句准确的内容介绍，用于列表和搜索 |
+| `sourceUrl` | 可选，原文/原视频地址。填了它，且 `excerpt` 里出现「链接」两个字时，文章页标题下那句摘要里的「链接」会变成可点的跳转（外链新窗口打开）；列表、搜索、RSS 仍按纯文字处理 |
 | `draft` | true 为草稿，false 为公开 |
 
 使用 Markdown 的 `## 小标题`、段落和引用即可。草稿不会进首页、目录、搜索或 RSS；开发模式可通过文章的固定地址预览。确认内容后把 `draft` 改成 `false`，运行构建。撤下文章可以改回 `true` 后发布；其旧地址将停止生成。
+
+### 汇记
+
+`huiji`（汇记）放"别人说的话"：讲稿、访谈、别人文章的文字整理，不是自己写的。这类内容有三条固定做法：
+
+- 一律 `anonymous: true`，不把别人的话挂到自己名下；
+- 正文开头一段说明据谁的材料整理，文末标出处、日期与版权归属；
+- 入口是 `/huiji/`（首页另有「汇记」区块），**不进 `/category/`**；分类链接由 `categoryPath()` 统一生成，新增同类板块时照这个模式再加一个。
 
 主题阅读路线只在公开文章足够时出现：全站至少八篇、同主题至少三篇，不把现有少量作品重复包装。专题中的文章仍按你登记的顺序阅读。
 
@@ -82,6 +91,8 @@ npm run content -- author lin-mu --name "林木" --tagline "由本人确认的�
 - `src/content/albums/lin-mu.json`：空相册 `photos: []`。
 
 填写真实 `bio`、个人链接等信息后，作者目录与 `/authors/lin-mu/` 自动生成。设 `featured: true` 才会在首页推荐。`order` 控制目录顺序，GINLANG 仍处在主要位置。不要复制其他人的经历或作品当作客席作者资料。
+
+新增客席作者、并让作品出现在作者页时，按 [`docs/guest-author-checklist.md`](./guest-author-checklist.md) 逐项核对。**两个最常见的漏项**：作者 JSON 里 `featured` 未改 `true`（首页「客席作者」不显示），文章 `draft` 未改 `false`（作者页「文章」区不显示）。
 
 ### 修改 GINLANG
 

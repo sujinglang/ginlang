@@ -103,7 +103,7 @@ const page = `<!doctype html>
       <textarea id="post-excerpt" name="excerpt"></textarea>
       <label for="post-tags">标签（逗号分隔，可留空）</label>
       <input id="post-tags" name="tags" placeholder="阅读, 独处" />
-      <label class="check"><input type="checkbox" id="post-anonymous" /> 对外匿名（源文件仍保留真实作者）</label>
+      <label class="check"><input type="checkbox" id="post-anonymous" name="anonymous" /> 对外匿名（源文件仍保留真实作者）</label>
       <button type="submit">创建草稿</button>
       <output id="post-out" aria-live="polite"></output>
     </form>
@@ -121,8 +121,8 @@ const page = `<!doctype html>
       <textarea id="update-excerpt" name="excerpt"></textarea>
       <label for="update-tags">标签（逗号分隔）</label>
       <input id="update-tags" name="tags" />
-      <label class="check"><input type="checkbox" id="update-draft" /> 设为草稿（不发布）</label>
-      <label class="check"><input type="checkbox" id="update-anonymous" /> 对外匿名</label>
+      <label class="check"><input type="checkbox" id="update-draft" name="draft" /> 设为草稿（不发布）</label>
+      <label class="check"><input type="checkbox" id="update-anonymous" name="anonymous" /> 对外匿名</label>
       <button type="submit">保存改动</button>
       <output id="update-out" aria-live="polite"></output>
     </form>
@@ -309,13 +309,14 @@ const server = createServer(async (request, response) => {
       const values = Object.fromEntries(
         Object.entries(rest).filter(([, value]) => value !== '' && value !== undefined && value !== null),
       );
-      // A checkbox arrives as "on" or "off"; booleans map to the plain or negated
-// flag because the content command treats them as switches, not values.
+      // Only update accepts negated switches; a new post uses its defaults
+      // when an optional checkbox is off.
       for (const flag of ['anonymous', 'draft']) {
         if (values[flag] === undefined) continue;
         const on = values[flag] === true || values[flag] === 'on';
-        values[flag] = undefined;
-        values[on ? flag : 'no-' + flag] = true;
+        delete values[flag];
+        if (on) values[flag] = true;
+        else if (command === 'update') values['no-' + flag] = true;
       }
       const flags = Object.entries(values)
         .filter(([, value]) => value !== undefined && value !== null && value !== '')

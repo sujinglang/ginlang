@@ -1,0 +1,372 @@
+---
+import { readdirSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+// 把音乐文件放进 public/audio/ 就会自动启用，文件名随意，mp3、m4a、ogg、wav 都行。
+// 目录为空或不存在时整块不渲染：页面上不会多出按钮，脚本也不会写进页面，
+// check:site 更不会因为指向不存在的音频而报错。换文件、删文件重新构建即可生效。
+const audioDir = resolve('./public/audio');
+const playable = /\.(mp3|m4a|aac|ogg|oga|wav|flac)$/i;
+let trackFile = '';
+try {
+  trackFile = readdirSync(audioDir)
+    .filter((name) => playable.test(name))
+    .sort((a, b) => a.localeCompare(b))
+    .find((name) => statSync(resolve(audioDir, name)).isFile()) ?? '';
+} catch {
+  // 还没有 public/audio 目录，保持安静。
+}
+const trackSrc = trackFile ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/audio/${trackFile}` : '';
+
+// 换曲子时一并改这一行：写给读者的来源说明，留空则不显示。
+const TRACK_CREDITS: Record<string, string> = {
+  'cosmo-the-palace-is-a-shelter.mp3': 'Cosmo《The palace is a Shelter》',
+};
+const trackCredit = TRACK_CREDITS[trackFile] ?? '';
+---
+
+{trackSrc && (
+  <div class="ambient-music" data-ambient-music data-track={trackFile}>
+    <audio data-ambient-audio src={trackSrc} loop preload="metadata"></audio>
+
+    <aside class="ambient-prompt" data-ambient-prompt aria-label="背景音乐" hidden>
+      <p class="ambient-title">这里放着一段音乐</p>
+      <p class="ambient-note">声音很轻，会一直循环。想调大小就按手机侧边键或系统音量。</p>
+      <div class="ambient-actions">
+        <button type="button" class="ambient-primary" data-ambient-play>听一听</button>
+        <button type="button" class="ambient-quiet" data-ambient-skip>不用了</button>
+      </div>
+      {trackCredit && <p class="ambient-credit">{trackCredit}</p>}
+    </aside>
+
+    <button
+      type="button"
+      class="ambient-disc"
+      data-ambient-toggle
+      aria-pressed="false"
+      aria-label="播放背景音乐"
+      title="播放背景音乐"
+      hidden
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M9.2 17.4V6.6l7.6-1.5v10.6" />
+        <circle cx="6.8" cy="17.6" r="2.4" />
+        <circle cx="14.4" cy="16.1" r="2.4" />
+        <path class="ambient-slash" d="M4.4 3.6 19.6 20.4" />
+      </svg>
+    </button>
+
+    <script is:inline>
+      // 浏览器不允许页面一打开就出声，所以音乐只能由读者的一次点击启动。
+      // 启动之后就一直循环，圆键只做静音开关：点了静音不暂停，曲子继续走，再点就有声。
+      // 音量不另做控件，读者用手机侧键或系统音量调总音量。
+      // 换页是整页重载，音乐必然断，所以播放位置记在 sessionStorage 里续上。
+      (() => {
+        const CHOICE_KEY = 'ginlang-music';
+        const MUTED_KEY = 'ginlang-music-muted';
+        const TIME_KEY = 'ginlang-music-time';
+        const VOLUME = 0.32;
+
+        const init = () => {
+          const root = document.querySelector('[data-ambient-music]');
+          if (!root || root.dataset.ambientReady) return;
+          root.dataset.ambientReady = 'true';
+
+          const audio = root.querySelector('[data-ambient-audio]');
+          const prompt = root.querySelector('[data-ambient-prompt]');
+          const toggle = root.querySelector('[data-ambient-toggle]');
+          const playButton = root.querySelector('[data-ambient-play]');
+          const skipButton = root.querySelector('[data-ambient-skip]');
+          if (!audio || !prompt || !toggle || !playButton || !skipButton) return;
+
+          const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+          const readChoice = () => {
+            try { return localStorage.getItem(CHOICE_KEY); } catch (error) { return null; }
+          };
+          const saveChoice = (value) => {
+            try { localStorage.setItem(CHOICE_KEY, value); } catch (error) { /* 本地存储是可选的 */ }
+          };
+          const readMuted = () => {
+            try { return localStorage.getItem(MUTED_KEY) === '1'; } catch (error) { return false; }
+          };
+          const saveMuted = (value) => {
+            try {
+              if (value) localStorage.setItem(MUTED_KEY, '1');
+              else localStorage.removeItem(MUTED_KEY);
+            } catch (error) { /* 本地存储是可选的 */ }
+          };
+          const readTime = () => {
+            try { return Number(sessionStorage.getItem(TIME_KEY)) || 0; } catch (error) { return 0; }
+          };
+          const saveTime = () => {
+            try { sessionStorage.setItem(TIME_KEY, String(audio.currentTime || 0)); } catch (error) { /* 本地存储是可选的 */ }
+          };
+
+          let muted = readMuted();
+          const targetVolume = () => (muted ? 0 : VOLUME);
+
+          let fadeFrame = 0;
+          const fadeTo = (value, duration) => {
+            const span = typeof duration === 'number' ? duration : 1000;
+            cancelAnimationFrame(fadeFrame);
+            const clamp = (input) => Math.min(Math.max(input, 0), 1);
+            if (reduced.matches || span <= 0) {
+              audio.volume = clamp(value);
+              return;
+            }
+            const from = audio.volume;
+            const started = performance.now();
+            const step = (now) => {
+              const progress = Math.min((now - started) / span, 1);
+              const eased = progress * progress * (3 - 2 * progress);
+              audio.volume = clamp(from + (value - from) * eased);
+              if (progress < 1) fadeFrame = requestAnimationFrame(step);
+            };
+            fadeFrame = requestAnimationFrame(step);
+          };
+
+          // 斜线在「没有声音」时显示：还没开始播，或者被静音了。
+          const paint = () => {
+            const playing = !audio.paused;
+            toggle.classList.toggle('is-playing', playing && !muted);
+            toggle.classList.toggle('is-muted', !playing || muted);
+            toggle.setAttribute('aria-pressed', String(playing && muted));
+            const label = playing ? (muted ? '取消静音' : '静音') : '播放背景音乐';
+            toggle.setAttribute('aria-label', label);
+            toggle.title = label;
+          };
+
+          const restorePosition = () => {
+            const time = readTime();
+            const total = audio.duration;
+            if (!time || !Number.isFinite(total) || total <= 0) return;
+            audio.currentTime = time % total;
+          };
+
+          const start = async () => {
+            audio.volume = 0;
+            try {
+              await audio.play();
+              fadeTo(targetVolume());
+              paint();
+              return true;
+            } catch (error) {
+              paint();
+              return false;
+            }
+          };
+
+          // 微信内置浏览器（iOS）要借这个桥才能播放，普通浏览器不受影响。
+          const viaWechatBridge = () => {
+            const bridge = window.WeixinJSBridge;
+            if (!bridge || !/MicroMessenger/i.test(navigator.userAgent)) return false;
+            bridge.invoke('getNetworkType', {}, () => { void start(); });
+            return true;
+          };
+
+          // 换页是新文档，浏览器不会再给一次播放许可；但「静音自动播放」是允许的。
+          // 所以先以 muted 把音乐接在上一页的位置上跑起来（听不见），
+          // 读者一碰屏幕就补上音量：比等他点一下才开始，近得像没断过。
+          let unlockArmed = false;
+          const armUnlock = () => {
+            if (unlockArmed) return;
+            unlockArmed = true;
+            const unlock = (event) => {
+              if (event.target instanceof Element && event.target.closest('[data-ambient-toggle]')) return;
+              document.removeEventListener('pointerdown', unlock, true);
+              document.removeEventListener('keydown', unlock, true);
+              document.removeEventListener('touchstart', unlock, true);
+              if (audio.paused) void start();
+              else if (audio.volume === 0) fadeTo(targetVolume(), 700);
+            };
+            document.addEventListener('pointerdown', unlock, true);
+            document.addEventListener('keydown', unlock, true);
+            document.addEventListener('touchstart', unlock, true);
+          };
+
+          const startSilently = async () => {
+            audio.volume = 0;
+            audio.muted = true;
+            try {
+              await audio.play();
+              // 已经在播了，取消 muted 不会再被自动播放策略拦一次。
+              audio.muted = false;
+              paint();
+              armUnlock();
+              return true;
+            } catch (error) {
+              audio.muted = false;
+              paint();
+              return false;
+            }
+          };
+
+          // 没拿到点击就播放失败时，等读者的第一次点击或按键再续上。
+          const armResume = () => {
+            const resume = () => {
+              document.removeEventListener('pointerdown', resume, true);
+              document.removeEventListener('keydown', resume, true);
+              if (audio.paused && readChoice() === 'on') void start();
+            };
+            document.addEventListener('pointerdown', resume, true);
+            document.addEventListener('keydown', resume, true);
+          };
+
+          const settle = () => {
+            prompt.hidden = true;
+            toggle.hidden = false;
+            paint();
+          };
+
+          const beginPlayback = async () => {
+            saveChoice('on');
+            const played = await start();
+            settle();
+            if (!played && !viaWechatBridge()) armResume();
+          };
+
+          playButton.addEventListener('click', () => { void beginPlayback(); });
+          skipButton.addEventListener('click', () => {
+            saveChoice('off');
+            muted = true;
+            saveMuted(true);
+            settle();
+          });
+
+          // 圆键只做静音开关：不暂停、不改变播放位置。
+          toggle.addEventListener('click', () => {
+            if (audio.paused) {
+              void beginPlayback();
+              return;
+            }
+            muted = !muted;
+            saveMuted(muted);
+            fadeTo(targetVolume(), muted ? 300 : 700);
+            paint();
+          });
+
+          // 循环由 <audio loop> 负责；这里只保证播放位置在换页前被记下。
+          if (audio.readyState >= 1) restorePosition();
+          else audio.addEventListener('loadedmetadata', restorePosition, { once: true });
+          audio.addEventListener('play', paint);
+          audio.addEventListener('pause', paint);
+          document.addEventListener('visibilitychange', () => { if (document.hidden) saveTime(); });
+          window.addEventListener('pagehide', saveTime);
+
+          const choice = readChoice();
+          const connection = navigator.connection;
+          if (choice === 'on') {
+            settle();
+            void startSilently().then((ok) => { if (!ok) armResume(); });
+          } else if (choice === 'off') {
+            settle();
+          } else if (connection && connection.saveData) {
+            // 读者开着省流量模式，别再问一次，也不加载音频。
+            saveChoice('off');
+            settle();
+          } else {
+            prompt.hidden = false;
+          }
+        };
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+        else init();
+        document.addEventListener('astro:page-load', init);
+      })();
+    </script>
+  </div>
+)}
+
+<style>
+  .ambient-music { position: relative; }
+
+  .ambient-prompt {
+    position: fixed;
+    z-index: 40;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    left: max(18px, env(safe-area-inset-left));
+    width: min(304px, calc(100vw - 36px));
+    padding: 15px 17px 14px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--paper-raised);
+    box-shadow: 0 20px 36px -28px rgb(41 43 39 / 62%);
+    color: var(--ink);
+    font: 13px/1.7 var(--sans);
+    animation: ambient-rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .ambient-prompt[hidden] { display: none; }
+  .ambient-title { margin: 0; font-size: 13px; letter-spacing: 0.01em; }
+  .ambient-note { margin: 3px 0 12px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+  .ambient-actions { display: flex; align-items: center; gap: 16px; }
+  .ambient-primary {
+    min-height: 44px;
+    padding: 9px 18px;
+    border: 1px solid var(--accent-deep);
+    border-radius: 2px;
+    background: var(--accent-deep);
+    color: var(--paper);
+    font: 12px/1.4 var(--sans);
+    cursor: pointer;
+    transition: background-color 200ms ease, border-color 200ms ease;
+  }
+  .ambient-primary:hover { border-color: var(--accent); background: var(--accent); }
+  .ambient-quiet {
+    min-height: 44px;
+    padding: 9px 2px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    font: 12px/1.4 var(--sans);
+    cursor: pointer;
+    transition: color 180ms ease, border-color 180ms ease;
+  }
+  .ambient-quiet:hover { border-bottom-color: var(--accent); color: var(--ink); }
+  .ambient-credit { margin: 9px 0 0; color: var(--muted); font-size: 11px; letter-spacing: 0.01em; }
+
+  /* 一个圆键：静音或取消静音。曲子一直在循环，不因这个按钮停。 */
+  .ambient-disc {
+    position: fixed;
+    z-index: 40;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    left: max(18px, env(safe-area-inset-left));
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--paper-raised) 94%, transparent);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  }
+  .ambient-disc[hidden] { display: none; }
+  .ambient-disc:hover { border-color: var(--accent); }
+  .ambient-disc.is-playing { border-color: var(--accent); color: var(--accent-deep); }
+  .ambient-disc.is-muted:hover { color: var(--ink); }
+  .ambient-disc svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ambient-slash { opacity: 1; transition: opacity 200ms ease; }
+  .ambient-disc.is-playing .ambient-slash { opacity: 0; }
+
+  @keyframes ambient-rise { from { opacity: 0; transform: translateY(7px); } }
+
+  @media (max-width: 560px) {
+    .ambient-prompt { bottom: max(14px, env(safe-area-inset-bottom)); left: max(14px, env(safe-area-inset-left)); width: min(288px, calc(100vw - 28px)); }
+    .ambient-disc { bottom: max(14px, env(safe-area-inset-bottom)); left: max(14px, env(safe-area-inset-left)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-prompt { animation: none; }
+  }
+</style>

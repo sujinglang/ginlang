@@ -38,6 +38,8 @@
 .article-meta { margin-bottom: 18px; }
 .article-header h1 { margin: 0; font-size: clamp(34px, 6vw, 49px); font-weight: 500; letter-spacing: 0.015em; line-height: 1.48; text-wrap: balance; }
 .article-deck { margin: 15px 0 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+.article-deck-link { color: var(--accent-deep); font-size: 1.12em; font-weight: 600; text-decoration: underline; text-decoration-color: var(--clay); text-decoration-thickness: 1.5px; text-underline-offset: 5px; transition: text-decoration-color 200ms ease, color 200ms ease; }
+.article-deck-link:hover, .article-deck-link:focus-visible { color: var(--clay); text-decoration-color: var(--clay); }
 .article-tags { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-top: 14px; }
 .article-tags-label { color: var(--muted); font-size: 10px; letter-spacing: .08em; }
 .article-tags a { min-height: 24px; display: inline-flex; align-items: center; color: var(--muted); font: 11px/1.6 var(--sans); text-decoration: none; border-bottom: 1px solid var(--line); }
@@ -67,6 +69,88 @@
   .article-page[data-post-id='2026-10-05-confession-after-hopelessness'] .confession-vow {
     font-size: 1.15em;
     letter-spacing: 0;
+  }
+}
+
+/* This post opens with the poem itself and then reads it. The verse keeps its
+   own measure and leading behind one hairline, so the analysis that follows
+   the rule never blends into the lines. Scoped to the post id. */
+.article-page[data-post-id='2026-11-07-bosporus'] .prose > p:first-of-type {
+  max-width: 27em;
+  margin-bottom: 2.6em;
+  padding-left: 1.15em;
+  border-left: 1px solid var(--line);
+  font-size: 1.02em;
+  line-height: 2.1;
+  letter-spacing: 0.012em;
+  text-wrap: pretty;
+}
+/* No drop cap on a verse line: it belongs to running prose. */
+.article-page[data-post-id='2026-11-07-bosporus'] .prose > p:first-of-type::first-letter {
+  float: none;
+  margin: 0;
+  color: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+@media (max-width: 680px) {
+  .article-page[data-post-id='2026-11-07-bosporus'] .prose > p:first-of-type {
+    margin-bottom: 2.2em;
+    padding-left: 1em;
+    line-height: 2;
+    letter-spacing: 0.008em;
+  }
+}
+
+/* The poem ends where the ink begins: the same reed-and-returning-birds band the
+   home page uses, held wider and given its own air so the reading below starts
+   on a new page, not after a hairline. Blend rules follow SectionDivider. */
+.article-page[data-post-id='2026-11-07-bosporus'] .prose .bosporus-divider {
+  position: relative;
+  width: min(100%, 690px);
+  margin: 3.4em auto;
+  aspect-ratio: 2172 / 280;
+  overflow: hidden;
+  pointer-events: none;
+}
+.article-page[data-post-id='2026-11-07-bosporus'] .prose .bosporus-divider img {
+  position: absolute;
+  top: 50%;
+  left: -6%;
+  width: 112%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: none;
+  transform: translateY(-50%);
+  opacity: 0.95;
+  mix-blend-mode: multiply;
+}
+:root[data-theme='dark'] .article-page[data-post-id='2026-11-07-bosporus'] .prose .bosporus-divider img {
+  opacity: 0.58;
+  mix-blend-mode: screen;
+  filter: grayscale(1) invert(1);
+}
+/* The label names what follows: the annotation, not more poem. It borrows the
+   handwriting the About block uses for its greeting (the Chinese counterpart,
+   since Marck Script carries no CJK glyphs). */
+.article-page[data-post-id='2026-11-07-bosporus'] .prose > .section-kicker {
+  margin: 0 0 0.7em;
+  color: var(--clay);
+  font: 400 59px/1.2 var(--hand-cn);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 680px) {
+  .article-page[data-post-id='2026-11-07-bosporus'] .prose .bosporus-divider {
+    margin: 2.4em auto;
+    aspect-ratio: 2172 / 270;
+  }
+  .article-page[data-post-id='2026-11-07-bosporus'] .prose > .section-kicker {
+    font-size: 39px;
   }
 }
 

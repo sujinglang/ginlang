@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const projectRoot = resolve(fileURLToPath(new URL('../', import.meta.url)));
-const categories = ['essay', 'diary', 'book', 'short'];
+const categories = ['essay', 'diary', 'book', 'short', 'huiji'];
 const stringOption = { type: 'string' };
 const commandOptions = {
   post: { title: stringOption, author: stringOption, anonymous: { type: 'boolean' }, category: stringOption, date: stringOption, excerpt: stringOption, tags: stringOption },
@@ -31,7 +31,7 @@ const help = `GINLANG 内容工具（从项目目录运行）
 
 ID 使用小写英文字母、数字和连字符，例如 september-wind、lin-mu。
 文章ID决定文件名和网址，发布后保持稳定。新文章始终 draft: true。
-post 默认作者 ginlang、分类 essay、日期为本机当天；分类也可为 diary、book、short。
+post 默认作者 ginlang、分类 essay、日期为本机当天；分类也可为 diary、book、short、huiji。
 --tags 用逗号分隔，写入文章的 tags 字段；旧文章没有该字段也能正常构建。
 update 只改 Markdown 头部，不动正文与文章ID；不改的字段保持原样。
 --no-draft 与 --no-anonymous 用来取消草稿或取消匿名；不加则按原值保留。

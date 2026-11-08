@@ -54,7 +54,7 @@ const founderPosts = (await getCollection('posts', ({ data }) => !data.draft)).f
       <span class="folio-mark">从这里接着读</span>
       <h2 id="about-reading-path-title">回到文章里</h2>
       <p>如果想进一步认识这里，从一篇文章开始就好。</p>
-      <a href={base + '/archive/'}>按时间翻阅文章</a>
+      <a href={base + '/writing/'}>按时间翻阅文章</a>
       {founderPosts.length > 0 && <ul class="about-reading-list">{founderPosts.map((post) => <li><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a></li>)}</ul>}
     </section>
   </article>

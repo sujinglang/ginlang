@@ -23,6 +23,8 @@ const hasAbout = bio || author.data.quote || author.data.links.length > 0;
 // the recommendations here and the author's own album page.
 const album = albumById.get(author.id);
 const albumPhotos = album?.data.photos ?? [];
+// 相簿暂时不对外展示：数据、页面、下面那一整块标记都留着，把开关改回 true 就恢复。
+const showAlbumSection = false;
 const siteUrl = Astro.site?.toString() ?? 'https://ginlang.vip';
 const authorSchema = JSON.stringify({
   '@context': 'https://schema.org',
@@ -40,7 +42,7 @@ const authorSchema = JSON.stringify({
 
 <SiteLayout title={author.data.name + ' · 作者'} description={author.data.tagline}>
   <script type="application/ld+json" set:html={authorSchema} />
-  <article class="listing-page author-page">
+  <article class="listing-page author-page" data-author-id={author.id}>
     <a class="back-link" href={base + '/authors/'}>← 全部作者</a>
     <header class="author-cover">
       <div class="author-cover-art">
@@ -69,7 +71,7 @@ const authorSchema = JSON.stringify({
       <div class="section-heading"><h2 id="works-title">文章</h2></div>
       {posts.length ? <ol class="editorial-index">{posts.map((post) => <li><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time><div><a href={base + '/posts/' + post.id + '/'}>{post.data.title}</a><p>{post.data.excerpt}</p></div><span>{categoryLabel(post.data.category)}</span></li>)}</ol> : <p class="empty-note">暂无公开署名的作品。</p>}
     </section>
-    {album && (
+    {showAlbumSection && album && (
       <section class="author-album" aria-labelledby="author-album-title">
         <div class="section-heading">
           <div class="section-heading-main"><p class="section-kicker">相簿</p><h2 id="author-album-title">相册</h2></div>

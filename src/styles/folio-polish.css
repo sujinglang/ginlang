@@ -233,6 +233,7 @@ select { background: var(--paper-raised); color: var(--ink); }
   :is(h1, h2, h3, h4, h5, h6, [id]) { scroll-margin-top: 24px; }
   .site-shell { width: min(calc(100% - 40px), var(--shell-width)); }
   .site-header { width: calc(100% + 40px); margin-left: -20px; padding: max(18px, env(safe-area-inset-top)) 20px 8px; min-height: 0; gap: 12px; }
+  .site-header::before { left: 0; width: 100%; transform: none; }
   .menu-toggle { min-height: 52px; }
   .primary-nav { margin-inline: 0; padding-inline: 0; }
   .header-tools { gap: 0; }

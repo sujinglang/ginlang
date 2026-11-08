@@ -9,7 +9,10 @@ import { hasPublicAuthor } from '../../lib/postVisibility';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export function getStaticPaths() {
-  return categories.map((category) => ({ params: { slug: category.slug }, props: { category } }));
+  // 汇记有自己的入口（/huiji/），不再生成一份重复的分类页。
+  return categories
+    .filter((category) => category.slug !== 'huiji')
+    .map((category) => ({ params: { slug: category.slug }, props: { category } }));
 }
 
 const { category } = Astro.props;

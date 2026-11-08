@@ -18,6 +18,8 @@ const guests = authors.filter((author) => author.data.role === 'guest' && author
 const latest = posts[0];
 // Show as much as the home can hold: the featured post plus up to five briefs.
 const earlierPosts = posts.slice(1, 6);
+// 汇记：抄别人的话的那一类，首页给一块自己的入口。
+const huijiPosts = posts.filter((post) => post.data.category === 'huiji');
 const postUrls = posts.map((post) => base + '/posts/' + post.id + '/');
 const readerCatalog = posts.map((post) => ({ id: post.id, title: post.data.title, url: base + '/posts/' + post.id + '/' }));
 const landscapes = [
@@ -119,6 +121,30 @@ const landscapes = [
     </section>
 
     <SectionDivider />
+    <section class="home-huiji home-section" aria-labelledby="home-huiji-title" data-reveal="list">
+      <div class="section-heading">
+        <div class="section-heading-main">
+          <p class="section-kicker">汇记</p>
+          <h2 id="home-huiji-title">收集他人言语，记在本处</h2>
+        </div>
+        <a class="quiet-link" href={base + '/huiji/'}>全部汇记</a>
+      </div>
+      {huijiPosts.length > 0 ? (
+        <ol class="huiji-index">
+          {huijiPosts.slice(0, 2).map((post) => (
+            <li>
+              <a class="huiji-entry" href={base + '/posts/' + post.id + '/'}>
+                <span class="huiji-entry-title">{post.data.title}</span>
+                <span class="huiji-entry-excerpt">{post.data.excerpt}</span>
+                <span class="huiji-entry-meta">{formatDate(post.data.date)} · {categoryLabel(post.data.category)}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      ) : <p class="empty-note">还没有汇记。</p>}
+    </section>
+
+    <SectionDivider />
     <section class="home-people home-section" aria-labelledby="home-people-title" data-reveal="list">
       {guests.length > 0 && <div class="section-heading"><div class="section-heading-main"><h2 id="home-people-title">客席作者</h2></div><a class="quiet-link" href={base + '/authors/'}>认识全部作者</a></div>}
       {guests.length ? <div class="home-guest-list">{guests.slice(0, 3).map((author) => <article class="home-guest"><span class="home-guest-portrait">{author.data.portrait ? <ResponsiveArt src={author.data.portrait} sizes="72px" maxWidth={240} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" loading="lazy" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}</span><div><span>客席作者</span><h3><a href={base + '/authors/' + author.id + '/'}>{author.data.name}</a></h3><p>{author.data.tagline}</p></div></article>)}</div> : <a class="home-guest-invitation" href={base + '/contribute/'}><h2 id="home-people-title">客席作者</h2><span>参与写作</span><p>朋友的介绍与作品，会在征得同意后陆续放在这里。</p></a>}
@@ -173,7 +199,7 @@ const landscapes = [
         </div>
       </div>
       <ol class="category-list" data-reveal="stagger">
-        {categories.map((category) => (
+        {categories.filter((category) => category.slug !== 'huiji').map((category) => (
           <li class="category-row">
             <a href={base + '/category/' + category.slug + '/'}>
               <span class="category-label">{category.label}</span>
@@ -275,3 +301,54 @@ const landscapes = [
   }
   document.addEventListener('astro:page-load', initLandscape);
 </script>
+
+<style>
+  .home-huiji .huiji-index {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 2.6vw, 32px);
+    margin: clamp(20px, 2.4vw, 30px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .home-huiji .huiji-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 19px 0 17px;
+    border-top: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .home-huiji .huiji-entry-title {
+    font-family: var(--serif);
+    font-size: clamp(17px, 1.6vw, 20px);
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--ink);
+    transition: color 220ms ease;
+  }
+
+  .home-huiji .huiji-entry:hover .huiji-entry-title { color: var(--clay); }
+
+  .home-huiji .huiji-entry-excerpt {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--muted);
+    font: 14px/1.85 var(--serif);
+  }
+
+  .home-huiji .huiji-entry-meta {
+    color: var(--muted);
+    font: 11px/1.5 var(--sans);
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 680px) {
+    .home-huiji .huiji-index { grid-template-columns: 1fr; }
+    .home-huiji .huiji-entry { padding: 16px 0 14px; }
+  }
+</style>

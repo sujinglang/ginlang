@@ -16,11 +16,14 @@ const posts = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
-    category: z.enum(['essay', 'diary', 'book', 'short']),
+    // huiji（汇记）是"抄别人的话"的那一类，有自己的入口 /huiji/。
+    category: z.enum(['essay', 'diary', 'book', 'short', 'huiji']),
     themes: z.array(z.enum(['philosophy', 'life', 'love', 'freedom', 'direction'])).default([]),
     // Free-form and optional: existing posts build unchanged with no tags.
     tags: z.array(z.string().min(1)).default([]),
     excerpt: z.string(),
+    // 可选：原文/原视频地址。填了它，摘要里那两个字「链接」会变成可点的跳转。
+    sourceUrl: z.string().url().optional(),
     author: reference('authors'),
     anonymous: z.boolean().default(false),
     draft: z.boolean().default(false),
