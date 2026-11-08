@@ -39,7 +39,7 @@ const founders = authors.filter((author) => author.data.role === 'founder');
     <section class="people-guests" aria-labelledby="guests-title">
       <div class="section-heading"><h2 id="guests-title">客席作者</h2><span class="section-kicker">受邀写作</span></div>
       {guests.length ? (
-        <div class="people-list">
+        <div class="people-list" data-reveal="stagger">
           {guests.map((author) => (
             <article class="person-row">
               {author.data.portrait ? <ResponsiveArt src={author.data.portrait} sizes="80px" maxWidth={240} width={author.data.portraitWidth} height={author.data.portraitHeight} alt={author.data.portraitAlt || author.data.name + '选用的头像'} /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}

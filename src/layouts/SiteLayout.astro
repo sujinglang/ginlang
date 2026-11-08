@@ -695,5 +695,22 @@ const webSiteSchema = JSON.stringify({
       }
 
     </script>
+    <script>
+      // 滚动显影：CSS 里的 [data-reveal] 全靠 will-reveal / is-revealed 两个类切换，
+      // 少这段脚本，全站的 home-section、category-list 都不会动。
+      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-revealed');
+            observer.unobserve(entry.target);
+          });
+        }, { rootMargin: '0px 0px -22px 0px', threshold: 0.07 });
+        document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((target) => {
+          target.classList.add('will-reveal');
+          observer.observe(target);
+        });
+      }
+    </script>
   </body>
 </html>

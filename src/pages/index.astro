@@ -130,7 +130,7 @@ const landscapes = [
         <a class="quiet-link" href={base + '/huiji/'}>全部汇记</a>
       </div>
       {huijiPosts.length > 0 ? (
-        <ol class="huiji-index">
+        <ol class="huiji-index" data-reveal="stagger">
           {huijiPosts.slice(0, 2).map((post) => (
             <li>
               <a class="huiji-entry" href={base + '/posts/' + post.id + '/'}>
