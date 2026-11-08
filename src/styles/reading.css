@@ -38,10 +38,10 @@
 .article-meta { margin-bottom: 18px; }
 .article-header h1 { margin: 0; font-size: clamp(34px, 6vw, 49px); font-weight: 500; letter-spacing: 0.015em; line-height: 1.48; text-wrap: balance; }
 .article-deck { margin: 15px 0 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
-/* 摘要里的原文链接：细线小方框，不加底座、不加箭头，字不拆行。
+/* 摘要里的原文链接：细线小方框，常态带一层 10% 陶土底（纸上就是 #EDE3DB），不加箭头，字不拆行。
    只需一眼能认出「这里可以点」。 */
-.article-deck-link { display: inline-block; margin: 0 2px; padding: 0 8px 1px; border: 1px solid var(--clay); border-radius: 2px; background: transparent; color: var(--clay); font-weight: 600; line-height: 1.72; text-decoration: none; white-space: nowrap; transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease; }
-.article-deck-link:hover, .article-deck-link:focus-visible { border-color: var(--clay); background: color-mix(in srgb, var(--clay) 10%, transparent); color: var(--clay); text-decoration: none; }
+.article-deck-link { display: inline-block; margin: 0 2px; padding: 0 8px 1px; border: 1px solid var(--clay); border-radius: 2px; background: color-mix(in srgb, var(--clay) 10%, transparent); color: var(--clay); font-weight: 600; line-height: 1.72; text-decoration: none; white-space: nowrap; transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease; }
+.article-deck-link:hover, .article-deck-link:focus-visible { border-color: var(--clay); background: color-mix(in srgb, var(--clay) 17%, transparent); color: var(--clay); text-decoration: none; }
 .article-deck-link:focus-visible { outline: 2px solid color-mix(in srgb, var(--clay) 45%, transparent); outline-offset: 2px; }
 .article-tags { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-top: 14px; }
 .article-tags-label { color: var(--muted); font-size: 10px; letter-spacing: .08em; }
