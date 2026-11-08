@@ -103,6 +103,8 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
           };
 
           let muted = readMuted();
+          // 换页后靠静音自动播放把曲子接上，此时在播但听不见，等第一次触碰才出声。
+          let silent = false;
           const targetVolume = () => (muted ? 0 : VOLUME);
 
           let fadeFrame = 0;
@@ -126,12 +128,15 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
           };
 
           // 斜线在「没有声音」时显示：还没开始播，或者被静音了。
+          // silent = 换页接上了位置、但还没拿到触屏许可，正在无声跑。
+          // 这时绝不能再显示成「正在播放」，否则读者看着音符亮着却听不到声。
           const paint = () => {
             const playing = !audio.paused;
-            toggle.classList.toggle('is-playing', playing && !muted);
-            toggle.classList.toggle('is-muted', !playing || muted);
-            toggle.setAttribute('aria-pressed', String(playing && muted));
-            const label = playing ? (muted ? '取消静音' : '静音') : '播放背景音乐';
+            const audible = playing && !muted && !silent && !audio.muted;
+            toggle.classList.toggle('is-playing', audible);
+            toggle.classList.toggle('is-muted', !audible);
+            toggle.setAttribute('aria-pressed', String(playing && !audible));
+            const label = !playing ? '播放背景音乐' : (audible ? '静音' : '点一下出声');
             toggle.setAttribute('aria-label', label);
             toggle.title = label;
           };
@@ -145,6 +150,8 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
 
           const start = async () => {
             audio.volume = 0;
+            audio.muted = false;
+            silent = false;
             try {
               await audio.play();
               fadeTo(targetVolume());
@@ -176,26 +183,38 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
               document.removeEventListener('pointerdown', unlock, true);
               document.removeEventListener('keydown', unlock, true);
               document.removeEventListener('touchstart', unlock, true);
+              document.removeEventListener('wheel', unlock, true);
+              document.removeEventListener('click', unlock, true);
+              // 取消 muted 必须在手势里做：浏览器只在这时放行，
+              // 提前把音量设成 0 再爬坡，iOS 上会一路静音到底。
+              audio.muted = false;
+              silent = false;
               if (audio.paused) void start();
-              else if (audio.volume === 0) fadeTo(targetVolume(), 700);
+              else fadeTo(targetVolume(), 700);
+              paint();
             };
             document.addEventListener('pointerdown', unlock, true);
             document.addEventListener('keydown', unlock, true);
             document.addEventListener('touchstart', unlock, true);
+            document.addEventListener('wheel', unlock, true);
+            document.addEventListener('click', unlock, true);
           };
 
           const startSilently = async () => {
-            audio.volume = 0;
+            // 音量先摆到目标值，用 muted 压住声音：等读者第一次碰屏幕再解开 muted。
+            // 不能「立刻取消 muted、靠 volume 0 静音」——那样图标会显示成正在播放，
+            // 而声音要等爬坡，读者看到的就是「亮着却没声」。
+            audio.volume = VOLUME;
             audio.muted = true;
+            silent = true;
             try {
               await audio.play();
-              // 已经在播了，取消 muted 不会再被自动播放策略拦一次。
-              audio.muted = false;
               paint();
               armUnlock();
               return true;
             } catch (error) {
               audio.muted = false;
+              silent = false;
               paint();
               return false;
             }
@@ -242,6 +261,8 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
             // muted 记成 true，那样 fadeTo(targetVolume()) 的目标是 0，点完只有画面。
             muted = false;
             saveMuted(false);
+            audio.muted = false;
+            silent = false;
             const played = await start();
             settle();
             if (!played && !viaWechatBridge()) armResume();
@@ -271,6 +292,17 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
           toggle.addEventListener('click', () => {
             if (audio.paused) {
               void beginPlayback();
+              return;
+            }
+            // 静音续播中（图标是斜线、写着「点一下出声」）：这一点就是开声音，
+            // 不要再翻成 muted，否则读者连点两下都听不见。
+            if (silent || audio.muted) {
+              silent = false;
+              muted = false;
+              saveMuted(false);
+              audio.muted = false;
+              fadeTo(targetVolume(), 700);
+              paint();
               return;
             }
             muted = !muted;
