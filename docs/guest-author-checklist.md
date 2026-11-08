@@ -15,10 +15,13 @@
 npm run content -- author <作者ID> --name "显示名" --tagline "由本人确认的一句话"
 npm run content -- profile-photo <作者ID> "封面.jpg" --kind cover --name <名字> --alt "客观描述画面"
 npm run content -- profile-photo <作者ID> "头像.jpg" --kind portrait --name <名字> --alt "客观描述画面"
+npm run images:art
 ```
 
 生成 `src/content/authors/<作者ID>.json`、`src/content/albums/<作者ID>.json`、`public/authors/<作者ID>/`；
 原图备份在 `source-art/authors/<作者ID>/`，被 `.gitignore` 忽略，不提交。
+
+**最后那条 `npm run images:art` 不能漏**：它给封面和头像切出 480w/800w（头像 96/240/480）响应式变体并写进 `src/data/artVariants.json`，页面靠这份清单生成 `srcset`。漏掉的话 `<img>` 只有原图，手机在 DPR-3 下会拉整张 1080×1340 的图——实测单张封面 379 KB，切完变体后 144 KB。新封面生成后肉眼核对一遍宽高比没变（变体保留原始比例）。
 
 ## 三、补齐作者 JSON（工具不负责的部分）
 
