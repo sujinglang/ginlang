@@ -139,7 +139,7 @@
 .topic-works li:focus-within > div > a:first-child { --sweep-progress: 100%; }
 .site-shell :is(a, button):not(:disabled):is(:focus-visible, :active),
 .site-shell .category-row:is(:active, :focus-within),
-.site-shell :is(a, button):is([aria-current='page'], [aria-pressed='true']) {
+.site-shell :is(a, button):is([aria-current='page'], [aria-pressed='true'], [aria-checked='true']) {
   --sweep-progress: 100%;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -164,7 +164,7 @@
   .topic-works li > div > a:first-child, .about-reading-list a, .reading-route li a
 ) { --sweep-track: transparent; }
 .primary-nav a::after, .landscape-controls button::after,
-.writing-filter button[aria-pressed='true']::after, .related-reading a::after { content: none; }
+.writing-filter button[aria-checked='true']::after, .related-reading a::after { content: none; }
 @media (hover: none), (pointer: coarse) {
   .site-shell :is(a, button):not(:disabled):active,
   .site-shell .category-row:active { --sweep-progress: 100%; transition-duration: 140ms; }

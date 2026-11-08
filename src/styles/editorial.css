@@ -111,8 +111,8 @@ body { background: var(--paper); }
 .editorial-index p, .topic-works p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
 .writing-filter { display: flex; flex-wrap: wrap; gap: 6px 24px; margin-top: 22px; border-bottom: 1px solid var(--line); }
 .writing-filter button { position: relative; min-height: 44px; padding: 8px 2px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: 13px/1.5 var(--sans); }
-.writing-filter button[aria-pressed='true'] { color: var(--ink); }
-.writing-filter button[aria-pressed='true']::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--clay); content: ''; }
+.writing-filter button[aria-checked='true'] { color: var(--ink); }
+.writing-filter button[aria-checked='true']::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--clay); content: ''; }
 .writing-filter button span { padding-left: 3px; color: var(--muted); font-size: 10px; }
 .writing-filter-status { margin: 14px 0 0; color: var(--muted); font: 11px/1.5 var(--sans); }
 .writing-row { position: relative; display: grid; grid-template-columns: 130px minmax(0, 1fr) 100px; gap: 23px; align-items: baseline; padding: 27px 0; border-bottom: 1px solid var(--line); }

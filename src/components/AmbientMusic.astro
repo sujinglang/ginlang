@@ -31,7 +31,7 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
 
     <aside class="ambient-prompt" data-ambient-prompt aria-label="背景音乐" hidden>
       <p class="ambient-title">这里放着一段音乐</p>
-      <p class="ambient-note">声音很轻，会一直循环。想调大小就按手机侧边键或系统音量。</p>
+      <p class="ambient-note">声音很轻，一直循环 · 想调大小按手机侧边键</p>
       <div class="ambient-actions">
         <button type="button" class="ambient-primary" data-ambient-play>听一听</button>
         <button type="button" class="ambient-quiet" data-ambient-skip>不用了</button>
@@ -218,6 +218,24 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
             paint();
           };
 
+          // 提示卡一次会话只问一次：读完了没表态就自己收回成圆键，别一直压着正文。
+          // 选择（听/不听）仍然写进 localStorage，跨会话记住。
+          const ASKED_KEY = 'ginlang-music-asked';
+          const askOnce = () => {
+            let asked = false;
+            try { asked = sessionStorage.getItem(ASKED_KEY) === '1'; } catch (error) { /* 本地存储是可选的 */ }
+            if (asked) {
+              settle();
+              return;
+            }
+            try { sessionStorage.setItem(ASKED_KEY, '1'); } catch (error) { /* 本地存储是可选的 */ }
+            prompt.hidden = false;
+            window.setTimeout(() => {
+              if (prompt.hidden) return;
+              settle();
+            }, 9000);
+          };
+
           const beginPlayback = async () => {
             saveChoice('on');
             // 读者主动点了「要听」，就得有声音：之前的「不用了」或圆键静音会把
@@ -283,7 +301,7 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
             saveChoice('off');
             settle();
           } else {
-            prompt.hidden = false;
+            askOnce();
           }
         };
 
@@ -379,8 +397,27 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
 
   @keyframes ambient-rise { from { opacity: 0; transform: translateY(7px); } }
 
+  /* 手机上不再是一张贴在阅读栏左下的大卡片（288×179，约占屏高六分之一）：
+     改成一条贴底的窄条，标题与按钮同行，说明与署名各占一行 10px 小字，
+     整块高度从 179px 收到 76px 左右，九秒后自动收回成圆键。 */
   @media (max-width: 560px) {
-    .ambient-prompt { bottom: max(14px, env(safe-area-inset-bottom)); left: max(14px, env(safe-area-inset-left)); width: min(288px, calc(100vw - 28px)); }
+    .ambient-prompt {
+      right: max(14px, env(safe-area-inset-right));
+      left: max(14px, env(safe-area-inset-left));
+      bottom: max(12px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 5px 10px;
+      width: auto;
+      padding: 11px 13px 10px;
+    }
+    .ambient-title { grid-row: 1; grid-column: 1; font-size: 12.5px; }
+    .ambient-actions { grid-row: 1; grid-column: 2; gap: 10px; }
+    .ambient-primary { min-height: 34px; padding: 6px 14px; font-size: 11.5px; }
+    .ambient-quiet { min-height: 34px; padding: 4px 0; font-size: 11.5px; }
+    .ambient-note { grid-row: 2; grid-column: 1 / -1; margin: 0; font-size: 10.5px; line-height: 1.55; }
+    .ambient-credit { grid-row: 3; grid-column: 1 / -1; margin: 0; font-size: 10px; line-height: 1.5; }
     .ambient-disc { bottom: max(14px, env(safe-area-inset-bottom)); left: max(14px, env(safe-area-inset-left)); }
   }
 

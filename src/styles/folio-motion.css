@@ -1,4 +1,4 @@
-﻿/* A slower, softer layer of motion: drifting paintings, staggered lists, quiet helpers. */
+/* A slower, softer layer of motion: drifting paintings, staggered lists, quiet helpers. */
 .hero-line { display: block; }
 @keyframes hero-line-rise {
   from { opacity: 0; transform: translateY(18px); clip-path: inset(0 0 72% 0); }
@@ -287,6 +287,7 @@
 .about-reading-list a { display: inline-flex; border: 0; color: var(--ink); font: 17px/1.7 var(--serif); }
 .about-reading-list a:hover { color: var(--accent-deep); text-decoration-color: currentColor; }
 .footer-visit { display: flex; justify-content: flex-end; gap: 8px; align-items: baseline; padding: 0 0 20px; color: var(--muted); font: 11px/1.5 var(--sans); }
+.footer-visit[hidden] { display: none; }
 .footer-visit strong { color: var(--accent-deep); font-weight: 500; font-variant-numeric: tabular-nums; }
 .footer-visit small { font-size: 10px; opacity: .85; }
 

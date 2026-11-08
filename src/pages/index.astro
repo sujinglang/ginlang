@@ -183,9 +183,9 @@ const landscapes = [
       </div>
       <div class="landscape-bottomline">
         <p data-landscape-caption aria-live="polite">{landscapes[0].caption}</p>
-        <div class="landscape-controls" role="group" aria-label="切换窗外风景">
+        <div class="landscape-controls" role="radiogroup" aria-label="切换窗外风景">
           {landscapes.map((scene, index) => (
-            <button type="button" data-landscape-choice={index} data-landscape-caption={scene.caption} aria-pressed={index === 0}>{scene.label}</button>
+            <button type="button" data-landscape-choice={index} data-landscape-caption={scene.caption} role="radio" aria-checked={index === 0}>{scene.label}</button>
           ))}
         </div>
       </div>
@@ -289,7 +289,7 @@ const landscapes = [
         image.classList.toggle('is-active', active);
         image.setAttribute('aria-hidden', String(!active));
       });
-      buttons.forEach((item, buttonIndex) => item.setAttribute('aria-pressed', String(buttonIndex === index)));
+      buttons.forEach((item, buttonIndex) => { const active = buttonIndex === index; item.setAttribute('aria-checked', String(active)); item.tabIndex = active ? 0 : -1; });
       if (caption) caption.textContent = button.dataset.landscapeCaption ?? '';
     }));
   }

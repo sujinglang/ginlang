@@ -190,7 +190,7 @@ const webSiteSchema = JSON.stringify({
           <span>作品署名与权利归各自作者；转载前请征得作者同意。</span>
           <a href="#main-content">回到顶部 ↑</a>
         </div>
-        <div class="footer-visit" aria-label="本站累计访问人次">
+        <div class="footer-visit" hidden aria-label="本站累计访问人次">
           <span>访问人次</span><strong id="busuanzi_site_pv">—</strong><small>由不蒜子统计</small>
         </div>
       </footer>
@@ -201,12 +201,23 @@ const webSiteSchema = JSON.stringify({
     <script is:inline>
       (() => {
         const pv = document.getElementById('busuanzi_site_pv');
-        if (!pv || ['localhost', '127.0.0.1'].includes(location.hostname)) return;
+        if (!pv) return;
+        // 统计是第三方的，失败时不能让「—」留在页脚里冒充数据：
+        // 整块默认隐藏，只有真拿到数字才显示，脚本报错或超时就继续藏着。
+        const panel = pv.closest('.footer-visit');
+        const reveal = (value) => {
+          const text = String(value || '').trim();
+          if (!text || text === '—') return false;
+          pv.textContent = text;
+          if (panel) panel.hidden = false;
+          return true;
+        };
+        if (['localhost', '127.0.0.1'].includes(location.hostname)) return;
         // Count at most once per tab session, so refreshing the page does not inflate the number.
         // The last known figure is cached and shown on every page of the visit.
         let cached = '';
         try { cached = localStorage.getItem('ginlang-visit-pv') || ''; } catch { /* Storage is optional. */ }
-        if (cached) pv.textContent = cached;
+        if (cached) reveal(cached);
         let counted = '';
         try { counted = sessionStorage.getItem('ginlang-visit-counted') || ''; } catch { /* Storage is optional. */ }
         if (counted) return;
@@ -214,15 +225,25 @@ const webSiteSchema = JSON.stringify({
         const counter = document.createElement('script');
         counter.src = 'https://cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js';
         counter.defer = true;
+        counter.addEventListener('error', () => { if (!cached) panel && (panel.hidden = true); });
         document.body.append(counter);
         const watch = new MutationObserver(() => {
           const value = pv.textContent.trim();
           if (value && value !== '—' && value !== cached) {
             try { localStorage.setItem('ginlang-visit-pv', value); } catch { /* Storage is optional. */ }
+            reveal(value);
             watch.disconnect();
           }
         });
         watch.observe(pv, { childList: true, characterData: true, subtree: true });
+        // 八秒还没数字就当它不会来了，别让占位符一直挂在页脚。
+        window.setTimeout(() => {
+          const value = pv.textContent.trim();
+          if (!value || value === '—') {
+            watch.disconnect();
+            if (panel) panel.hidden = true;
+          }
+        }, 8000);
       })();
     </script>
 
