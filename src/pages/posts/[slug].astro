@@ -85,7 +85,7 @@ const articleSchema = JSON.stringify({
       <h1>{post.data.title}</h1>
       <p class="article-deck">
         {deckSource ? (
-          <>{deckSource.before}<a class="article-deck-link" href={deckSource.url} target="_blank" rel="noopener noreferrer">{LINK_WORD}</a>{deckSource.after}</>
+          <>{deckSource.before}<a class="article-deck-link" href={deckSource.url} target="_blank" rel="noopener noreferrer">{LINK_WORD}<span class="article-deck-link-arrow" aria-hidden="true">↗</span></a>{deckSource.after}</>
         ) : post.data.excerpt}
       </p>
       {post.data.tags.length > 0 && (
