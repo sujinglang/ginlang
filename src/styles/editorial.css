@@ -114,7 +114,7 @@ body { background: var(--paper); }
 .writing-filter button[aria-checked='true'] { color: var(--ink); }
 .writing-filter button[aria-checked='true']::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--clay); content: ''; }
 .writing-filter button span { padding-left: 3px; color: var(--muted); font-size: 10px; }
-.writing-filter-status { margin: 14px 0 0; color: var(--muted); font: 11px/1.5 var(--sans); }
+.writing-filter-status { margin: 14px 0 0; color: var(--muted); font: 12px/1.5 var(--sans); }
 .writing-row { position: relative; display: grid; grid-template-columns: 130px minmax(0, 1fr) 100px; gap: 23px; align-items: baseline; padding: 27px 0; border-bottom: 1px solid var(--line); }
 .writing-row[hidden], .writing-empty[hidden] { display: none; }
 .writing-row-meta { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font: 11px/1.5 var(--sans); }

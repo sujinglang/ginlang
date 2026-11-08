@@ -125,7 +125,7 @@ select { background: var(--paper-raised); color: var(--ink); }
 .editorial-page-header p, .page-intro > p:last-child, .desk-intro > p { font-size: 16px; line-height: 1.95; max-width: 42em; }
 .folio-mark, .eyebrow { font-size: 12px; letter-spacing: .04em; }
 .writing-row { padding-block: 30px; gap: 28px; }
-.writing-row-meta { font-size: 12px; line-height: 1.7; }
+.writing-row-meta { font-size: 13px; line-height: 1.7; }
 .writing-row h2 { font-size: 25px; line-height: 1.65; margin-bottom: 12px; }
 .writing-row p { font-size: 16px; line-height: 1.95; }
 .writing-row-author { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; }
