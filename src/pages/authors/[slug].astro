@@ -46,7 +46,7 @@ const authorSchema = JSON.stringify({
     <a class="back-link" href={base + '/authors/'}>← 全部作者</a>
     <header class="author-cover">
       <div class="author-cover-art">
-        {author.data.cover && <ResponsiveArt src={author.data.cover} sizes="(max-width: 1244px) 94vw, 1180px" width={author.data.coverWidth} height={author.data.coverHeight} alt={author.data.coverAlt || ''} loading="eager" fetchpriority="high" />}
+        {author.data.cover && <ResponsiveArt src={author.data.cover} sizes="(max-width: 1244px) 94vw, 1180px" maxWidth={800} width={author.data.coverWidth} height={author.data.coverHeight} alt={author.data.coverAlt || ''} loading="eager" fetchpriority="high" />}
       </div>
       <div class="author-identity">
         <div class="author-portrait">

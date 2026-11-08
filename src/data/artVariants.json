@@ -108,5 +108,37 @@
       "file": "authors/chayu/cover-forest-canopy.webp",
       "width": 1672
     }
+  ],
+  "authors/cyq/portrait-reading.webp": [
+    {
+      "file": "authors/cyq/portrait-reading-96w.webp",
+      "width": 96
+    },
+    {
+      "file": "authors/cyq/portrait-reading-240w.webp",
+      "width": 240
+    },
+    {
+      "file": "authors/cyq/portrait-reading-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "authors/cyq/portrait-reading.webp",
+      "width": 500
+    }
+  ],
+  "authors/cyq/cover-birds.webp": [
+    {
+      "file": "authors/cyq/cover-birds-480w.webp",
+      "width": 480
+    },
+    {
+      "file": "authors/cyq/cover-birds-800w.webp",
+      "width": 800
+    },
+    {
+      "file": "authors/cyq/cover-birds.webp",
+      "width": 1080
+    }
   ]
 }

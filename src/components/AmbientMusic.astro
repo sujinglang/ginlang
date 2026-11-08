@@ -27,7 +27,7 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
 
 {trackSrc && (
   <div class="ambient-music" data-ambient-music data-track={trackFile}>
-    <audio data-ambient-audio src={trackSrc} loop preload="metadata"></audio>
+    <audio data-ambient-audio src={trackSrc} loop preload="none"></audio>
 
     <aside class="ambient-prompt" data-ambient-prompt aria-label="背景音乐" hidden>
       <p class="ambient-title">这里放着一段音乐</p>
@@ -220,10 +220,26 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
 
           const beginPlayback = async () => {
             saveChoice('on');
+            // 读者主动点了「要听」，就得有声音：之前的「不用了」或圆键静音会把
+            // muted 记成 true，那样 fadeTo(targetVolume()) 的目标是 0，点完只有画面。
+            muted = false;
+            saveMuted(false);
             const played = await start();
             settle();
             if (!played && !viaWechatBridge()) armResume();
           };
+
+          // 音频不预下载：4 MB 的曲子挂在 preload="metadata" 上，页面一打开就会读进
+          // 六十多秒的数据（约 2.6 MB），手机流量和首屏都被它拖住。改成 preload="none"，
+          // 但读者一伸手就先把流拉起来，等真点下去时已经有数据在路上了。
+          const warmUp = () => {
+            if (audio.preload === 'auto' || !audio.paused) return;
+            audio.preload = 'auto';
+            audio.load();
+          };
+          for (const type of ['pointerenter', 'pointerdown', 'touchstart', 'focus', 'keydown']) {
+            playButton.addEventListener(type, warmUp, { once: true, passive: true });
+          }
 
           playButton.addEventListener('click', () => { void beginPlayback(); });
           skipButton.addEventListener('click', () => {
@@ -257,6 +273,8 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
           const connection = navigator.connection;
           if (choice === 'on') {
             settle();
+            // 已经决定要听的人，才值得替他预取整首曲子。
+            audio.preload = 'auto';
             void startSilently().then((ok) => { if (!ok) armResume(); });
           } else if (choice === 'off') {
             settle();

@@ -54,7 +54,7 @@ const landscapes = [
     <SectionDivider />
     <section class="home-profile home-section" aria-labelledby="home-profile-name" data-reveal="image">
       <div class="home-profile-visual">
-        {founder.data.cover && <ResponsiveArt class="home-profile-cover" src={founder.data.cover} width={founder.data.coverWidth} height={founder.data.coverHeight} alt={founder.data.coverAlt || ''} />}
+        {founder.data.cover && <ResponsiveArt class="home-profile-cover" src={founder.data.cover} sizes="(max-width: 680px) 90vw, 520px" maxWidth={800} width={founder.data.coverWidth} height={founder.data.coverHeight} alt={founder.data.coverAlt || ''} />}
         <span class="home-profile-portrait">
           {founder.data.portrait ? <ResponsiveArt src={founder.data.portrait} sizes="172px" width={founder.data.portraitWidth} height={founder.data.portraitHeight} alt={founder.data.portraitAlt || founder.data.name + '选用的头像'} /> : <span aria-hidden="true">{founder.data.name.slice(0, 1)}</span>}
         </span>
