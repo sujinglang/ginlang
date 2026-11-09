@@ -106,7 +106,7 @@
   .margin-whisper-content button, .selection-brief-author, .writing-row-author,
   .topic-author, .footer-bottom > a,
   .cover-colophon a, .featured-post h3 a, .selection-brief h3 a,
-  .post-row .post-title, .writing-row h2 a, .archive-list > li > a,
+  .post-row .post-title, .writing-row h2 a, .home-guest h3 a, .archive-list > li > a,
   .author-page .editorial-index li > div > a:first-child,
   .topic-works li > div > a:first-child, .about-reading-list a,
   .reading-route li a
@@ -161,7 +161,7 @@
   .hero-gallery-actions button, .margin-whisper-content button,
   .selection-brief-author, .writing-row-author, .topic-author, .footer-bottom > a,
   .cover-colophon a, .featured-post h3 a, .selection-brief h3 a,
-  .post-row .post-title, .writing-row h2 a, .archive-list > li > a,
+  .post-row .post-title, .writing-row h2 a, .home-guest h3 a, .archive-list > li > a,
   .author-page .editorial-index li > div > a:first-child,
   .topic-works li > div > a:first-child, .about-reading-list a, .reading-route li a
 ) { --sweep-track: transparent; }
@@ -205,29 +205,8 @@
   overflow-wrap: anywhere;
 }
 
-/* 客席作者：和其他列表项一样，只在下面一道线——鼠标放上去从左边长出来。
-   不要底色高亮、不要头像或名字的额外动作，这是全站统一的悬停语言
-   （`.post-row`、`.writing-row` 都是这条 220ms 的陶土细线）。 */
-.home-guest::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 1px;
-  background: var(--clay);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 220ms ease;
-  pointer-events: none;
-}
-
-.home-guest:hover::before,
-.home-guest:has(:focus-visible)::before {
-  transform: scaleX(1);
-}
-
-/* 原来那层 paper-raised 底色去掉，避免鼠标扫过时整块发亮 */
+/* 客席作者：悬停只让名字下面那道陶土细线长出来，和文章标题同一套，
+   不再有底色高亮，也不再有卡片整条的线。 */
 .home-guest:hover {
   background: transparent;
 }
