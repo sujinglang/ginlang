@@ -65,7 +65,8 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
         const CHOICE_KEY = 'ginlang-music';
         const MUTED_KEY = 'ginlang-music-muted';
         const TIME_KEY = 'ginlang-music-time';
-        const VOLUME = 0.32;
+        // 2026-11-08 用户要求默认音量减半：0.32 → 0.16
+        const VOLUME = 0.16;
 
         const init = () => {
           const root = document.querySelector('[data-ambient-music]');
