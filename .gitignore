@@ -5,3 +5,4 @@ dist/
 .codegraph/
 source-art/
 .commandcode/
+_hand-chars.json

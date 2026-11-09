@@ -28,15 +28,59 @@ const first = allWhispers[0];
 </aside>
 
 <script>
-  import { allWhispers } from '../data/whispers';
+  // 札记全集有 37 KB，几乎每页都挂着这块，但它在页面上位置靠后（手机上更靠后）。
+  // 所以先只渲染服务端那一句，等区块快进视口再取全集：正文渲染不再被它拖住，
+  // 读者没滚到那儿就一个字节都不下载。
+  let whispersPromise: Promise<typeof import('../data/whispers').allWhispers> | undefined;
+  const loadWhispers = () =>
+    (whispersPromise ??= import('../data/whispers').then((module) => module.allWhispers));
 
-  function initWhispers() {
-    document.querySelectorAll<HTMLElement>('[data-whisper]:not([data-whisper-ready])').forEach((note) => {
-      const lines = allWhispers;
+  async function initWhispers() {
+    const notes = [...document.querySelectorAll<HTMLElement>('[data-whisper]:not([data-whisper-ready])')];
+    if (!notes.length) return;
+
+    const start = async (note: HTMLElement) => {
+      if (note.dataset.whisperReady === 'true') return;
+      note.dataset.whisperReady = 'true';
+
+      // 数据到之前读者可能已经点了「换一句」：先记下点击次数，
+      // 拿到数据后补上，不能让人点了没反应。
+      const button = note.querySelector<HTMLButtonElement>('[data-whisper-next]');
+      let queued = 0;
+      const remember = () => { queued += 1; };
+      button?.addEventListener('click', remember);
+
+      const lines = await loadWhispers();
+      button?.removeEventListener('click', remember);
+
+      const advance = setupNote(note, lines);
+      if (advance && queued > 0) {
+        for (let step = 0; step < queued; step += 1) advance();
+      }
+    };
+
+    if (!('IntersectionObserver' in window)) {
+      for (const note of notes) void start(note);
+      return;
+    }
+
+    const watcher = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        watcher.unobserve(entry.target);
+        void start(entry.target as HTMLElement);
+      }
+    }, { rootMargin: '300px' });
+
+    for (const note of notes) watcher.observe(note);
+  }
+
+  function setupNote(note: HTMLElement, lines: typeof import('../data/whispers').allWhispers) {
+    {
       const text = note.querySelector<HTMLElement>('[data-whisper-text]');
       const source = note.querySelector<HTMLElement>('[data-whisper-source]');
       const button = note.querySelector<HTMLButtonElement>('[data-whisper-next]');
-      if (!lines?.length || !text || !source || !button) return;
+      if (!lines?.length || !text || !source || !button) return null;
 
       note.dataset.whisperReady = 'true';
       const key = 'ginlang-whisper-bag-all-v3';
@@ -114,13 +158,14 @@ const first = allWhispers[0];
 
       nextLine();
       button.addEventListener('click', nextLine);
-    });
+      return nextLine;
+    }
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initWhispers, { once: true });
+    document.addEventListener('DOMContentLoaded', () => void initWhispers(), { once: true });
   } else {
-    initWhispers();
+    void initWhispers();
   }
-  document.addEventListener('astro:page-load', initWhispers);
+  document.addEventListener('astro:page-load', () => void initWhispers());
 </script>

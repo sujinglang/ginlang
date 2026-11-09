@@ -1,0 +1,180 @@
+/* 刊物尺度与纸张材质（2026-11-08）
+   目标：把整站从「网页」往「一本装订好的文集」推一档——
+   首屏诗句按刊物封面尺度放大，章节标题抬一档，正文首段起笔，
+   纸面加极轻的纤维噪点，分隔线做成压凹的双色细线。
+   全部是叠加层：不动色板、字体、动效与既有结构，删掉本文件即回到原样。 */
+
+/* ---------- 一、首屏：刊头尺度 ---------- */
+
+/* 诗句是整站最该被记住的东西，给它刊物封面的字号；其余一切保持安静。 */
+.home-intro h1.cover-poem {
+  font-size: clamp(44px, 5.2vw, 70px);
+  line-height: 1.32;
+  letter-spacing: 0.055em;
+}
+
+/* 刊头信息行拉长字距，上面压一条极细的横线，像刊物的出版信息栏。 */
+.hero-kicker {
+  padding-top: 13px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 11%, transparent);
+  color: color-mix(in srgb, var(--muted) 88%, var(--ink));
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+}
+
+/* 诗句在左侧让出一条书页边线，像诗集的订口；线两端渐隐，不做成表格边框。 */
+@media (min-width: 1000px) {
+  .home-intro h1.cover-poem {
+    position: relative;
+    padding-left: 34px;
+  }
+
+  .home-intro h1.cover-poem::before {
+    position: absolute;
+    top: 0.12em;
+    bottom: 0.16em;
+    left: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--clay) 42%, transparent) 18%,
+      color-mix(in srgb, var(--clay) 42%, transparent) 78%,
+      transparent
+    );
+    content: '';
+  }
+}
+
+/* 首屏与正文之间的分界压进纸里：深一像素，下面回一像素高光。 */
+.home-intro {
+  border-bottom-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 58%, transparent);
+}
+
+/* ---------- 二、章节标题抬一档 ---------- */
+
+.section-heading h2 {
+  font-size: clamp(26px, 2.4vw, 33px);
+  letter-spacing: 0.005em;
+}
+
+.section-kicker {
+  font-size: 10px;
+  letter-spacing: 0.26em;
+}
+
+/* ---------- 三、文章页：标题与起笔 ---------- */
+
+/* 稿件上方一道压凹横线，把「文章」和页头导航分开，像目录页的栏线。 */
+.article-header {
+  padding-top: clamp(16px, 1.8vw, 24px);
+  border-top: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 55%, transparent);
+}
+
+.article-header h1 {
+  font-size: clamp(38px, 5.1vw, 63px);
+  line-height: 1.28;
+  letter-spacing: 0.006em;
+}
+
+.article-deck {
+  font-size: 15px;
+  line-height: 2;
+}
+
+/* 首段放大半档并加粗一点行距，读者知道自己从哪儿开始。 */
+.article-body.prose > p:first-of-type {
+  font-size: 17.5px;
+  line-height: 2.05;
+  color: color-mix(in srgb, var(--ink) 94%, transparent);
+}
+
+/* 首段左侧一道短竖线，像落笔前压住的笔锋；窄屏没有页边距，就不画。 */
+@media (min-width: 900px) {
+  .article-body.prose > p:first-of-type {
+    position: relative;
+  }
+  .article-body.prose > p:first-of-type::before {
+    position: absolute;
+    top: 0.5em;
+    left: -26px;
+    width: 2px;
+    height: 2.6em;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--clay) 62%, transparent),
+      color-mix(in srgb, var(--clay) 6%, transparent)
+    );
+    content: '';
+  }
+}
+
+/* ---------- 四、纸面纤维 ---------- */
+
+/* 一层 3.5% 的噪点铺在最上面，纸才有纤维感；点缀在照片上也不会发脏。
+   深色下改用滤色叠加，墨底上才看得见，否则只剩一团黑。 */
+html::after {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  opacity: 0.09;
+  background-image: url('/paper-grain.png');
+  background-size: 128px 128px;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  content: '';
+}
+
+:root[data-theme='dark'] html::after {
+  opacity: 0.07;
+  mix-blend-mode: screen;
+}
+
+@media print {
+  html::after {
+    display: none;
+  }
+}
+
+/* ---------- 五、窄屏收口 ---------- */
+
+@media (max-width: 680px) {
+  .home-intro h1.cover-poem {
+    font-size: clamp(38px, 10.4vw, 52px);
+    line-height: 1.36;
+    letter-spacing: 0.04em;
+  }
+
+  .article-header h1 {
+    font-size: clamp(31px, 9vw, 42px);
+    line-height: 1.32;
+  }
+
+  .article-deck {
+    font-size: 14.5px;
+  }
+
+  .article-body.prose > p:first-of-type {
+    font-size: 17px;
+  }
+}
+/* 诗句缩进之后，导语与两个按钮跟诗句左对齐，刊头行留在真正的版口。 */
+@media (min-width: 1000px) {
+  .home-intro .intro-note,
+  .home-intro .hero-links {
+    padding-left: 34px;
+  }
+}
+
+/* ---------- 六、水彩画既是「印在纸上的一张画」 ---------- */
+
+/* 拿掉硬边和常规投影，换成贴纸般轻的压力：上沿一线高光，下方一团很淡的落影。 */
+.hero-gallery-frame {
+  border-color: color-mix(in srgb, var(--ink) 9%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 72%, transparent),
+    0 18px 36px -22px rgb(58 52 39 / 28%),
+    0 2px 6px rgb(58 52 39 / 6%);
+}
