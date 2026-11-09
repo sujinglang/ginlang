@@ -111,32 +111,12 @@
   }
 }
 
-/* ---------- 四、纸面纤维 ---------- */
+/* ---------- 四、纸面 ---------- */
 
-/* 一层 3.5% 的噪点铺在最上面，纸才有纤维感；点缀在照片上也不会发脏。
-   深色下改用滤色叠加，墨底上才看得见，否则只剩一团黑。 */
-html::after {
-  position: fixed;
-  z-index: 70;
-  inset: 0;
-  opacity: 0.09;
-  background-image: url('/paper-grain.png');
-  background-size: 128px 128px;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  content: '';
-}
-
-:root[data-theme='dark'] html::after {
-  opacity: 0.07;
-  mix-blend-mode: screen;
-}
-
-@media print {
-  html::after {
-    display: none;
-  }
-}
+/* 纸面保持干净的暖纸白，不再叠噪点或材质。
+   2026-11-08 试过两层（逐像素噪点、牛皮纸材质），前者被指出「背景有麻子」，
+   后者贴上去会连水彩一起染黄，用户最终说保持原样。这里留白即是有意为之，
+   要加质感请先让用户看样片。 */
 
 /* ---------- 五、窄屏收口 ---------- */
 
