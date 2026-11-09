@@ -106,7 +106,7 @@
   .margin-whisper-content button, .selection-brief-author, .writing-row-author,
   .topic-author, .footer-bottom > a,
   .cover-colophon a, .featured-post h3 a, .selection-brief h3 a,
-  .post-row .post-title, .writing-row h2 a, .home-guest h3 a, .person-row h3 a, .person-feature h2 a, .archive-list > li > a,
+  .post-row .post-title, .writing-row h2 a, .archive-list > li > a,
   .author-page .editorial-index li > div > a:first-child,
   .topic-works li > div > a:first-child, .about-reading-list a,
   .reading-route li a
@@ -161,7 +161,7 @@
   .hero-gallery-actions button, .margin-whisper-content button,
   .selection-brief-author, .writing-row-author, .topic-author, .footer-bottom > a,
   .cover-colophon a, .featured-post h3 a, .selection-brief h3 a,
-  .post-row .post-title, .writing-row h2 a, .home-guest h3 a, .person-row h3 a, .person-feature h2 a, .archive-list > li > a,
+  .post-row .post-title, .writing-row h2 a, .archive-list > li > a,
   .author-page .editorial-index li > div > a:first-child,
   .topic-works li > div > a:first-child, .about-reading-list a, .reading-route li a
 ) { --sweep-track: transparent; }
@@ -207,3 +207,28 @@
 
 /* 客席作者：悬停只让名字下面那道陶土细线长出来，和文章标题同一套。
    底色高亮的源规则已从 editorial.css 直接删掉，这里不再需要覆盖。 */
+
+/* 客席作者（首页块与 /authors/ 整页）：悬停时下面那条长线从左压到右，
+   和文章列表 .post-row、.writing-row 是同一套语言。
+   线铺在各行自己的 border-bottom 上（bottom: -1px），不改变任何尺寸。 */
+.home-guest::before,
+.person-row::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 1px;
+  background: var(--clay);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+  pointer-events: none;
+}
+
+.home-guest:hover::before,
+.home-guest:has(:focus-visible)::before,
+.person-row:hover::before,
+.person-row:has(:focus-visible)::before {
+  transform: scaleX(1);
+}
