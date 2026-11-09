@@ -205,14 +205,10 @@
   overflow-wrap: anywhere;
 }
 
-/* 客席作者：原来悬停只是把底色从 #F5F2EB 换成 #FCFAF6，肉眼几乎看不出变化，
-   手机上按下去更是完全没有回应。现在换成一笔从左到右压下来的陶土线，
-   头像随之轻轻推近一点；触屏没有悬停，按下的瞬间给一次短促的底色回应。 */
-.home-guest {
-  transition: background-color 220ms ease, border-color 220ms ease;
-}
-
-.home-guest::after {
+/* 客席作者：和其他列表项一样，只在下面一道线——鼠标放上去从左边长出来。
+   不要底色高亮、不要头像或名字的额外动作，这是全站统一的悬停语言
+   （`.post-row`、`.writing-row` 都是这条 220ms 的陶土细线）。 */
+.home-guest::before {
   content: '';
   position: absolute;
   right: 0;
@@ -221,50 +217,17 @@
   height: 1px;
   background: var(--clay);
   transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 420ms cubic-bezier(0.22, 0.68, 0.24, 1);
+  transform-origin: left;
+  transition: transform 220ms ease;
   pointer-events: none;
 }
 
-.home-guest:hover::after,
-.home-guest:has(:focus-visible)::after {
+.home-guest:hover::before,
+.home-guest:has(:focus-visible)::before {
   transform: scaleX(1);
 }
 
-/* 取消原来那层几乎看不见的底色，把注意力留给线与头像 */
+/* 原来那层 paper-raised 底色去掉，避免鼠标扫过时整块发亮 */
 .home-guest:hover {
   background: transparent;
-}
-
-.home-guest-portrait img {
-  transition: transform 460ms cubic-bezier(0.22, 0.68, 0.24, 1), border-color 260ms ease;
-}
-
-.home-guest:hover .home-guest-portrait img,
-.home-guest:has(:focus-visible) .home-guest-portrait img {
-  transform: scale(1.045);
-  border-color: color-mix(in srgb, var(--clay) 45%, var(--line));
-}
-
-.home-guest h3 a {
-  transition: color 240ms ease;
-}
-
-.home-guest:hover h3 a {
-  color: var(--clay);
-}
-
-@media (hover: none) {
-  .home-guest:active {
-    background: color-mix(in srgb, var(--clay) 6%, transparent);
-  }
-
-  .home-guest:active::after {
-    transform: scaleX(1);
-    transition-duration: 160ms;
-  }
-
-  .home-guest:active .home-guest-portrait img {
-    transform: scale(1.02);
-  }
 }

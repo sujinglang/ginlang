@@ -98,3 +98,7 @@
 .about-card p {
   font-size: 17px;
 }
+/* 首页「上次读到 …」那行偏小，抬到 15px */
+.last-read-note {
+  font-size: 15px;
+}
