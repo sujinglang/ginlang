@@ -52,7 +52,7 @@ body { background: var(--paper); }
 .home-guest-portrait { display: block; flex: none; width: 66px; height: 66px; }
 .home-guest-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--line); }
 .home-guest-portrait .person-initial { width: 100%; height: 100%; }
-.home-guest:hover, .home-guest:has(:focus-visible) { background: var(--paper-raised); }
+/* 客席作者卡片不再做底色高亮：悬停只让名字下的陶土细线长出来（见 refinements.css）。 */
 .home-guest > div > span { color: var(--clay); font: 10px/1.5 var(--sans); }
 .home-guest h3 { margin: 3px 0 7px; font-size: 18px; font-weight: 500; }
 .home-guest h3 a { text-decoration: none; }

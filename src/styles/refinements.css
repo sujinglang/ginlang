@@ -205,8 +205,5 @@
   overflow-wrap: anywhere;
 }
 
-/* 客席作者：悬停只让名字下面那道陶土细线长出来，和文章标题同一套，
-   不再有底色高亮，也不再有卡片整条的线。 */
-.home-guest:hover {
-  background: transparent;
-}
+/* 客席作者：悬停只让名字下面那道陶土细线长出来，和文章标题同一套。
+   底色高亮的源规则已从 editorial.css 直接删掉，这里不再需要覆盖。 */
