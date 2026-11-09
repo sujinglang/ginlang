@@ -1,0 +1,94 @@
+/* 可达性收尾（2026-11-08）
+   只做三件事：把过小的字号抬到能读的地板、把过小的点按区域撑开、
+   鼠标点完不留焦点方框。视觉位置与间距都不变，不动任何既有版式。 */
+
+/* ---------- 一、最小字号地板 ---------- */
+
+/* 这些说明字原先在 9–11px（署名、篇数、刊头、页脚、目录提示）。
+   组件内的样式是 scoped 的、选择器更细，所以这一层用 !important 才压得住，
+   而且只改字号，不动颜色、字距和间距。 */
+.hero-kicker,
+.section-kicker,
+.toc-kicker,
+.dialog-kicker,
+.brand-note,
+.post-meta,
+.home-profile-label,
+.footer-main p,
+.footer-bottom,
+.footer-visit small,
+.footer-wordmark span,
+.hero-topics,
+.hero-gallery-actions button,
+.margin-whisper-body cite,
+.margin-whisper-content button,
+.search-result a > span:last-child,
+.archive-list > li > span,
+.cover-colophon span:nth-last-child(-n + 2),
+.intro-art figcaption,
+.neighbor-card strong,
+.setting-group legend,
+.setting-options label span,
+.settings-note,
+.home-note .paper-topline,
+.home-note .paper-footline,
+.home-guest div > span,
+.share-label,
+.writing-filter-count,
+.resume-kicker,
+.resume-privacy {
+  font-size: 11.5px !important;
+  line-height: 1.55;
+}
+
+/* 音乐卡片的两行字桌面本来是 12px / 11px，只在窄屏才缩到 10.5 / 10，
+   所以只在窄屏抬回来，别把桌面的正常字号也一起改小。 */
+@media (max-width: 680px) {
+  .ambient-note,
+  .ambient-credit {
+    font-size: 11.5px !important;
+  }
+}
+
+/* ---------- 二、点按区域 ---------- */
+
+/* 顶部字标、页脚字标与页脚链接、目录条目、换一句，
+   原先高度只有 16–27px。用 padding 撑开、再给等量负 margin，
+   热区变大而视觉位置、行高、间距全都不变。 */
+.wordmark,
+.footer-wordmark,
+.site-footer a,
+.article-toc a,
+.toc a,
+[data-back-to-top],
+.margin-whisper-content button {
+  padding-block: 12px;
+  margin-block: -12px;
+}
+
+/* 目录条目原本挤在一起，热区撑开后相邻条目会互相压住，
+   给 li 加一点行间呼吸，避免点到上一条。 */
+.article-toc li + li {
+  margin-top: 2px;
+}
+
+/* 手机上的字标与页脚链接更密，热区再多给一点 */
+@media (max-width: 680px) {
+  .wordmark,
+  .footer-wordmark,
+  .site-footer a {
+    padding-block: 14px;
+    margin-block: -14px;
+  }
+}
+
+/* ---------- 三、鼠标点击不留描边 ---------- */
+
+/* 用户要求：点按钮不许出现方框，看着廉价。
+   键盘 Tab 仍然走各组件既有的 :focus-visible 规则，不受影响；
+   这里兜住「鼠标点过之后浏览器自己画的那个焦点环」。
+   卡片外框与标题下划线不在这条里，它们已经从 :focus-within 换成
+   :has(:focus-visible)，鼠标点不出来。 */
+.site-shell :is(a, button, summary, [tabindex]):focus:not(:focus-visible) {
+  outline: none;
+}

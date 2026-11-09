@@ -171,7 +171,9 @@
 }
 .featured-post h3 a, .selection-brief h3 a, .post-row .post-title, .writing-row h2 a, .person-feature h2 a, .person-row h3 a, .home-guest h3 a, .author-page .editorial-index a, .topic-works li > div > a:first-child { cursor: pointer; }
 .featured-meta a, .selection-brief-author, .post-meta a, .writing-row-author, .topic-works .topic-author, .person-feature .quiet-link { position: relative; z-index: 1; }
-.featured-post:focus-within, .selection-brief:focus-within, .post-row:focus-within, .writing-row:focus-within, .person-feature:focus-within, .person-row:focus-within, .home-guest:focus-within, .author-page .editorial-index li:focus-within, .topic-works li:focus-within { outline: 1px solid var(--focus); outline-offset: 3px; }
+/* 卡片外框只在键盘聚焦时出现。用 :has(:focus-visible) 代替 :focus-within，
+   是因为鼠标点进卡片后 :focus-within 会一直成立，框会一直留在屏幕上。 */
+.featured-post:has(:focus-visible), .selection-brief:has(:focus-visible), .post-row:has(:focus-visible), .writing-row:has(:focus-visible), .person-feature:has(:focus-visible), .person-row:has(:focus-visible), .home-guest:has(:focus-visible), .author-page .editorial-index li:has(:focus-visible), .topic-works li:has(:focus-visible) { outline: 1px solid var(--focus); outline-offset: 3px; }
 .recent-section { margin-top: 48px; }
 .recent-section .section-heading { margin-bottom: 7px; }
 .post-list { margin: 0; padding: 0; list-style: none; }
@@ -186,7 +188,7 @@
   border-bottom: 1px solid var(--line);
 }
 .post-row::before { position: absolute; right: 0; bottom: -1px; left: 0; height: 1px; background: var(--clay); content: ''; transform: scaleX(0); transform-origin: left; transition: transform 220ms ease; }
-.post-row:hover::before, .post-row:focus-within::before { transform: scaleX(1); }
+.post-row:hover::before, .post-row:has(:focus-visible)::before { transform: scaleX(1); }
 .post-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted); font: 11px/1.6 var(--sans); letter-spacing: 0.015em; }
 .post-meta a { text-decoration: none; }
 .meta-dot { color: var(--clay); }

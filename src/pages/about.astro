@@ -24,7 +24,7 @@ const founderPosts = (await getCollection('posts', ({ data }) => !data.draft)).f
         <ProfileMeta location={founder?.data.location} displayDate={founder?.data.displayDate} className="about-profile-meta" />
       </header>
       <figure class="intro-art" data-reveal="image">
-        <img src={base + '/about-notebook-animated.webp'} width="720" height="720" alt="手绘的摊开笔记本与一枝植物" loading="lazy" decoding="async" />
+        <img src={base + '/about-notebook-animated.webp'} width="720" height="720" alt="手绘的摊开笔记本与一枝植物" loading="eager" decoding="async" />
         <figcaption>留白的地方，也可以写字。</figcaption>
         <Butterfly size="sm" />
       </figure>

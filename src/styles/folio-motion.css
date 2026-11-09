@@ -82,7 +82,7 @@
 .home-guest-empty > a.quiet-link, .people-empty > a.quiet-link { padding: 4px 0 5px; border-bottom: 1px solid var(--line); color: var(--accent-deep); font: 12px/1.5 var(--sans); }
 .home-guest-empty > a.quiet-link { border-bottom: 0; }
 .home-guest-empty > a::after, .people-empty > a::after { position: absolute; inset: 0; content: ''; }
-.home-guest-empty:focus-within, .people-empty:focus-within { outline: 2px solid var(--focus); outline-offset: 3px; }
+.home-guest-empty:has(:focus-visible), .people-empty:has(:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
 .back-link { min-height: 44px; gap: 9px; margin-bottom: 31px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 12px; transition: border-color 220ms ease, color 220ms ease; }
 .back-link:hover { border-bottom-color: var(--clay); }
 .rss-link { border-bottom-color: var(--line); }

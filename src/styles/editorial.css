@@ -52,7 +52,7 @@ body { background: var(--paper); }
 .home-guest-portrait { display: block; flex: none; width: 66px; height: 66px; }
 .home-guest-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--line); }
 .home-guest-portrait .person-initial { width: 100%; height: 100%; }
-.home-guest:hover, .home-guest:focus-within { background: var(--paper-raised); }
+.home-guest:hover, .home-guest:has(:focus-visible) { background: var(--paper-raised); }
 .home-guest > div > span { color: var(--clay); font: 10px/1.5 var(--sans); }
 .home-guest h3 { margin: 3px 0 7px; font-size: 18px; font-weight: 500; }
 .home-guest h3 a { text-decoration: none; }
@@ -82,7 +82,7 @@ body { background: var(--paper); }
 .people-empty a { color: var(--accent-deep); font: 12px/1.6 var(--sans); text-decoration: none; white-space: nowrap; }
 .people-list { border-top: 1px solid var(--line); }
 .person-row { position: relative; display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 18px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); transition: background-color 180ms ease, padding-inline 180ms ease; }
-.person-row:hover, .person-row:focus-within { padding-inline: 9px; background: var(--paper-raised); }
+.person-row:hover, .person-row:has(:focus-visible) { padding-inline: 9px; background: var(--paper-raised); }
 .person-row img, .person-initial { width: 66px; height: 66px; object-fit: cover; }
 .person-initial { display: grid; place-items: center; flex: none; border: 1px solid var(--line); background: var(--accent-soft); color: var(--accent-deep); font: 26px/1 var(--serif); }
 .person-row h3 { margin: 0; font-size: 19px; font-weight: 500; }
