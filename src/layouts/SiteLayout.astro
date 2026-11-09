@@ -6,6 +6,10 @@ import { formatDate } from '../lib/date';
 import { getHomeShareCard } from '../lib/shareCard';
 import AmbientMusic from '../components/AmbientMusic.astro';
 
+// 2026-11-08 用户要求：「回到页首」先封存：代码、样式、交互脚本都保留，只是不渲染。
+// 想恢复把这里改成 true 即可。
+const showToTop = false;
+
 interface Props {
   title?: string;
   description?: string;
@@ -245,7 +249,7 @@ const webSiteSchema = JSON.stringify({
       })();
     </script>
 
-    <button class="to-top" type="button" data-to-top hidden aria-label="回到页首">回到页首 <span aria-hidden="true">↑</span></button>
+    {showToTop && <button class="to-top" type="button" data-to-top hidden aria-label="回到页首">回到页首 <span aria-hidden="true">↑</span></button>}
 
     <dialog class="utility-dialog share-dialog" id="share-dialog" aria-labelledby="share-title" data-share-url={homeUrl}>
       <div class="dialog-topline">
