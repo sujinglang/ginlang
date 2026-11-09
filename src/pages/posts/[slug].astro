@@ -74,7 +74,7 @@ const articleSchema = JSON.stringify({
 <SiteLayout title={post.data.title} description={post.data.excerpt} articlePage={true} ogImage={shareImage} ogImageAlt={shareCard.alt} publishedTime={post.data.draft ? undefined : post.data.date.toISOString()}>
   <script type="application/ld+json" set:html={articleSchema} />
   <article class="article-page" data-article-neighbors data-post-id={post.id} data-post-title={post.data.title} data-neighbor-prev={olderPost ? base + '/posts/' + olderPost.id + '/' : undefined} data-neighbor-next={newerPost ? base + '/posts/' + newerPost.id + '/' : undefined}>
-    <a class="back-link" href={base + '/'}>← 回到首页</a>
+    <a class="back-link" href={base + '/writing/'} data-back-link>← 返回</a>
     <header class="article-header">
       {post.data.draft && <p class="draft-banner">草稿预览 · 这篇文章不会出现在正式网站</p>}
       <div class="post-meta article-meta">
@@ -123,14 +123,7 @@ const articleSchema = JSON.stringify({
     </div>
 
     <div class="article-endmark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" focusable="false"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4L18.4 5.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" /></svg></div>
-    <div class="article-actions">
-      <span>如果这篇文章也陪你停留了一会儿</span>
-      <div class="article-actions-buttons">
-        <button class="copy-link" id="share-post" type="button" hidden>分享这篇文章</button>
-        <button class="copy-link" id="copy-link" type="button">复制文章链接</button>
-      </div>
-    </div>
-    <span class="sr-only" id="copy-status" aria-live="polite"></span>
+
 
     {showAuthor && <aside class="article-author" aria-label="关于作者">
       {author.data.portrait ? <ResponsiveArt class="article-author-portrait" src={author.data.portrait} sizes="64px" maxWidth={240} width={author.data.portraitWidth} height={author.data.portraitHeight} alt="" /> : <span class="person-initial" aria-hidden="true">{author.data.name.slice(0, 1)}</span>}

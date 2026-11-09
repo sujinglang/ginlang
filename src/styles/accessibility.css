@@ -92,3 +92,9 @@
 .site-shell :is(a, button, summary, [tabindex]):focus:not(:focus-visible) {
   outline: none;
 }
+
+/* 关于页那句「认识写字的人 · 了解参与写作的方式」偏小，抬到 16px；
+   同一段里的说明文字跟着一起变，整行才不显得断层。 */
+.about-card p {
+  font-size: 17px;
+}

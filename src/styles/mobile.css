@@ -1,0 +1,82 @@
+/* 手机端全局处理（2026-11-08）
+   用户明确：主看手机。这一层只收紧手机上的密度、补齐安全区与热区，
+   桌面版一条规则都不碰（全部关在 max-width: 680px 里）。 */
+
+@media (max-width: 680px) {
+  /* ---------- 一、页头收紧 ---------- */
+
+  /* 原 18px 上内边距 + 52px 菜单行 + 8px 下内边距，合计 135px。
+     收成 14 / 46 / 6，整块降到 118px 左右，首屏内容上移。 */
+  .site-header {
+    padding-block: max(14px, env(safe-area-inset-top)) 6px;
+    gap: 6px;
+  }
+
+  .menu-toggle {
+    min-height: 46px;
+  }
+
+  /* ---------- 二、底部不再被固定元素压住 ---------- */
+
+  /* 左下角的音符键是 position: fixed，页面最后一行会被它盖住；
+     页脚统一留出一条，含 iPhone 底部手势区。 */
+  .site-footer {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  /* ---------- 三、点按热区 ---------- */
+
+  /* 卡片标题、作者名、「最近更新」那条目录、标签与页脚链接，
+     手机上多数只有 18–28px 高。一律用 padding + 等量负 margin 撑开，
+     视觉位置、行高、卡片间距都不变。 */
+  .cover-colophon a,
+  .home-guest h3 a,
+  .post-row h3 a,
+  .selection-brief h3 a,
+  .writing-row h2 a,
+  .person-row h3 a,
+  .archive-list h3 a,
+  .article-meta a,
+  .article-footer a,
+  .article-pagination a,
+  .post-meta a,
+  .about-copy p a,
+  .about-card p a,
+  .about-reading-list a,
+  .reading-route li a,
+  .last-read-note a,
+  .desk-note a {
+    padding-block: 8px;
+    margin-block: -8px;
+  }
+
+  /* 摘要里的「链接」带描边，直接加 padding 会把框一起撑大，
+     所以改用透明覆盖层扩热区，描边框本身尺寸不变。 */
+  .article-deck-link {
+    position: relative;
+  }
+
+  .article-deck-link::after {
+    content: '';
+    position: absolute;
+    inset: -7px -5px;
+  }
+
+  /* 画册说明文字删掉了，只剩「做张小卡片」一个按钮，
+     让它跟上面的翻页控件一样贴右，别孤零零挂在左边。 */
+  .hero-gallery-caption-actions {
+    justify-content: flex-end;
+  }
+
+  /* ---------- 四、正文疏密 ---------- */
+
+  /* 手机上正文行距略收一点，长文读起来不散；字号不动。 */
+  .article-body.prose p {
+    line-height: 1.95;
+  }
+
+  /* 文章页大标题在窄屏行距稍紧，避免四行以上的标题把首屏吃光 */
+  .article-header h1 {
+    line-height: 1.3;
+  }
+}

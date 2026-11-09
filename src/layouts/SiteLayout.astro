@@ -65,7 +65,7 @@ const webSiteSchema = JSON.stringify({
 <html lang="zh-CN" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" id="theme-color" content="#f5f2eb" />
     <meta name="description" content={description} />
     <meta name="robots" content={noIndex ? 'noindex, follow' : 'index, follow'} />
@@ -670,20 +670,6 @@ const webSiteSchema = JSON.stringify({
         updateProgress();
       }
 
-      document.querySelector<HTMLButtonElement>('#copy-link')?.addEventListener('click', async (event) => {
-        const button = event.currentTarget as HTMLButtonElement;
-        const status = document.querySelector<HTMLElement>('#copy-status');
-        try {
-          await navigator.clipboard.writeText(window.location.href);
-          button.textContent = '已复制链接';
-          if (status) status.textContent = '文章链接已复制到剪贴板。';
-        } catch {
-          if (status) status.textContent = '浏览器暂不允许复制，请从地址栏复制链接。';
-          button.textContent = '复制不可用';
-        }
-        window.setTimeout(() => { button.textContent = '复制文章链接'; }, 2200);
-      });
-
       const toTop = document.querySelector<HTMLButtonElement>('[data-to-top]');
       if (toTop) {
         // Article pages already have a floating bookmark in the corner; sit above it.
@@ -731,5 +717,21 @@ const webSiteSchema = JSON.stringify({
         });
       }
     </script>
-  </body>
+    <script>
+      // 「← 返回」：读者是从站内某个页面点进来的，就回到那一页（浏览器后退，滚动位置也还原）；
+      // 直接打开链接或从外部站点进来时，href 里的兜底地址生效。
+      document.addEventListener('click', (event) => {
+        const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('[data-back-link]');
+        if (!link) return;
+        if (!document.referrer) return;
+        try {
+          if (new URL(document.referrer).origin !== location.origin) return;
+        } catch {
+          return;
+        }
+        if (history.length <= 1) return;
+        event.preventDefault();
+        history.back();
+      });
+    </script>  </body>
 </html>
