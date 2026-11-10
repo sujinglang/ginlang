@@ -93,3 +93,12 @@
 - **换页后把焦点交给正文**：点完链接那颗 `<a>` 已经不在 DOM 里，焦点掉回 `body`，键盘与读屏用户得从页头重新 Tab。现在 `astro:page-load` 里若 `activeElement` 是 body 就 `#main-content`（已有 `tabindex="-1"`）`focus({ preventScroll: true })`；鼠标点进来不会出现焦点框（`:focus-visible` 没命中）。
 - **减少动态效果不用另做**：`ClientRouter` 自带 `@media (prefers-reduced-motion)` 下的 `::view-transition-* { animation: none !important }`，构建产物里已确认在。别自己再写一遍。
 - **没动的**：纸页过渡仍是 300ms 出 / 420ms 入。这是设计不是性能问题——真要更利落，改 `tokens-base.css` 里 `::view-transition-old(root)` / `-new(root)` 的两个时长即可，两行。**别顺手改**，用户对这块节奏有意见会自己说。
+### 2026-11-10 标签功能下线
+
+用户截了文章页那行「标签 远方 成长 秋日」，说「不要标签功能，然后全部上线」。
+
+- **文章页**：`posts/[slug].astro` 加 `const showTags = false`，摘要下面那一行不再渲染。模板与 `.article-tags` 样式都留着，改回 `true` 就恢复。
+- **页面**：删掉 `src/pages/tags/index.astro` 与 `src/pages/tags/[slug].astro`。构建从 44 页降到 34 页，`/tags/` 与四个标签页不再生成，老地址现在落到 404。
+- **sitemap**：去掉 `/tags/`、`/tags/<slug>/`、`/archive/<slug>/` 三类地址，22 条。
+- **仍保留的**：frontmatter 的 `tags` 字段（zod 照旧校验，`npm run content` 与工作台也照旧问）；`src/lib/tags.ts`（`/archive/` 的按标签筛选、文章页「相关文章」的排序还在用 `tagSlug`）；`search-index.json` 里的 tags——关键词仍能搜到那篇文章，只是页面上不再显示。
+- 所以：**标签作为元数据还在，作为一个面向读者的功能没了**。要彻底连数据一起清，得同时改 `content.config.ts`、四篇文章的 frontmatter、`tags.ts` 与归档页。

@@ -15,6 +15,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // 2026-11-08 用户要求：阅读书签（存到书桌、续读卡片、右下角夹书签）先封存。
 // 组件与样式都还在，只是不渲染；要恢复改成 true。
 const showReadingBookmark = false;
+// 2026-11-10 用户要求：不要标签功能。文章页不再渲染「标签 远方 成长 秋日」那一行，
+// /tags/ 页面也不再从任何地方链出去、不进 sitemap（数据与页面都保留，要恢复改成 true）。
+const showTags = false;
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => import.meta.env.DEV || !data.draft);
@@ -91,7 +94,7 @@ const articleSchema = JSON.stringify({
           <>{deckSource.before}<a class="article-deck-link" href={deckSource.url} target="_blank" rel="noopener noreferrer">{LINK_WORD}</a>{deckSource.after}</>
         ) : post.data.excerpt}
       </p>
-      {post.data.tags.length > 0 && (
+      {showTags && post.data.tags.length > 0 && (
         <p class="post-meta article-tags">
           <span class="article-tags-label">标签</span>
           {post.data.tags.map((raw) => (

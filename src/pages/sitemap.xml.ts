@@ -1,6 +1,5 @@
 import { getCollection } from 'astro:content';
 import { categories } from '../lib/categories';
-import { collectTags } from '../lib/tags';
 import topicRecords from '../content/topics.json';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -13,7 +12,6 @@ export async function GET() {
   const authors = await getCollection('authors');
   const albums = await getCollection('albums');
   const topics = Object.keys(topicRecords).length ? await getCollection('topics', ({ data }) => !data.draft) : [];
-  const tags = collectTags(posts);
   const paths = [
     { path: '/', modified: undefined },
     { path: '/writing/', modified: undefined },
@@ -25,9 +23,7 @@ export async function GET() {
     ...(topics.length ? [{ path: '/topics/', modified: undefined }] : []),
     ...categories.filter((category) => category.slug !== 'huiji').map((category) => ({ path: '/category/' + category.slug + '/', modified: undefined })),
     ...(categories.some((category) => category.slug === 'huiji') ? [{ path: '/huiji/', modified: undefined }] : []),
-    ...(tags.length ? [{ path: '/tags/', modified: undefined }] : []),
-    ...tags.map((tag) => ({ path: '/tags/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
-    ...tags.map((tag) => ({ path: '/archive/' + encodeURIComponent(tag.slug) + '/', modified: undefined })),
+    // 2026-11-10 用户要求：不要标签功能。标签页与按标签筛的归档页不再进 sitemap。
     ...authors.map((author) => ({ path: '/authors/' + encodeURIComponent(author.id) + '/', modified: undefined })),
     ...albums.map((album) => ({ path: '/album/' + encodeURIComponent(album.id) + '/', modified: undefined })),
     ...topics.map((topic) => ({ path: '/topics/' + encodeURIComponent(topic.id) + '/', modified: undefined })),
