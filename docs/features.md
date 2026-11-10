@@ -66,3 +66,20 @@
 - **阅读书签**：文章页 [slug].astro 加 const showReadingBookmark = false;，<BookmarkWidget /> 包进条件渲染。右下角那颗 ✳ 浮动夹、A PAGE KEPT OPEN 续读卡片、ginlang-reading-bookmark:* 状态都随组件一起停用，组件文件与样式未删。
 - 恢复方式：把对应常量改回 	rue。
 - 注意：文章页紧挨着标签的「存到我的书桌 / 打开我的书桌」是另一个组件 SaveArticle.astro（把文章存进本地书桌），不与书签同源，本次未动。
+### 2026-11-10 全站单页路由（ClientRouter）
+
+用户要求「把这个网站全局改为单页路由」。做法是 Astro 内置的 `ClientRouter`（`astro:transitions`）：页面仍然是可索引的静态 HTML，只是站内链接由它在浏览器里接管，换页不再整份重载。下面几条是这次踩到的，以后改这块别退回。
+
+- **接入点**：`src/layouts/SiteLayout.astro` 里 `import { ClientRouter } from 'astro:transitions'`，在 `</head>` 前渲染 `<ClientRouter />`。所有页面都用这个布局，所以全站生效。`astro.config.mjs` 加了 `prefetch: false`：不关的话 ClientRouter 会顺带给所有站内链接做预取。
+- **一、模块脚本只执行一次**。Astro 打包出的 `<script>` 是模块，换页后浏览器不会重新求值，新 DOM 上没有任何监听。所有页面/组件脚本必须写成 `init…()` + `document.addEventListener('astro:page-load', init…)`，并用 `data-*-ready` 之类的标记保证同一份 DOM 只绑一次。SiteLayout 那段三百多行原本是顶层 `querySelector`，换页后引用全指向被替换掉的旧节点，菜单、搜索、阅读设置会一起失灵 —— 这是上一次单页路由尝试回滚的真正原因。现在是两层：只注册一次的全站监听（滚动、快捷键、页面外点击）读可变引用，每次换页由 `bindPage()` 换新节点，`pageGeneration` 防止同一份 DOM 绑两遍。
+- **二、`<html>` 属性会被新文档覆盖**。换页时 Astro 把新文档 `<html>` 的属性整份拷过来，`data-theme`、`data-text-size`、`data-font`、`data-reading-width` 全会消失，页面退回浅色默认值。必须在 `astro:after-swap` 里重新应用一遍（这时新画面还没截图，不会闪）。`<head>` 也是整体换掉的，所以 `theme-color` 那个 `<meta>` 要重新查，不能缓存节点。
+- **三、背景音乐靠 `transition:persist`**。`AmbientMusic.astro` 根节点加了 `transition:persist="ambient-music"`，换页时 Astro 把整块连同正在播放的 `<audio>` 一起搬进新页面，声音不断、播放位置连续。**删掉这个属性，换页时音乐就会停**。它的 `is:inline` 脚本不会重跑，`data-ambient-ready` 标记让 `init` 直接返回，正好。
+- **滚动显影不再重跑**。换页后的新内容直接可见，不叠 `will-reveal`；入场动效交给页面级纸页淡入。别让它在 `astro:page-load` 里重跑 —— 那样新画面的截图里整屏还是隐藏状态，过渡结束内容才「跳」出来。
+- **`history.pushState` / `replaceState` 必须把 `history.state` 传回去**（写 `window.history.state`）。传 `null` 会抹掉 ClientRouter 记的滚动位置和来回方向，之后按「返回」时路由器看到 `state === null` 会直接放弃换页，出现「地址变了但内容没变」。已改两处：搜索的 `?q=`（SiteLayout）、写作页类别筛选（writing.astro）。
+- **文章页 ←/→ 翻相邻文章改用 `navigate()`**（`import { navigate } from 'astro:transitions/client'`）。原来用 `location.assign`，单页路由下等于绕过路由器整页重载。
+- **「← 返回」加了站内翻页标记**。单页路由下 `document.referrer` 只在进站那一次有效，之后换页都不更新，光看它会把站内换页误判成从外部进来。现在另记 `astro:after-swap` 发生过没有；监听挂在**捕获阶段**，抢在路由器接管链接之前（路由器会看 `defaultPrevented` 而放过这一下）。
+- **几处监听挪到模块作用域**：文章页目录高亮、画册的 `visibilitychange`/系统动效变化、相册看图器的键盘操作。原来写在每次初始化的闭包里，换几次页就叠出好几份，按方向键会同时操作已经被换掉的节点。
+- **首页画册首图**：那段 `<script is:inline define:vars={{slideIds}}>` 换页后不会重跑，`__ginlangHeroStartId` 会一直是首次进站那张。现在从第二次起在初始化里自己重挑一张，保持「再进来换一幅」。
+- **验收脚本**（都在会话工作区 `_ginlang_spa/`）：`spa-test.mjs` 34 项、`spa-mobile.mjs` 11 项、`spa-direct.mjs` 8 项。dev 4323 与 preview 4324 都跑过 34/34；`check:site`、`check:library`、`check:content-state` 全绿。
+- **回滚**：改动只在分支 `spa-router`，`main` 与线上没动；保险起见另打了标签 `backup-before-spa-8170c19` 和分支 `backup/pre-spa`。要撤回 `git switch main` 即可。
+- **dev 小坑**：改过 `astro.config.mjs` 后，Vite 的依赖预构建可能还指着旧哈希，控制台报 `504 (Outdated Optimize Dep)`，表现就是路由器脚本没加载、点链接整页刷新。删掉 `node_modules/.vite` 再重启 dev 就好，不是代码问题。

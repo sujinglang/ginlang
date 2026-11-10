@@ -4,6 +4,9 @@ export default defineConfig({
   site: 'https://ginlang.vip',
   base: '/',
   trailingSlash: 'always',
+  // 单页路由开着时 Astro 会顺带做链接预取。这里明确关掉：换页由 ClientRouter
+  // 在点击时取一次 HTML，不想让鼠标扫过的每个链接都去下载一份。
+  prefetch: false,
   image: {
     layout: 'constrained',
     breakpoints: [480, 800, 1200],

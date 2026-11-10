@@ -87,6 +87,17 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
 
 <script>
   import { loadImage } from '../lib/imageLoading';
+
+  // 单页路由：可见性与系统动效的监听只注册一次，指向「当前这一页的画册」。
+  // 以前它们写在初始化函数里，换页会叠出多份，旧的那份还在操作已经被换掉的节点。
+  let activeGallerySync: (() => void) | null = null;
+  let heroInitialized = 0;
+  document.addEventListener('visibilitychange', () => activeGallerySync?.());
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const onMotionChange = () => activeGallerySync?.();
+  if (typeof motionQuery.addEventListener === 'function') motionQuery.addEventListener('change', onMotionChange);
+  else motionQuery.addListener(onMotionChange);
+
   function initHeroGallery() {
     const gallery = document.querySelector<HTMLElement>('[data-hero-gallery]:not([data-gallery-ready])');
     if (!gallery) return;
@@ -266,14 +277,11 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
       focused = false;
       schedule();
     });
-    document.addEventListener('visibilitychange', schedule);
-    const motionChanged = () => {
+    activeGallerySync = () => {
       if (motion.matches) userRequestedPlay = false;
       updatePlayButton();
       schedule();
     };
-    if (typeof motion.addEventListener === 'function') motion.addEventListener('change', motionChanged);
-    else motion.addListener(motionChanged);
     frame.addEventListener('touchstart', (event) => {
       const touch = event.changedTouches[0];
       if (touch) touchStart = { x: touch.clientX, y: touch.clientY };
@@ -316,7 +324,19 @@ const gallerySizes = '(max-width: 430px) 92vw, (max-width: 680px) 430px, (max-wi
         void activate(0, 1);
       }
     });
-    const chosenId = (window as Window & { __ginlangHeroStartId?: string }).__ginlangHeroStartId;
+    // 首次进站沿用上面那段内联脚本挑好的那张；单页路由换页后内联脚本不会再跑，
+    // 提示会一直是旧值，所以从第二次起在这里重挑一张，保持「再进来换一幅」。
+    const hint = (window as Window & { __ginlangHeroStartId?: string }).__ginlangHeroStartId;
+    let chosenId = heroInitialized === 0 && hint ? hint : '';
+    heroInitialized += 1;
+    if (!chosenId) {
+      let previous = '';
+      try { previous = sessionStorage.getItem(key) || ''; } catch { /* Storage is optional. */ }
+      const ids = images.map((image) => image.dataset.slideId || '');
+      const choices = ids.filter((id) => id && id !== previous);
+      chosenId = choices[Math.floor(Math.random() * choices.length)] || ids[0] || '';
+      try { sessionStorage.setItem(key, chosenId); } catch { /* Storage is optional. */ }
+    }
     const matchedStart = images.findIndex((image) => image.dataset.slideId === chosenId);
     const start = matchedStart >= 0 ? matchedStart : Math.floor(Math.random() * images.length);
     // Show the HTML image first, then swap to the chosen painting only when ready.

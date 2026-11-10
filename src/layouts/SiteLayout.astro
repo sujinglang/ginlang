@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import marckScriptFont from '../assets/fonts/marck-script-latin.woff2?url';
 import { getCollection } from 'astro:content';
+import { ClientRouter } from 'astro:transitions';
 import { formatDate } from '../lib/date';
 import { getHomeShareCard } from '../lib/shareCard';
 import AmbientMusic from '../components/AmbientMusic.astro';
@@ -133,6 +134,8 @@ const webSiteSchema = JSON.stringify({
         if (themeColor) themeColor.content = document.documentElement.dataset.theme === 'dark' ? '#20221f' : '#f5f2eb';
       })();
     </script>
+    <!-- 单页路由：站内链接由这里接管，换页不再整份重载。音乐用 transition:persist 跨页不断。 -->
+    <ClientRouter />
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到正文</a>
@@ -344,31 +347,34 @@ const webSiteSchema = JSON.stringify({
       const preferenceKey = 'ginlang-preferences';
       const defaults: Preferences = { theme: 'light', textSize: 'normal', font: 'serif', width: 'comfortable' };
       const root = document.documentElement;
-      const header = document.querySelector<HTMLElement>('.site-header');
-      const menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-      const menu = document.querySelector<HTMLElement>('#primary-nav');
-      if (header && menuToggle && menu) {
-        header.dataset.menuReady = 'true';
-        const closeMenu = (restoreFocus = false) => {
-          menuToggle.setAttribute('aria-expanded', 'false');
-          if (restoreFocus) menuToggle.focus();
-        };
-        menuToggle.addEventListener('click', () => {
-          menuToggle.setAttribute('aria-expanded', String(menuToggle.getAttribute('aria-expanded') !== 'true'));
-        });
-        menu.addEventListener('click', (event) => { if ((event.target as Element).closest('a')) closeMenu(); });
-        document.addEventListener('click', (event) => { if (event.target instanceof Node && !header.contains(event.target)) closeMenu(); });
-        document.addEventListener('keydown', (event) => {
-          if (menuToggle.getAttribute('aria-expanded') !== 'true') return;
-          if (event.key === 'Escape') closeMenu(true);
-          else if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) closeMenu();
-        });
-        window.addEventListener('wheel', () => { if (menuToggle.getAttribute('aria-expanded') === 'true') closeMenu(); }, { passive: true });
-        window.addEventListener('touchmove', () => { if (menuToggle.getAttribute('aria-expanded') === 'true') closeMenu(); }, { passive: true });
-      }
-      const settingsDialog = document.querySelector<HTMLDialogElement>('#reading-settings');
-      const settingsForm = document.querySelector<HTMLFormElement>('#settings-form');
-      const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
+
+      // 2026-11 单页路由（ClientRouter）改造，这一层要分两种东西看：
+      //   1. 全站只注册一次的监听（滚动、快捷键、页面外点击）挂在 document / window 上，
+      //      内部一律读下面的可变引用；换页时引用由 bindPage() 换成新节点。
+      //   2. 每次换页都要重绑的元素监听（页头菜单、三个对话框、进度条）——换页后是新的 DOM，
+      //      直接绑即可；用 pageGeneration 防止同一份 DOM 被绑两遍。
+      // 以前这段是顶层直接 querySelector，换页后引用全指向被替换掉的旧节点，菜单/搜索/
+      // 设置会一起失灵，这也是上一次单页路由回滚的原因。
+      let headerEl: HTMLElement | null = null;
+      let menuToggle: HTMLButtonElement | null = null;
+      let menu: HTMLElement | null = null;
+      let settingsDialog: HTMLDialogElement | null = null;
+      let settingsForm: HTMLFormElement | null = null;
+      let searchDialog: HTMLDialogElement | null = null;
+      let searchInput: HTMLInputElement | null = null;
+      let searchResults: HTMLOListElement | null = null;
+      let searchStatus: HTMLParagraphElement | null = null;
+      let shareDialog: HTMLDialogElement | null = null;
+      let shareUrlInput: HTMLInputElement | null = null;
+      let shareStatus: HTMLElement | null = null;
+      let progressFill: HTMLElement | null = null;
+      let progressArticle: HTMLElement | null = null;
+      let toTopButton: HTMLButtonElement | null = null;
+      let articleObserver: ResizeObserver | null = null;
+      let pageGeneration = 0;
+      let boundGeneration = -1;
+      let scrollFrame = 0;
+
       // The inline head script has already restored saved choices before this module runs.
       // Start from those applied values so opening the dialog reflects the visible page.
       let preferences: Preferences = {
@@ -383,12 +389,14 @@ const webSiteSchema = JSON.stringify({
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
 
-      function applyPreferences(save = false) {
+      function paintPreferences(save = false) {
         root.dataset.themeMode = preferences.theme;
         root.dataset.theme = resolvedTheme(preferences.theme);
         root.dataset.textSize = preferences.textSize;
         root.dataset.font = preferences.font;
         root.dataset.readingWidth = preferences.width;
+        // 换页后 <head> 也换成了新文档的，theme-color 这个 meta 必须重新查一次。
+        const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
         if (themeColor) themeColor.content = resolvedTheme(preferences.theme) === 'dark' ? '#20221f' : '#f5f2eb';
         if (save) {
           try {
@@ -405,55 +413,20 @@ const webSiteSchema = JSON.stringify({
         });
       }
 
-      document.querySelector('#settings-open')?.addEventListener('click', () => {
-        syncSettingsForm();
-        settingsDialog?.showModal();
-      });
+      function closeMenu(restoreFocus = false) {
+        if (!menuToggle) return;
+        menuToggle.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) menuToggle.focus();
+      }
 
-      document.querySelectorAll<HTMLButtonElement>('[data-dialog-close]').forEach((button) => {
-        button.addEventListener('click', () => button.closest('dialog')?.close());
-      });
-
-      settingsDialog?.addEventListener('click', (event) => {
-        if (event.target === settingsDialog) settingsDialog.close();
-      });
-
-      settingsForm?.addEventListener('change', () => {
-        const values = new FormData(settingsForm);
-        const theme = values.get('theme');
-        const textSize = values.get('textSize');
-        const font = values.get('font');
-        const width = values.get('width');
-        preferences = {
-          theme: theme === 'light' || theme === 'dark' ? theme : 'system',
-          textSize: textSize === 'small' || textSize === 'large' ? textSize : 'normal',
-          font: font === 'sans' ? 'sans' : 'serif',
-          width: width === 'narrow' || width === 'wide' ? width : 'comfortable',
-        };
-        applyPreferences(true);
-      });
-
-      document.querySelector('#settings-reset')?.addEventListener('click', () => {
-        preferences = { ...defaults };
-        syncSettingsForm();
-        applyPreferences(true);
-      });
-
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
-      systemTheme.addEventListener?.('change', () => {
-        if (preferences.theme === 'system') applyPreferences();
-      });
-
-      const searchDialog = document.querySelector<HTMLDialogElement>('#search-dialog');
-      const searchInput = document.querySelector<HTMLInputElement>('#search-input');
-      const searchResults = document.querySelector<HTMLOListElement>('#search-results');
-      const searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
-      const indexUrl = searchDialog?.dataset.indexUrl ?? '/search-index.json';
       type SearchItem = { title: string; excerpt: string; body: string; category: string; tags?: string[]; author?: string; date: string; url: string };
       let searchItemsPromise: Promise<SearchItem[]> | undefined;
       let searchRevision = 0;
 
+      // 索引与已展开的搜索结果跟着模块活，换页不会重新下载一次 search-index.json。
       function getSearchItems() {
+        // 索引地址写在对话框的 data-index-url 上；换页后对话框是新节点，所以每次现取。
+        const indexUrl = searchDialog?.dataset?.indexUrl ?? '/search-index.json';
         searchItemsPromise ??= fetch(indexUrl)
           .then((response) => {
             if (!response.ok) throw new Error('Search index unavailable');
@@ -490,6 +463,7 @@ const webSiteSchema = JSON.stringify({
       }
 
       function showSearchResult(item: SearchItem, query: string) {
+        if (!searchResults) return;
         const row = document.createElement('li');
         const link = document.createElement('a');
         const meta = document.createElement('span');
@@ -507,7 +481,7 @@ const webSiteSchema = JSON.stringify({
         excerpt.append(highlighted(source, query));
         link.append(meta, title, excerpt);
         row.append(link);
-        searchResults?.append(row);
+        searchResults.append(row);
       }
 
       async function updateSearch() {
@@ -540,173 +514,289 @@ const webSiteSchema = JSON.stringify({
       }
 
       function openSearch() {
-        if (!searchDialog?.open) searchDialog?.showModal();
+        if (!searchDialog) return;
+        if (!searchDialog.open) searchDialog.showModal();
         searchInput?.focus();
         // Warm the index while the reader is still thinking of a word.
         void getSearchItems().catch(() => { /* A query displays the error and can retry. */ });
       }
-      document.querySelector('#search-open')?.addEventListener('click', openSearch);
-      searchDialog?.addEventListener('click', (event) => {
-        if (event.target === searchDialog) searchDialog.close();
-      });
-      searchDialog?.addEventListener('close', () => {
-        if (searchInput) searchInput.value = '';
+
+      // 单页路由下 history.state 由 ClientRouter 用来记滚动位置与来回方向。
+      // replaceState 传 null 会把它抹掉，之后按「返回」时路由器会以为没有状态而直接放弃换页。
+      function replaceQueryParam(key: string, value: string | null) {
         const url = new URL(window.location.href);
-        if (url.searchParams.has('q')) {
-          url.searchParams.delete('q');
-          window.history.replaceState(null, '', url);
-        }
+        if (value) url.searchParams.set(key, value);
+        else url.searchParams.delete(key);
+        window.history.replaceState(window.history.state, '', url);
+      }
+
+      function closeSearch() {
+        const wasOpen = searchDialog?.open;
+        if (wasOpen) searchDialog?.close();
+        return wasOpen;
+      }
+
+      function fillSearchFromUrl() {
+        const query = new URL(window.location.href).searchParams.get('q');
+        if (!query || !searchInput || !searchDialog) return;
+        searchInput.value = query;
+        if (!searchDialog.open) searchDialog.showModal();
         void updateSearch();
-      });
-      searchInput?.addEventListener('input', () => {
-        const url = new URL(window.location.href);
-        const query = searchInput.value.trim();
-        if (query) url.searchParams.set('q', query);
-        else url.searchParams.delete('q');
-        window.history.replaceState(null, '', url);
-        void updateSearch();
-      });
-      searchInput?.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          event.stopPropagation();
-          searchDialog?.close();
-          return;
+      }
+
+      function openShareDialog() {
+        if (!shareDialog) return;
+        if (!shareDialog.open) shareDialog.showModal();
+        shareUrlInput?.focus();
+        shareUrlInput?.select();
+      }
+
+      function scheduleScrollState() {
+        if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollState);
+      }
+
+      function updateScrollState() {
+        scrollFrame = 0;
+        if (progressFill && progressArticle) {
+          const articleTop = window.scrollY + progressArticle.getBoundingClientRect().top;
+          const scrollable = Math.max(1, progressArticle.scrollHeight - window.innerHeight);
+          const progress = Math.min(1, Math.max(0, (window.scrollY - articleTop) / scrollable));
+          progressFill.style.transform = 'scaleX(' + progress + ')';
         }
-        if (event.key === 'ArrowDown') {
-          const first = searchResults?.querySelector('a');
-          if (first) {
+        if (toTopButton) {
+          // Article pages already have a floating bookmark in the corner; sit above it.
+          const artworkInView = window.innerWidth <= 680 && Array.from(
+            document.querySelectorAll<HTMLElement>('.home-profile-visual, .hero-gallery, .landscape-frame'),
+          ).some((artwork) => {
+            const bounds = artwork.getBoundingClientRect();
+            return bounds.top < window.innerHeight && bounds.bottom > 0;
+          });
+          // The footer has its own return link. Avoid covering the visit count.
+          const footer = document.querySelector<HTMLElement>('.site-footer');
+          const footerInView = footer ? footer.getBoundingClientRect().top < window.innerHeight : false;
+          toTopButton.hidden = window.scrollY < 640 || artworkInView || footerInView;
+        }
+      }
+
+      function bindPage() {
+        headerEl = document.querySelector<HTMLElement>('.site-header');
+        menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+        menu = document.querySelector<HTMLElement>('#primary-nav');
+        if (headerEl && menuToggle && menu) {
+          headerEl.dataset.menuReady = 'true';
+          menuToggle.addEventListener('click', () => {
+            menuToggle!.setAttribute('aria-expanded', String(menuToggle!.getAttribute('aria-expanded') !== 'true'));
+          });
+          menu.addEventListener('click', (event) => { if ((event.target as Element).closest('a')) closeMenu(); });
+        }
+
+        settingsDialog = document.querySelector<HTMLDialogElement>('#reading-settings');
+        settingsForm = document.querySelector<HTMLFormElement>('#settings-form');
+        document.querySelector('#settings-open')?.addEventListener('click', () => {
+          syncSettingsForm();
+          settingsDialog?.showModal();
+        });
+        settingsDialog?.addEventListener('click', (event) => {
+          if (event.target === settingsDialog) settingsDialog.close();
+        });
+        settingsForm?.addEventListener('change', () => {
+          const values = new FormData(settingsForm!);
+          const theme = values.get('theme');
+          const textSize = values.get('textSize');
+          const font = values.get('font');
+          const width = values.get('width');
+          preferences = {
+            theme: theme === 'light' || theme === 'dark' ? theme : 'system',
+            textSize: textSize === 'small' || textSize === 'large' ? textSize : 'normal',
+            font: font === 'sans' ? 'sans' : 'serif',
+            width: width === 'narrow' || width === 'wide' ? width : 'comfortable',
+          };
+          paintPreferences(true);
+        });
+        document.querySelector('#settings-reset')?.addEventListener('click', () => {
+          preferences = { ...defaults };
+          syncSettingsForm();
+          paintPreferences(true);
+        });
+
+        searchDialog = document.querySelector<HTMLDialogElement>('#search-dialog');
+        searchInput = document.querySelector<HTMLInputElement>('#search-input');
+        searchResults = document.querySelector<HTMLOListElement>('#search-results');
+        searchStatus = document.querySelector<HTMLParagraphElement>('#search-status');
+        document.querySelector('#search-open')?.addEventListener('click', openSearch);
+        searchDialog?.addEventListener('click', (event) => {
+          if (event.target === searchDialog) searchDialog.close();
+        });
+        searchDialog?.addEventListener('close', () => {
+          if (searchInput) searchInput.value = '';
+          replaceQueryParam('q', null);
+          void updateSearch();
+        });
+        searchInput?.addEventListener('input', () => {
+          if (!searchInput) return;
+          replaceQueryParam('q', searchInput.value.trim() || null);
+          void updateSearch();
+        });
+        searchInput?.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
             event.preventDefault();
-            first.focus();
+            event.stopPropagation();
+            closeSearch();
+            return;
           }
+          if (event.key === 'ArrowDown') {
+            const first = searchResults?.querySelector('a');
+            if (first) {
+              event.preventDefault();
+              first.focus();
+            }
+          }
+        });
+        searchResults?.addEventListener('keydown', (event) => {
+          if (!(event.target instanceof HTMLAnchorElement) || !searchResults) return;
+          const links = [...searchResults.querySelectorAll('a')];
+          const index = links.indexOf(event.target);
+          if (index === -1) return;
+          if (event.key === 'ArrowDown' && index < links.length - 1) {
+            event.preventDefault();
+            links[index + 1].focus();
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (index > 0) links[index - 1].focus();
+            else searchInput?.focus();
+          }
+        });
+
+        shareDialog = document.querySelector<HTMLDialogElement>('#share-dialog');
+        shareUrlInput = document.querySelector<HTMLInputElement>('#share-url');
+        shareStatus = document.querySelector<HTMLElement>('#share-status');
+        const nativeShareButton = document.querySelector<HTMLButtonElement>('#share-native');
+        document.querySelectorAll<HTMLButtonElement>('[data-share-site]').forEach((button) => {
+          button.addEventListener('click', openShareDialog);
+        });
+        if (nativeShareButton && typeof navigator.share === 'function') {
+          nativeShareButton.hidden = false;
+          nativeShareButton.addEventListener('click', async () => {
+            const shareUrl = shareDialog?.dataset.shareUrl;
+            if (!shareUrl) return;
+            try {
+              await navigator.share({ title: 'GINLANG', url: shareUrl });
+              shareDialog?.close();
+            } catch (error) {
+              if (error instanceof DOMException && error.name === 'AbortError') return;
+              if (shareStatus) shareStatus.textContent = '系统分享暂不可用，可以复制上方网址。';
+            }
+          });
         }
-      });
-      searchResults?.addEventListener('keydown', (event) => {
-        if (!(event.target instanceof HTMLAnchorElement) || !searchResults) return;
-        const links = [...searchResults.querySelectorAll('a')];
-        const index = links.indexOf(event.target);
-        if (index === -1) return;
-        if (event.key === 'ArrowDown' && index < links.length - 1) {
-          event.preventDefault();
-          links[index + 1].focus();
-        } else if (event.key === 'ArrowUp') {
-          event.preventDefault();
-          if (index > 0) links[index - 1].focus();
-          else searchInput?.focus();
+        shareDialog?.addEventListener('click', (event) => {
+          if (event.target === shareDialog) shareDialog.close();
+        });
+        document.querySelector<HTMLButtonElement>('#share-copy')?.addEventListener('click', async (event) => {
+          const button = event.currentTarget as HTMLButtonElement;
+          const shareUrl = shareDialog?.dataset.shareUrl;
+          if (!shareUrl) return;
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            if (shareStatus) shareStatus.textContent = '网址已复制，现在可以发送给朋友。';
+            button.textContent = '已复制';
+            window.setTimeout(() => { button.textContent = '复制链接'; }, 2200);
+          } catch {
+            shareUrlInput?.focus();
+            shareUrlInput?.select();
+            if (shareStatus) shareStatus.textContent = '网址已选中，请手动复制。';
+          }
+        });
+
+        // 每个对话框里都有一个 × / 完成，节点随页面更换，所以每次换页重新绑。
+        document.querySelectorAll<HTMLButtonElement>('[data-dialog-close]').forEach((button) => {
+          button.addEventListener('click', () => button.closest('dialog')?.close());
+        });
+
+        progressFill = document.querySelector<HTMLElement>('#reading-progress-fill');
+        progressArticle = document.querySelector<HTMLElement>('.article-body');
+        articleObserver?.disconnect();
+        articleObserver = null;
+        if (progressArticle && 'ResizeObserver' in window) {
+          articleObserver = new ResizeObserver(scheduleScrollState);
+          articleObserver.observe(progressArticle);
         }
+
+        toTopButton = document.querySelector<HTMLButtonElement>('[data-to-top]');
+        if (toTopButton) {
+          if (document.querySelector('.article-page')) toTopButton.classList.add('to-top-raised');
+          toTopButton.addEventListener('click', () => {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+            document.querySelector<HTMLElement>('#main-content')?.focus({ preventScroll: true });
+          });
+        }
+        updateScrollState();
+      }
+
+      function initSite() {
+        // 同一份 DOM 只绑一次：首屏 astro:page-load 可能与下面的兜底调用先后撞上。
+        if (boundGeneration === pageGeneration) return;
+        boundGeneration = pageGeneration;
+        bindPage();
+      }
+
+      // —— 全站只注册一次的监听 ——
+      window.addEventListener('scroll', scheduleScrollState, { passive: true });
+      window.addEventListener('resize', scheduleScrollState, { passive: true });
+
+      document.addEventListener('click', (event) => {
+        if (!headerEl || menuToggle?.getAttribute('aria-expanded') !== 'true') return;
+        if (event.target instanceof Node && headerEl.contains(event.target)) return;
+        closeMenu();
       });
+
       document.addEventListener('keydown', (event) => {
+        if (menuToggle?.getAttribute('aria-expanded') === 'true') {
+          if (event.key === 'Escape') closeMenu(true);
+          else if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) closeMenu();
+        }
         if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
           event.preventDefault();
           openSearch();
         }
       });
-      const sharedQuery = new URL(window.location.href).searchParams.get('q');
-      if (sharedQuery && searchInput && searchDialog) {
-        searchInput.value = sharedQuery;
-        openSearch();
-        void updateSearch();
-      }
 
-      const shareDialog = document.querySelector<HTMLDialogElement>('#share-dialog');
-      const shareUrlInput = document.querySelector<HTMLInputElement>('#share-url');
-      const shareStatus = document.querySelector<HTMLElement>('#share-status');
-      const shareUrl = shareDialog?.dataset.shareUrl;
-      const nativeShareButton = document.querySelector<HTMLButtonElement>('#share-native');
+      window.addEventListener('wheel', () => {
+        if (menuToggle?.getAttribute('aria-expanded') === 'true') closeMenu();
+      }, { passive: true });
+      window.addEventListener('touchmove', () => {
+        if (menuToggle?.getAttribute('aria-expanded') === 'true') closeMenu();
+      }, { passive: true });
 
-      function openShareDialog() {
-        if (!shareDialog?.open) shareDialog?.showModal();
-        shareUrlInput?.focus();
-        shareUrlInput?.select();
-      }
-
-      document.querySelectorAll<HTMLButtonElement>('[data-share-site]').forEach((button) => {
-        button.addEventListener('click', openShareDialog);
-      });
-      if (nativeShareButton && typeof navigator.share === 'function') {
-        nativeShareButton.hidden = false;
-        nativeShareButton.addEventListener('click', async () => {
-          if (!shareUrl) return;
-          try {
-            await navigator.share({ title: 'GINLANG', url: shareUrl });
-            shareDialog?.close();
-          } catch (error) {
-            if (error instanceof DOMException && error.name === 'AbortError') return;
-            if (shareStatus) shareStatus.textContent = '系统分享暂不可用，可以复制上方网址。';
-          }
-        });
-      }
-      shareDialog?.addEventListener('click', (event) => {
-        if (event.target === shareDialog) shareDialog.close();
-      });
-      document.querySelector<HTMLButtonElement>('#share-copy')?.addEventListener('click', async (event) => {
-        const button = event.currentTarget as HTMLButtonElement;
-        if (!shareUrl) return;
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          if (shareStatus) shareStatus.textContent = '网址已复制，现在可以发送给朋友。';
-          button.textContent = '已复制';
-          window.setTimeout(() => { button.textContent = '复制链接'; }, 2200);
-        } catch {
-          shareUrlInput?.focus();
-          shareUrlInput?.select();
-          if (shareStatus) shareStatus.textContent = '网址已选中，请手动复制。';
-        }
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+      systemTheme.addEventListener?.('change', () => {
+        if (preferences.theme === 'system') paintPreferences();
       });
 
-      const progressFill = document.querySelector<HTMLElement>('#reading-progress-fill');
-      const article = document.querySelector<HTMLElement>('.article-body');
-      if (progressFill && article) {
-        let progressFrame = 0;
-        const updateProgress = () => {
-          progressFrame = 0;
-          const articleTop = window.scrollY + article.getBoundingClientRect().top;
-          const scrollable = Math.max(1, article.scrollHeight - window.innerHeight);
-          const progress = Math.min(1, Math.max(0, (window.scrollY - articleTop) / scrollable));
-          progressFill.style.transform = 'scaleX(' + progress + ')';
-        };
-        const scheduleProgress = () => {
-          if (!progressFrame) progressFrame = window.requestAnimationFrame(updateProgress);
-        };
-        window.addEventListener('scroll', scheduleProgress, { passive: true });
-        window.addEventListener('resize', scheduleProgress, { passive: true });
-        if ('ResizeObserver' in window) new ResizeObserver(scheduleProgress).observe(article);
-        updateProgress();
-      }
+      // 换页顺序：astro:before-swap → 换 DOM → astro:after-swap → 脚本 → astro:page-load。
+      // <html> 上的阅读偏好在换 DOM 时会被新文档覆盖，趁 after-swap 补回来，
+      // 这时新画面还没截图，读者不会看到浅色闪一下。
+      document.addEventListener('astro:after-swap', () => {
+        pageGeneration += 1;
+        paintPreferences();
+      });
 
-      const toTop = document.querySelector<HTMLButtonElement>('[data-to-top]');
-      if (toTop) {
-        // Article pages already have a floating bookmark in the corner; sit above it.
-        if (document.querySelector('.article-page')) toTop.classList.add('to-top-raised');
-        const homeArtwork = document.querySelectorAll<HTMLElement>('.home-profile-visual, .hero-gallery, .landscape-frame');
-        const footer = document.querySelector<HTMLElement>('.site-footer');
-        let topFrame = 0;
-        const updateToTop = () => {
-          topFrame = 0;
-          const artworkInView = window.innerWidth <= 680 && Array.from(homeArtwork).some((artwork) => {
-            const bounds = artwork.getBoundingClientRect();
-            return bounds.top < window.innerHeight && bounds.bottom > 0;
-          });
-          // The footer has its own return link. Avoid covering the visit count.
-          const footerInView = footer ? footer.getBoundingClientRect().top < window.innerHeight : false;
-          toTop.hidden = window.scrollY < 640 || artworkInView || footerInView;
-        };
-        window.addEventListener('scroll', () => {
-          if (!topFrame) topFrame = window.requestAnimationFrame(updateToTop);
-        }, { passive: true });
-        window.addEventListener('resize', updateToTop, { passive: true });
-        toTop.addEventListener('click', () => {
-          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
-          document.querySelector<HTMLElement>('#main-content')?.focus({ preventScroll: true });
-        });
-        updateToTop();
-      }
+      document.addEventListener('astro:page-load', () => {
+        initSite();
+        fillSearchFromUrl();
+      });
 
+      // 兜底：如果模块比 window load 还晚（极慢的连接），page-load 已经错过了。
+      if (document.readyState === 'complete') {
+        initSite();
+        fillSearchFromUrl();
+      }
     </script>
     <script>
       // 滚动显影：CSS 里的 [data-reveal] 全靠 will-reveal / is-revealed 两个类切换，
       // 少这段脚本，全站的 home-section、category-list 都不会动。
+      // 单页路由换页时这段不会重跑（模块只执行一次）：新内容直接可见，入场动效交给
+      // 页面级的纸页淡入，避免新画面截图时整屏还是隐藏状态、过渡完才「跳」出来。
       if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         const observer = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
@@ -724,18 +814,25 @@ const webSiteSchema = JSON.stringify({
     <script>
       // 「← 返回」：读者是从站内某个页面点进来的，就回到那一页（浏览器后退，滚动位置也还原）；
       // 直接打开链接或从外部站点进来时，href 里的兜底地址生效。
+      // 单页路由下 document.referrer 只在进站那一次有效，之后换页不会更新，
+      // 所以另外记一个「站内已经翻过页」的标记。用捕获阶段挂，抢在路由器接管链接之前。
+      let spaNavigated = false;
+      document.addEventListener('astro:after-swap', () => { spaNavigated = true; });
       document.addEventListener('click', (event) => {
         const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('[data-back-link]');
         if (!link) return;
-        if (!document.referrer) return;
-        try {
-          if (new URL(document.referrer).origin !== location.origin) return;
-        } catch {
-          return;
+        let cameFromHere = spaNavigated;
+        if (!cameFromHere) {
+          try {
+            cameFromHere = Boolean(document.referrer) && new URL(document.referrer).origin === location.origin;
+          } catch {
+            cameFromHere = false;
+          }
         }
-        if (history.length <= 1) return;
+        if (!cameFromHere || history.length <= 1) return;
+        // 阻止默认跳转就够了：路由器在冒泡阶段，会看到 defaultPrevented 而放过这一下。
         event.preventDefault();
         history.back();
-      });
+      }, true);
     </script>  </body>
 </html>

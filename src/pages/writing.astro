@@ -80,7 +80,9 @@ for (const post of posts) counts.set(post.data.category, (counts.get(post.data.c
         const url = new URL(window.location.href);
         if (choice === 'all') url.searchParams.delete('category');
         else url.searchParams.set('category', choice);
-        window.history.pushState(null, '', url);
+        // 单页路由：history.state 里存着 ClientRouter 的滚动位置与来回方向，
+        // 传 null 会一并抹掉，之后按「返回」时路由器会直接放弃换页。
+        window.history.pushState(window.history.state, '', url);
       }
     };
     buttons.forEach((button) => button.addEventListener('click', () => applyFilter(button.dataset.writingFilter || 'all', true)));

@@ -27,7 +27,7 @@ GINLANG 原有头像与背景继续留在 `public/authors/` 原地址。新增�
 | --- | --- |
 | `src/pages/` | 稳定 URL 与页面模板；不要为每篇文章手工添加页面 |
 | `src/components/` | 画册、札记、信笺、卡片、书签与资料等可复用交互 |
-| `src/layouts/SiteLayout.astro` | 页头、页脚、搜索、阅读设置和全站行为 |
+| `src/layouts/SiteLayout.astro` | 页头、页脚、搜索、阅读设置和全站行为；单页路由的 `ClientRouter` 也挂在这里（2026-11-10） |
 | `src/lib/content.ts` | 内容索引、日期和目录排序、跨文件引用检查 |
 | `src/content.config.ts` | 必填字段、图片相对路径与内容格式检查 |
 | `src/lib/` | 日期、分类、阅读路线等共享逻辑 |

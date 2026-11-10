@@ -26,7 +26,7 @@ const trackCredit = TRACK_CREDITS[trackFile] ?? '';
 ---
 
 {trackSrc && (
-  <div class="ambient-music" data-ambient-music data-track={trackFile}>
+  <div class="ambient-music" data-ambient-music data-track={trackFile} transition:persist="ambient-music">
     <audio data-ambient-audio src={trackSrc} loop preload="none"></audio>
 
     <aside class="ambient-prompt" data-ambient-prompt aria-label="背景音乐" hidden>
