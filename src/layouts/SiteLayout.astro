@@ -761,6 +761,28 @@ const webSiteSchema = JSON.stringify({
         }
       });
 
+      // 点「当前所在的这一页」不必再换一次页：整页会白闪一下，读完的位置还会被弹回顶部。
+      // 这里只拦成「滚回页首」。挂在捕获阶段、只 preventDefault —— 路由器在冒泡阶段看到
+      // defaultPrevented 会放过这一下，页头菜单该关的照关。
+      // 带 hash 的同页链接交给路由器：它只滚动、本来就不换页。
+      document.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.button !== 0) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[href]');
+        if (!link || link.hasAttribute('download')) return;
+        if (link.target && link.target !== '_self') return;
+        const url = new URL(link.href);
+        if (url.origin !== location.origin) return;
+        if (url.pathname !== location.pathname || url.search !== location.search) return;
+        if (url.hash) return;
+        event.preventDefault();
+        closeMenu();
+        if (window.scrollY > 0) {
+          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+        }
+      }, true);
+
       window.addEventListener('wheel', () => {
         if (menuToggle?.getAttribute('aria-expanded') === 'true') closeMenu();
       }, { passive: true });
@@ -784,6 +806,11 @@ const webSiteSchema = JSON.stringify({
       document.addEventListener('astro:page-load', () => {
         initSite();
         fillSearchFromUrl();
+        // 换页后被点的那颗链接已经不在 DOM 里，焦点会掉回 body。交给新页面的正文，
+        // 键盘和读屏用户才不用从页头重新 Tab 一遍；preventScroll 保住滚动位置。
+        if (pageGeneration > 0 && document.activeElement === document.body) {
+          document.querySelector<HTMLElement>('#main-content')?.focus({ preventScroll: true });
+        }
       });
 
       // 兜底：如果模块比 window load 还晚（极慢的连接），page-load 已经错过了。

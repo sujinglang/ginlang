@@ -83,3 +83,13 @@
 - **验收脚本**（都在会话工作区 `_ginlang_spa/`）：`spa-test.mjs` 34 项、`spa-mobile.mjs` 11 项、`spa-direct.mjs` 8 项。dev 4323 与 preview 4324 都跑过 34/34；`check:site`、`check:library`、`check:content-state` 全绿。
 - **回滚**：改动只在分支 `spa-router`，`main` 与线上没动；保险起见另打了标签 `backup-before-spa-8170c19` 和分支 `backup/pre-spa`。要撤回 `git switch main` 即可。
 - **dev 小坑**：改过 `astro.config.mjs` 后，Vite 的依赖预构建可能还指着旧哈希，控制台报 `504 (Outdated Optimize Dep)`，表现就是路由器脚本没加载、点链接整页刷新。删掉 `node_modules/.vite` 再重启 dev 就好，不是代码问题。
+### 2026-11-10 续：换页再优化（预取、同页点击、焦点）
+
+- **悬停预取重开**：`astro.config.mjs` 从 `prefetch: false` 改成 `prefetch: { prefetchAll: true, defaultStrategy: 'hover' }`。鼠标停到站内链接上就把那一页的 HTML 取回来，点击时直接命中浏览器缓存。
+  - **为什么之前关掉是错的**：我一度以为预取是「扫过的链接全下一遍」。实际 `prefetchAll` 配 `hover` 只在指针真正停在链接上时才取一次，一个链接最多一次。
+  - **实测（4G 模拟：RTT 150ms / 1.6 Mbps）**：不预取时 `fetch('/writing/')` 要 170–230ms，点击到新 DOM 就位 230–420ms；预取完成后同一跳 `fetch` 只要 8ms，点击到就位 **34–38ms**。
+  - **`npm run preview` 看不出这个效果**：`astro preview` 的 HTML 响应头是 `Cache-Control: no-cache`，浏览器必须回源校验，预取的那份用不上。线上 GitHub Pages 是 `Cache-Control: max-age=600`（实测），预取才会真正省掉一个来回。要在本地看效果，用会话工作区 `_ginlang_spa/serve-dist.mjs`（照 GitHub Pages 的头起一份 dist）。
+- **点「当前所在的这一页」不再换一次页**：以前点导航里正在看的那个栏目，Astro 照样 fetch + 换 DOM + 走完 300/420ms 转场，整页白闪一下，读到哪儿还被弹回顶部。现在 `SiteLayout` 在**捕获阶段**拦一道：同源、同 pathname、同 search、无 hash、无修饰键、非下载、非 `target=_blank` 的链接只 `preventDefault()` 并滚回页首，路由器看到 `defaultPrevented` 就放过这一下。带 hash 的同页链接照旧交给路由器（它本来只滚动、不换页）。
+- **换页后把焦点交给正文**：点完链接那颗 `<a>` 已经不在 DOM 里，焦点掉回 `body`，键盘与读屏用户得从页头重新 Tab。现在 `astro:page-load` 里若 `activeElement` 是 body 就 `#main-content`（已有 `tabindex="-1"`）`focus({ preventScroll: true })`；鼠标点进来不会出现焦点框（`:focus-visible` 没命中）。
+- **减少动态效果不用另做**：`ClientRouter` 自带 `@media (prefers-reduced-motion)` 下的 `::view-transition-* { animation: none !important }`，构建产物里已确认在。别自己再写一遍。
+- **没动的**：纸页过渡仍是 300ms 出 / 420ms 入。这是设计不是性能问题——真要更利落，改 `tokens-base.css` 里 `::view-transition-old(root)` / `-new(root)` 的两个时长即可，两行。**别顺手改**，用户对这块节奏有意见会自己说。
